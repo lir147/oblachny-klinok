@@ -30,6 +30,8 @@ function mqPacket(head, body) {
 }
 function mqConnect(url, cid, will, timeout) {
   return new Promise(resolve => {
+    let user = null, pass = null;
+    { const m = url.match(/^(wss?:\/\/)([^:@/]+):([^@/]*)@(.*)$/); if (m) { user = decodeURIComponent(m[2]); pass = decodeURIComponent(m[3]); url = m[1] + m[4]; } }
     let ws, done = false, buf = new Uint8Array(0), pid = 1, ping = null;
     const api = { url, onmsg: null, onclose: null, open: false, bytes: 0,
       pub(topic, str, retain) { if (!api.open) return; try { const pk = mqPacket(0x30 | (retain ? 1 : 0), [...mqStr(topic), ...MQ_TE.encode(str)]); api.bytes += pk.length; api.lastPub = Date.now(); if (!api.pend) api.pend = api.lastPub; ws.send(pk); } catch (e) {} },
@@ -40,9 +42,10 @@ function mqConnect(url, cid, will, timeout) {
     try { ws = new WebSocket(url, ['mqtt']); } catch (e) { finish(false); return; }
     ws.binaryType = 'arraybuffer';
     ws.onopen = () => {
-      const flags = 0x02 | (will ? 0x04 : 0);
+      const flags = 0x02 | (will ? 0x04 : 0) | (user != null ? 0x80 : 0) | (pass != null ? 0x40 : 0);
       const body = [...mqStr('MQTT'), 4, flags, 0, 40, ...mqStr(cid)];
       if (will) body.push(...mqStr(will[0]), ...mqStr(will[1]));
+      if (user != null) body.push(...mqStr(user)); if (pass != null) body.push(...mqStr(pass));
       ws.send(mqPacket(0x10, body));
     };
     ws.onmessage = ev => {
@@ -66,10 +69,10 @@ const rid = Math.random().toString(36).slice(2, 10);
 const R = {};
 const tests = [];
 function row(key, name) { const tr = document.createElement('tr'); tr.innerHTML = '<td></td><td class="wait">проверяю…</td>'; tr.firstChild.textContent = name; $('tbl').appendChild(tr); R[key] = { name, ok: null, info: '' }; return (ok, info) => { R[key].ok = ok; R[key].info = info; tr.lastChild.className = ok ? 'ok' : 'bad'; tr.lastChild.textContent = (ok ? 'работает' : 'не работает') + (info ? ' · ' + info : ''); }; }
-const MQTT = [['emqx', 'wss://broker.emqx.io:8084/mqtt'], ['emqxcn', 'wss://broker-cn.emqx.io:8084/mqtt'], ['hivemq', 'wss://broker.hivemq.com:8884/mqtt'], ['eclipse', 'wss://mqtt.eclipseprojects.io:443/mqtt'], ['mosq', 'wss://test.mosquitto.org:8081/mqtt']];
+const MQTT = [['shiftr', 'wss://public:public@public.cloud.shiftr.io'], ['emqx', 'wss://broker.emqx.io:8084/mqtt'], ['emqxcn', 'wss://broker-cn.emqx.io:8084/mqtt'], ['hivemq', 'wss://broker.hivemq.com:8884/mqtt'], ['eclipse', 'wss://mqtt.eclipseprojects.io:443/mqtt'], ['mosq', 'wss://test.mosquitto.org:8081/mqtt']];
 const live = [];
 for (const [k, url] of MQTT) {
-  const done = row(k, 'MQTT ' + url.replace('wss://', ''));
+  const done = row(k, 'MQTT ' + url.replace(/wss:\/\/([^@]*@)?/, '') + (k === 'shiftr' ? ' (порт 443)' : ''));
   tests.push((async () => {
     const t0 = performance.now();
     const c = await mqConnect(url, 'nt_' + rid + '_' + k, null, 12000);
