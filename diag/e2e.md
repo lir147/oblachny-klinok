@@ -1,6 +1,6 @@
 # Проверка двумя браузерами
 
-Время: 29.10.2026, 19:35:17
+Время: 29.10.2026, 19:55:30
 
 ## Браузер 1
 
@@ -13,7 +13,7 @@
 Друзей пока нет. Добавьте игроков из списка «Сейчас в игре».
 СЕЙЧАС В ИГРЕ · 2
 弓
-Странник1144
+Странник8022
 Лучник · ур. 1 · БМ 548 · Бронза I · Окрестности деревни Кумо
 Добавить
 Дуэль
@@ -21,7 +21,7 @@
 В отряд
 術
 Komik
-Маг · ур. 18 · БМ 3218 · Бронза I · Окрестности деревни Кумо
+«Рассекающий нити» · Маг · ур. 23 · БМ 4989 · Бронза I · Окрестности деревни Кумо
 Добавить
 Дуэль
 Бой
@@ -30,7 +30,7 @@ Komik
 
 **Журнал игры:**
 ```
-Новый день в долине! Награда за вход (день 1 из 7) и свежие задания ждут в «Дневнике».
+Скоро мировой босс: «Владыка Багрового затмения» появится — Окрестности деревни Кумо. Соберитесь вместе!
 Демон Багровой луны пробудился на юго-востоке.
 Онлайн: подключено к игровому серверу (public.cloud.shiftr.io).
 Нажмите на «Воин» ещё раз, чтобы выбрать навсегда.
@@ -39,10 +39,10 @@ Komik
 
 **Консоль и сеть:**
 ```
-warning: [.WebGL-0x1204001c3a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x1204001c3a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x1204001c3a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x1204001c3a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+warning: [.WebGL-0x2fcc03051e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x2fcc03051e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x2fcc03051e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x2fcc03051e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
 ws open wss://public.cloud.shiftr.io/
 ws sent 1 frames to wss://public.cloud.shiftr.io/
 ws sent 5 frames to wss://public.cloud.shiftr.io/
@@ -58,6 +58,9 @@ ws open wss://public.cloud.shiftr.io/
 ws sent 1 frames to wss://public.cloud.shiftr.io/
 ws sent 5 frames to wss://public.cloud.shiftr.io/
 ws close wss://public.cloud.shiftr.io/
+ws open wss://public.cloud.shiftr.io/
+ws sent 1 frames to wss://public.cloud.shiftr.io/
+ws sent 5 frames to wss://public.cloud.shiftr.io/
 ```
 
 ## Браузер 2
@@ -71,7 +74,7 @@ ws close wss://public.cloud.shiftr.io/
 Друзей пока нет. Добавьте игроков из списка «Сейчас в игре».
 СЕЙЧАС В ИГРЕ · 2
 剣
-Странник1978
+Странник9175
 Воин · ур. 1 · БМ 427 · Бронза I · Окрестности деревни Кумо
 Добавить
 Дуэль
@@ -79,7 +82,7 @@ ws close wss://public.cloud.shiftr.io/
 В отряд
 術
 Komik
-Маг · ур. 18 · БМ 3218 · Бронза I · Окрестности деревни Кумо
+«Рассекающий нити» · Маг · ур. 23 · БМ 4989 · Бронза I · Окрестности деревни Кумо
 Добавить
 Дуэль
 Бой
@@ -88,7 +91,7 @@ Komik
 
 **Журнал игры:**
 ```
-Новый день в долине! Награда за вход (день 1 из 7) и свежие задания ждут в «Дневнике».
+Скоро мировой босс: «Владыка Багрового затмения» появится — Окрестности деревни Кумо. Соберитесь вместе!
 Демон Багровой луны пробудился на юго-востоке.
 Онлайн: подключено к игровому серверу (public.cloud.shiftr.io).
 Нажмите на «Лучник» ещё раз, чтобы выбрать навсегда.
@@ -100,6 +103,10 @@ Komik
 ws open wss://public.cloud.shiftr.io/
 ws sent 1 frames to wss://public.cloud.shiftr.io/
 ws sent 5 frames to wss://public.cloud.shiftr.io/
+ws open wss://public.cloud.shiftr.io/
+ws sent 1 frames to wss://public.cloud.shiftr.io/
+ws sent 5 frames to wss://public.cloud.shiftr.io/
+ws close wss://public.cloud.shiftr.io/
 ws open wss://public.cloud.shiftr.io/
 ws sent 1 frames to wss://public.cloud.shiftr.io/
 ws sent 5 frames to wss://public.cloud.shiftr.io/
