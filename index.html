@@ -271,6 +271,17 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
 .srow.noic{grid-template-columns:minmax(0,1fr) auto}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.tcard{display:grid;gap:4px;justify-items:center;text-align:center;padding:8px;border:1px solid #3a2e1a;border-radius:8px;background:linear-gradient(#1c150c,#0e0b08)}
+.tcard img{width:180px;height:auto;max-width:100%}
+.tcard.big{grid-template-columns:1fr;max-width:420px;margin:0 auto 8px;border-color:var(--gold)}.tcard.big img{width:260px}
+.tcard.on{border-color:var(--gold);box-shadow:0 0 12px rgba(201,163,90,.35)}
+.tcard.locked img{filter:grayscale(1) brightness(.55)}.tcard.locked{opacity:.8}
+.tcard .tsec{width:100%;padding:2px 6px;font-size:12px;color:#f3e1b0;background:linear-gradient(90deg,rgba(90,60,20,.6),rgba(90,60,20,0));text-align:left;border-radius:3px}
+.tcard .tbon{color:#ff8a6a;font-size:13px}.tcard .tdesc{font-size:13px;color:var(--paper)}
+.tcard .bestbar{width:100%}
+.ghhud{border-color:#c9a35a;background:rgba(30,22,8,.9);color:#ffe0a0}
+
 .newnick{display:grid;gap:4px;width:min(360px,100%);margin:0 auto 8px}.newnick .bad{color:#ff8a80}
 .nickro{font-size:16px;color:var(--gold)}
 .renic{display:grid;place-items:center;width:44px;height:44px;border-radius:8px;background:#2a1a08;color:#ffd36a;font-size:24px}
@@ -4128,6 +4139,7 @@ const WORLD_QUESTS = [
 ];
 ZONES.bg_field = { name: 'Поле битвы', seed: 177, tiles: 't', bg: '#0d1220', deco: 'sky', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 // zones were laid out on a 28x28 map; stretch each onto its own size (open worlds 150x150, dungeons 44x44)
+ZONES.ghall = { name: 'Зал гильдии', seed: 251, tiles: 'k', bg: '#0e0a14', deco: 'sky', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 ZONES.tower = { name: 'Башня испытаний', seed: 233, tiles: 'v', bg: '#0a0814', deco: 'spirit', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 for (const z of Object.values(ZONES)) z.size = z.dungeon || z.arena ? 44 : 150;
 { for (const z of Object.values(ZONES)) {
@@ -4357,7 +4369,7 @@ class World extends Phaser.Scene {
     { const zd = ZONES[this.zoneId] && ZONES[this.zoneId].dungeon, gi = data && data.dgInst;
       this.dgHost = !!(zd && gi && PARTY && PARTY.lead === save.pid && gi === 'dg:' + PARTY.id + ':' + this.zoneId);
       this.dgRemote = !!(zd && gi && !this.dgHost);
-      this.inst = zd ? (gi || 'solo:' + save.pid + ':' + this.zoneId) : gi && gi.startsWith('bg:') ? gi : this.zoneId === 'tower' ? 'tower:' + save.pid : this.zoneId; }
+      this.inst = zd ? (gi || 'solo:' + save.pid + ':' + this.zoneId) : gi && gi.startsWith('bg:') ? gi : this.zoneId === 'tower' ? 'tower:' + save.pid : this.zoneId === 'ghall' ? 'gh:' + (save.guild ? gtag(save.guild) : save.pid) : this.zoneId; }
     this.tw = this.zoneId === 'tower' ? { f: Math.max(1, +(data && data.towF) || 1), state: 'wait', t: performance.now() + 2500 } : null;
     this.zone = ZONES[this.zoneId];
     N = this.zone.size || 44; C = N / 2;
@@ -4467,7 +4479,7 @@ class World extends Phaser.Scene {
 
     this.allies = []; this.remotes = new Map(); this.fishing = null; this.pvpProxy = null;
     safeRun('herbs', () => makeHerbs(this)); safeRun('daily', () => dailyCheck(this)); safeRun('title', () => titleHud()); safeRun('buff', () => buffHud());
-    safeRun('holiday', () => holidayDecor(this)); this.weather = null; safeRun('weather', () => weatherApply(this)); safeRun('tut', () => tutInit()); safeRun('gfx', () => gfxApply(this)); safeRun('tower', () => towerHud(this));
+    safeRun('holiday', () => holidayDecor(this)); this.weather = null; safeRun('weather', () => weatherApply(this)); safeRun('tut', () => tutInit()); safeRun('gfx', () => gfxApply(this)); safeRun('tower', () => towerHud(this)); safeRun('ghDecor', () => ghDecor(this));
     safeRun('wardrobe', () => { for (const it of [...save.inv, ...Object.values(save.eq)]) wardrobeNote(it); });
     safeRun('bg', () => { if (BG && this.zoneId !== BG_ID && Date.now() - BG.t0 > 15000) { BG = null; bgHud(); }
     if (BG && this.zoneId === BG_ID) { const base = BG.me === 0 ? [C - 20, C] : [C + 20, C]; this.hero.x = base[0]; this.hero.y = base[1]; } });
@@ -5120,7 +5132,7 @@ class World extends Phaser.Scene {
     const sb = setBonus(), gb = guildBonus(); atk *= 1 + sb.atk + gb; hp = Math.round(hp * (1 + sb.hp + gb)); def += sb.def; crit += sb.crit;
     crit = Math.min(crit, 75);
     const lb = lookBonus(); atk *= 1 + lb; hp = Math.round(hp * (1 + lb)); def += (save.ward.lv - 1) * 2;
-    { const rb = rebBonus(), sp = specDef() || {}, hb = homeBonus(), bb = bestBonus(); atk *= (1 + rb) * (1 + (sp.atk || 0)) * (1 + hb.atk) * (1 + bb); hp = Math.round(hp * (1 + rb) * (1 + (sp.hp || 0)) * (1 + hb.hp) * (1 + bb)); def += sp.def || 0; crit += sp.crit || 0; mp = Math.round(mp * (1 + (sp.mp || 0)));
+    { const rb = rebBonus(), sp = specDef() || {}, hb = homeBonus(), bb = bestBonus(), tb = titleBonus(save.title) || {}; atk *= (1 + rb) * (1 + (sp.atk || 0)) * (1 + hb.atk) * (1 + bb) * (1 + (tb.atk || 0)); hp = Math.round(hp * (1 + rb) * (1 + (sp.hp || 0)) * (1 + hb.hp) * (1 + bb) * (1 + (tb.hp || 0))); crit += tb.crit || 0; def += sp.def || 0; crit += sp.crit || 0; mp = Math.round(mp * (1 + (sp.mp || 0)));
       for (const s2 of STAT_SLOTS) { const it2 = save.eq[s2]; if (!it2) continue; const g = gemStats(it2); atk += g.atk || 0; hp += Math.round(g.hp || 0); def += g.def || 0; crit += g.crit || 0; mp += Math.round(g.ki || 0); if (s2 === 'pet') { const k = petMul(it2) - 1; atk += statVal(it2, 'atk') * k; hp += Math.round(statVal(it2, 'hp') * k); def += Math.round(statVal(it2, 'def') * k); } } }
     { const fb = typeof buffsActive === 'function' ? buffsActive() : {}; atk *= 1 + (fb.atk || 0); hp = Math.round(hp * (1 + (fb.hp || 0))); crit = Math.min(75, crit + (fb.crit || 0)); def += fb.def || 0; }
     Object.assign(h, { atk, maxHp: hp, maxMp: mp, def, crit: Math.min(85, crit), aspd: cl.aspd * (1 - ((specDef() || {}).aspd || 0)) });
@@ -6046,7 +6058,7 @@ class World extends Phaser.Scene {
     if (m.pvp) return;
     sfx(m.boss ? 'boom' : 'kill'); sfx('coin');
     m.gold = Math.round(m.gold * evMul('gold') * (terrMine(this.zoneId) ? 1.15 : 1) * (save.eq.pet && (save.eq.pet.plv || 1) >= 20 ? 1.1 : 1));
-    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); bestiaryKill(this, m); invKill(this, m); if (m.kind === 'stormoni') { stat('storm'); }
+    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); bestiaryKill(this, m); invKill(this, m); safeRun('ghKill', () => ghKill(this, m)); if (m.kind === 'stormoni') { stat('storm'); }
     stat('kills'); stat('goldEarned', m.gold); if (inParty()) stat('partyKills'); if (eventsNow().length) stat('eventKills');
     if (m.boss) { stat('bosses'); save.stats.bossKinds[m.kind] = (save.stats.bossKinds[m.kind] || 0) + 1; }
     save.gold += m.gold;
@@ -6735,9 +6747,9 @@ class World extends Phaser.Scene {
     if (this.allies.length) this.updateAllies(dt);
     if (this.pet) this.updatePet(dt);
     netUpdate(this, dt);
-    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); safeRun('bgTick', () => bgTick(this), 1); safeRun('towerTick', () => towerTick(this), 1);
+    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); safeRun('bgTick', () => bgTick(this), 1); safeRun('towerTick', () => towerTick(this), 1); safeRun('htag', () => heroTagTick(this), 1);
     if (performance.now() > (this.achT || 0)) { this.achT = performance.now() + 2000; checkAch(this); evHud(); }
-    if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); safeRun('dgTimer', () => dgTimerHud(this), 1); safeRun('path', () => pathTick(this), 1); safeRun('inv', () => invTick(this), 1); }
+    if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); safeRun('dgTimer', () => dgTimerHud(this), 1); safeRun('path', () => pathTick(this), 1); safeRun('inv', () => invTick(this), 1); safeRun('gh', () => ghTick(this), 1); }
     if (this.zone.dungeon) this.updateDungeon();
     for (const n of this.npcs) this.placeUnit(n, Math.sin(this.now * 1.6 + n.off) * .8);
 
@@ -7111,7 +7123,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '44', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '45', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -7326,14 +7338,7 @@ function renderDiary() {
     }
     body.appendChild(list);
   } else if (DIARY_TAB === 'titles') {
-    note('Выбранный титул виден над вашим именем в мире, в списке игроков и в отряде.');
-    if (!save.titles.length) note('Титулов пока нет. Они открываются за достижения: победы над боссами, подземелья, дуэли, рыбалку и многое другое.');
-    const list = mk('div', 'titlelist');
-    list.appendChild(btn('Без титула', () => { save.title = null; persist(); titleHud(); pushPresence(true); renderDiary(); }, save.title ? '' : 'main'));
-    for (const t of save.titles) list.appendChild(btn('«' + TITLES[t] + '»', () => { save.title = t; persist(); titleHud(); pushPresence(true); renderDiary(); log('Титул «' + TITLES[t] + '» надет.', 'good'); }, save.title === t ? 'main' : ''));
-    body.appendChild(list);
-    const locked = Object.keys(TITLES).filter(t => !save.titles.includes(t));
-    if (locked.length) note('Ещё не открыто: ' + locked.length + ' титулов. Подробности — во вкладке «Достижения».');
+    renderTitlesTab(body);
   } else if (DIARY_TAB === 'cook') {
     note('Рыбу ловят в любом водоёме: нажмите на воду рядом с берегом, а когда клюнет — нажмите ещё раз. Травы растут по всему миру, их видно по мягкому свечению. Готовить можно где угодно.');
     const inv = mk('div', 'mats');
@@ -7414,7 +7419,7 @@ $('fbSend').addEventListener('click', () => {
   else $('fbNote').textContent = 'Нет связи с сервером — отзыв сохранён у вас, но автор его пока не увидит. Отправьте позже.';
   $('fbIn').value = ''; renderReviews();
 });
-(save.myReviews || []).forEach(addReview);
+setTimeout(() => (save.myReviews || []).forEach(r => safeRun("myReviews", () => addReview(r))), 0);
 $('fbGo').addEventListener('click', async () => {
   if (!COMMENTS) return;
   try { const r = await COMMENTS.openComposer({ element: $('fbText') }); if (r && r.opened === false) $('fbText').textContent = 'Нажмите кнопку ещё раз, когда страница в фокусе, или используйте «Комментировать» в меню страницы.'; }
@@ -7809,7 +7814,7 @@ function myPresence() {
   if (!GAME || !GAME.hero || GAME.hero.atk == null) return null;
   const f = myFighter(), a = save.eq.armor, c = save.eq.costume, w = save.eq.weapon;
   return { pid: save.pid, n: cleanText(save.name).slice(0, 20), c: f.c, lv: f.lv, bm: f.bm, a: f.a, hp: f.hp, d: f.d, cr: f.cr, pl: f.pl, r: save.arena.r,
-    g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId, in: GAME.inst || GAME.zoneId, ti: titleName(save.title), rb: save.reb || 0,
+    g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId, in: GAME.inst || GAME.zoneId, ti: titleName(save.title), tid: save.title || null, rb: save.reb || 0,
     x: Math.round(GAME.hero.x), y: Math.round(GAME.hero.y),
     look: { ar: a ? a.base : null, r: a ? Math.min(2, a.rarity) : 0, co: c ? c.base : null, w: w ? w.base : null, wr: w ? w.rarity : 0, wg: GAME.wingLook ? GAME.wingLook() : null, mt: save.eq.mount ? save.eq.mount.base : null, b: save.body || 'anime' }, chat: MY_CHAT.slice(-6) };
 }
@@ -7985,14 +7990,15 @@ function makeRemote(S, p, mv) {
   u.wspr = S.add.image(0, 0, S.weaponTexKey(wb, Math.min(3, +L.wr || 0))).setOrigin(GRIP[0] / HERO_W, GRIP[1] / HERO_H).setScale(HERO_K / 4);
   const name = cleanText(p.n).slice(0, 20) || 'Игрок', tag = p.g && p.g.t ? ' [' + cleanText(p.g.t).slice(0, 4) + ']' : '';
   const fr = save.friends && save.friends.some(f => f.pid === p.pid);
-  u.label = S.add.text(0, 0, (p.ti ? '«' + cleanText(p.ti).slice(0, 30) + '»\n' : '') + (p.rb ? rebStars(+p.rb) + ' ' : '') + name + tag + ' · ' + (+p.lv || 1), { fontFamily: FONT, fontSize: '12px', color: fr ? '#8fe3bf' : '#ffe08a', stroke: '#000', strokeThickness: 3 }).setOrigin(.5, 1).setDepth(190000);
+ u.badge = remoteBadge(S, u, p);
+  u.label = S.add.text(0, 0, (p.ti && !u.badge ? '«' + cleanText(p.ti).slice(0, 30) + '»\n' : '') + (p.rb ? rebStars(+p.rb) + ' ' : '') + name + tag + ' · ' + (+p.lv || 1), { fontFamily: FONT, fontSize: '12px', color: fr ? '#8fe3bf' : '#ffe08a', stroke: '#000', strokeThickness: 3 }).setOrigin(.5, 1).setDepth(190000);
   u.mark = { setPosition() { return this; } };
   u.sig = remoteSig(p, fr);
-  u.parts = [u.shadow, u.spr, u.wspr, u.label, u.wingR, u.wingL, u.mountB, u.mountF].filter(Boolean);
+  u.parts = [u.shadow, u.spr, u.wspr, u.label, u.badge, u.wingR, u.wingL, u.mountB, u.mountF].filter(Boolean);
   for (const o of u.parts) if (o.setInteractive && o === u.spr) o.setInteractive({ useHandCursor: true }).on('pointerdown', (pt, lx, ly, ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); openPeerCard(p.pid); });
   return u;
 }
-const remoteSig = (p, fr) => JSON.stringify([p.look, p.n, p.g && p.g.t, p.lv, p.c, !!fr, p.ti, p.rb]);
+const remoteSig = (p, fr) => JSON.stringify([p.look, p.n, p.g && p.g.t, p.lv, p.c, !!fr, p.ti, p.rb, p.tid]);
 function dropRemote(u) { for (const o of u.parts) try { o.destroy(); } catch (e) {} }
 function openPeerCard(pid) {
   WORLD_TAB = 'friends'; toggleWorld(true);
@@ -8049,6 +8055,7 @@ function placeRemote(S, u, moving) {
     const flap = Math.sin(t * 3) * 10 + (moving ? Math.sin(t * 10) * 7 : 0), sy = u.spr.y + (SHOULDER_Y - HERO_FY) * HERO_K, d2 = u.spr.depth - .3;
     u.wingR.setPosition(u.spr.x + 1.5, sy).setAngle(-flap).setDepth(d2); u.wingL.setPosition(u.spr.x - 1.5, sy).setAngle(flap).setDepth(d2);
   }
+  if (u.badge) u.badge.setPosition(u.label.x, u.label.y - u.label.height - 1).setVisible(u.label.visible);
 }
 
 /* ---------- mythic weapons: the strongest tier, only from bosses ---------- */
@@ -10281,12 +10288,208 @@ function hchatRender() {
   HCHAT_SEEN = Math.max(HCHAT_SEEN, last);
   const el = $('hchatLines'); el.innerHTML = '';
   if (!ch) el.appendChild(mk('div', 'hce', 'Вы не в гильдии.'));
-  else if (!L.length) el.appendChild(mk('div', 'hce', netOk() ? 'Тишина. Напишите первым!' : 'Нет связи с игровым сервером.'));
+  else if (!L.length) el.appendChild(mk('div', 'hce', NET_STATE === 'online' ? 'Тишина. Напишите первым!' : NET_STATE === 'connecting' ? 'Подключаемся…' : 'Нет связи с игровым сервером.'));
   for (const l of L) { const r = mk('div', 'hcr' + (l.me ? ' me' : '')); const n = mk('b', '', l.who + ': '); if (CLASSES[l.c]) n.style.color = { warrior: '#ffb38a', mage: '#b9a6ff', archer: '#9fe3a0' }[l.c] || ''; r.append(n, document.createTextNode(l.s)); el.appendChild(r); }
   el.scrollTop = el.scrollHeight;
 }
 setInterval(hchatRender, 1000);
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.activeElement === document.body && $('hchatIn') && !save.chatMin) { e.preventDefault(); $('hchatIn').focus(); } });
+
+/* ---------- title badges: a drawn emblem above the name + a small bonus for the worn title ---------- */
+const TITLE_EXTRA = {
+  pumpkinlord: ['Собрать 50 тыквенных свечей на Хэллоуине', 3], nyspirit: ['Собрать 50 подарков на Новый год', 3], reborn: ['Переродиться', 3], phoenixsoul: ['Переродиться 10 раз', 4],
+  bgchamp: ['Победить на поле битвы 5 раз', 3], landlord: ['Гильдия владеет землёй неделю', 3], homebody: ['Построить дом максимального уровня', 2], speedrun: ['Пройти подземелье на время', 3],
+  mythicdg: ['Пройти подземелье на мифической сложности', 4], ryugu: ['Пройти сюжет дворца Рюгу', 3], spirits: ['Пройти сюжет Города духов', 3], kagutsuchi: ['Усмирить духа вулкана', 4],
+  stormchaser: ['Победить 20 грозовых они', 2], towerclimb: ['Подняться на 20 этаж Башни', 3], towermaster: ['Подняться на 50 этаж Башни', 4],
+  bestscholar: ['25 видов демонов в бестиарии на 1 ступени', 3], bestchronicler: ['20 видов демонов в бестиарии на 3 ступени', 4], defender: ['Победить 100 налётчиков во вторжениях', 3]
+};
+const titleAch = id => ACHS.find(a => a.title === id);
+function titleTier(id) { const a = titleAch(id); if (a) return a.gold >= 8000 ? 4 : a.gold >= 3000 ? 3 : a.gold >= 1000 ? 2 : 1; return (TITLE_EXTRA[id] || [0, 2])[1]; }
+function titleDesc(id) { const a = titleAch(id); return a ? a.desc : (TITLE_EXTRA[id] || ['Особый титул'])[0]; }
+function titleProg(id) { const a = titleAch(id); if (!a || !a.prog) return null; try { const [n, need] = a.prog(save.stats); return [Math.min(n, need), need]; } catch (e) { return null; } }
+const TITLE_BONUS = [null, { hp: .02 }, { atk: .02, hp: .02 }, { atk: .03, hp: .03, crit: 1 }, { atk: .05, hp: .05, crit: 2 }];
+const titleBonus = id => id && TITLES[id] ? TITLE_BONUS[titleTier(id)] : {};
+const titleBonusText = id => { const b = titleBonus(id) || {}; return [b.atk ? 'Атака +' + Math.round(b.atk * 100) + '%' : '', b.hp ? 'Здоровье +' + Math.round(b.hp * 100) + '%' : '', b.crit ? 'Крит +' + b.crit + '%' : ''].filter(Boolean).join(' · '); };
+const TB_PAL = [null, ['#ffd9a8', '#b2733a', '#5a3214'], ['#ffffff', '#a8b4c8', '#4a5468'], ['#fff4b0', '#e0a830', '#6a4a10'], ['#ffe0ec', '#ff6a8a', '#6a1030']];
+const TB_RIB = [null, '#4a2a14', '#26324a', '#5a1414', '#3a0e3a'];
+const hashHue = s => { let h = 0; for (const ch of String(s)) h = (h * 33 + ch.charCodeAt(0)) >>> 0; return h % 360; };
+const TB_CACHE = {};
+function titleBadgeCanvas(id) {
+  if (TB_CACHE[id]) return TB_CACHE[id];
+  const W = 200, H = 84, R = 2, cv = document.createElement('canvas'); cv.width = W * R; cv.height = H * R;
+  const c = cv.getContext('2d'); c.scale(R, R);
+  const tier = titleTier(id), [lt, md, dk] = TB_PAL[tier], cx = W / 2, cy = 32, hue = hashHue(id);
+  const metal = (x0, y0, x1, y1) => { const g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, lt); g.addColorStop(.55, md); g.addColorStop(1, dk); return g; };
+  if (tier >= 3) { const g = c.createRadialGradient(cx, cy, 4, cx, cy, 46); g.addColorStop(0, tier === 4 ? 'rgba(255,120,160,.55)' : 'rgba(255,220,120,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  // wings: layered feathers
+  c.lineJoin = 'round';
+  for (const s of [-1, 1]) {
+    const n = 3 + tier;
+    for (let i = n - 1; i >= 0; i--) {
+      const k = i / (n - 1), rx = cx + s * 13, ry = cy + 4, tx = cx + s * (34 + k * 46), ty = cy - 20 + k * 26, wdt = 7 - k * 2;
+      c.beginPath(); c.moveTo(rx, ry);
+      c.quadraticCurveTo((rx + tx) / 2, Math.min(ry, ty) - 10 + k * 6, tx, ty);
+      c.quadraticCurveTo((rx + tx) / 2 + s * 4, (ry + ty) / 2 + wdt, rx, ry + 6);
+      c.closePath(); c.fillStyle = metal(rx, ty - 10, tx, ry + 8); c.fill(); c.strokeStyle = 'rgba(20,10,4,.85)'; c.lineWidth = 1; c.stroke();
+      c.beginPath(); c.moveTo(rx + s * 3, ry + 2); c.lineTo(tx - s * 4, ty + 1); c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = .6; c.stroke();
+    }
+  }
+  // medallion with a gem
+  c.beginPath(); c.arc(cx, cy, 15, 0, 6.29); c.fillStyle = metal(cx - 15, cy - 15, cx + 15, cy + 15); c.fill(); c.strokeStyle = '#1a0e04'; c.lineWidth = 1.2; c.stroke();
+  c.beginPath(); c.arc(cx, cy, 10, 0, 6.29); const gg = c.createRadialGradient(cx - 3, cy - 3, 1, cx, cy, 10); gg.addColorStop(0, 'hsl(' + hue + ',90%,85%)'); gg.addColorStop(.5, 'hsl(' + hue + ',80%,50%)'); gg.addColorStop(1, 'hsl(' + hue + ',70%,22%)'); c.fillStyle = gg; c.fill(); c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = .8; c.stroke();
+  c.beginPath(); c.ellipse(cx - 3.5, cy - 4, 3, 1.8, -.6, 0, 6.29); c.fillStyle = 'rgba(255,255,255,.75)'; c.fill();
+  // crown for high tiers
+  if (tier >= 3) {
+    const y = cy - 15; c.beginPath(); c.moveTo(cx - 10, y); c.lineTo(cx - 12, y - 10); c.lineTo(cx - 5, y - 5); c.lineTo(cx, y - 13); c.lineTo(cx + 5, y - 5); c.lineTo(cx + 12, y - 10); c.lineTo(cx + 10, y); c.closePath();
+    const cg = c.createLinearGradient(0, y - 13, 0, y); cg.addColorStop(0, '#fff4b0'); cg.addColorStop(1, '#c08a20'); c.fillStyle = cg; c.fill(); c.strokeStyle = '#3a2404'; c.lineWidth = 1; c.stroke();
+    for (const [x, yy, col] of [[cx, y - 4, '#ff3a5a'], [cx - 7, y - 3, '#3ac0ff'], [cx + 7, y - 3, '#3ac0ff']]) { c.beginPath(); c.arc(x, yy, 1.6, 0, 6.29); c.fillStyle = col; c.fill(); }
+  }
+  // ribbon with the title name
+  const name = TITLES[id] || id, ry0 = 52, rh = 20;
+  let fs = 15; c.font = 'bold ' + fs + 'px sans-serif'; while (c.measureText(name).width > 170 && fs > 8) { fs--; c.font = 'bold ' + fs + 'px sans-serif'; }
+  const tw = Math.min(186, c.measureText(name).width + 26), x0 = cx - tw / 2, x1 = cx + tw / 2;
+  for (const s of [-1, 1]) { const ex = s < 0 ? x0 : x1; c.beginPath(); c.moveTo(ex, ry0 + 4); c.lineTo(ex + s * 9, ry0 + 4); c.lineTo(ex + s * 5, ry0 + rh / 2 + 4); c.lineTo(ex + s * 9, ry0 + rh + 4); c.lineTo(ex, ry0 + rh + 4); c.closePath(); c.fillStyle = 'rgba(0,0,0,.55)'; c.fill(); c.fillStyle = TB_RIB[tier]; c.fill(); c.strokeStyle = md; c.lineWidth = 1; c.stroke(); }
+  c.beginPath(); c.moveTo(x0, ry0); c.quadraticCurveTo(cx, ry0 - 5, x1, ry0); c.lineTo(x1, ry0 + rh); c.quadraticCurveTo(cx, ry0 + rh - 5, x0, ry0 + rh); c.closePath();
+  const rg = c.createLinearGradient(0, ry0, 0, ry0 + rh); rg.addColorStop(0, TB_RIB[tier]); rg.addColorStop(1, '#0a0608'); c.fillStyle = rg; c.fill(); c.strokeStyle = md; c.lineWidth = 1.4; c.stroke();
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 3; c.strokeStyle = '#000'; c.strokeText(name, cx, ry0 + rh / 2 - 1); c.fillStyle = tier === 1 ? '#ffe2c0' : tier === 2 ? '#ffffff' : '#ffe680'; c.fillText(name, cx, ry0 + rh / 2 - 1);
+  TB_CACHE[id] = cv; return cv;
+}
+const titleBadgeURL = id => { const k = 'u_' + id; if (!TB_CACHE[k]) TB_CACHE[k] = titleBadgeCanvas(id).toDataURL(); return TB_CACHE[k]; };
+function titleBadgeKey(S, id) { const key = 'tb_' + id; if (!S.textures.exists(key)) S.textures.addCanvas(key, titleBadgeCanvas(id)); return key; }
+const TB_SCALE = .27;
+// own hero: name, guild and title badge above the head
+function heroTagTick(S) {
+  const h = S.hero; if (!h || !h.spr) return;
+  const sig = [save.name, save.title, save.guild && save.guild.t, save.lv, save.reb].join('|');
+  if (!S.heroTag || !S.heroTag.scene || S.heroTagSig !== sig) {
+    if (S.heroTag && S.heroTag.scene) S.heroTag.destroy(); if (S.heroBadge && S.heroBadge.scene) S.heroBadge.destroy(); S.heroBadge = null;
+    S.heroTag = S.add.text(0, 0, (save.reb ? rebStars(save.reb) + ' ' : '') + save.name + (save.guild ? ' [' + save.guild.t + ']' : '') + ' · ' + save.lv, { fontFamily: FONT, fontSize: '12px', color: '#ffffff', stroke: '#000', strokeThickness: 3, align: 'center' }).setOrigin(.5, 1).setDepth(190000);
+    if (save.title && TITLES[save.title]) S.heroBadge = S.add.image(0, 0, titleBadgeKey(S, save.title)).setOrigin(.5, 1).setScale(TB_SCALE).setDepth(190000);
+    S.heroTagSig = sig;
+  }
+  const y = h.spr.y - h.spr.displayHeight * (HERO_FY / HERO_H) - 6, vis = h.spr.visible !== false && !PHOTO;
+  S.heroTag.setPosition(h.spr.x, y).setVisible(vis);
+  if (S.heroBadge) S.heroBadge.setPosition(h.spr.x, y - S.heroTag.height - 1).setVisible(vis);
+}
+function remoteBadge(S, u, p) {
+  if (!p.tid || !TITLES[p.tid]) return null;
+  const b = S.add.image(0, 0, titleBadgeKey(S, p.tid)).setOrigin(.5, 1).setScale(TB_SCALE).setDepth(190000); return b;
+}
+function renderTitlesTab(body) {
+  body.appendChild(mk('div', 'ds', 'Надетый титул виден значком над вашим именем — его видят все игроки — и даёт бонус к характеристикам. Чем труднее титул, тем сильнее бонус.'));
+  const cur = save.title && TITLES[save.title] ? save.title : null;
+  if (cur) body.appendChild(titleCard(cur, true));
+  const list = mk('div', 'tgrid');
+  list.appendChild(btn('Снять титул', () => { save.title = null; persist(); titleHud(); pushPresence(true); if (GAME) GAME.recalc(true); renderDiary(); }, cur ? '' : 'main', !cur));
+  body.appendChild(list);
+  body.appendChild(mk('div', 'label', 'Ваши титулы · ' + save.titles.length));
+  const g = mk('div', 'tgrid');
+  for (const t of save.titles) if (TITLES[t]) g.appendChild(titleCard(t, false));
+  if (!save.titles.length) g.appendChild(mk('div', 'ds', 'Титулов пока нет. Они открываются за достижения.'));
+  body.appendChild(g);
+  const locked = Object.keys(TITLES).filter(t => !save.titles.includes(t));
+  if (locked.length) {
+    body.appendChild(mk('div', 'label', 'Ещё не открыты · ' + locked.length));
+    const lg = mk('div', 'tgrid'); for (const t of locked) lg.appendChild(titleCard(t, false, true)); body.appendChild(lg);
+  }
+}
+function titleCard(id, big, locked) {
+  const el = mk('div', 'tcard' + (big ? ' big' : '') + (locked ? ' locked' : '') + (save.title === id ? ' on' : ''));
+  const im = mk('img'); im.src = titleBadgeURL(id); im.alt = TITLES[id]; el.appendChild(im);
+  el.appendChild(mk('div', 'tsec', 'Свойства титула')); el.appendChild(mk('div', 'tbon', titleBonusText(id) || '—'));
+  el.appendChild(mk('div', 'tsec', 'Как получить'));
+  const pr = titleProg(id); el.appendChild(mk('div', 'tdesc', titleDesc(id) + (pr && locked ? ' (' + pr[0].toLocaleString('ru-RU') + ' / ' + pr[1].toLocaleString('ru-RU') + ')' : '')));
+  if (pr && locked) { const bar = mk('div', 'bestbar'), f = mk('i'); f.style.width = Math.round(100 * pr[0] / pr[1]) + '%'; bar.appendChild(f); el.appendChild(bar); }
+  if (!locked && !big) el.appendChild(btn(save.title === id ? 'Надет' : 'Надеть', () => { save.title = id; persist(); titleHud(); pushPresence(true); if (GAME) GAME.recalc(true); renderDiary(); log('Титул «' + TITLES[id] + '» надет: ' + titleBonusText(id) + '.', 'good'); }, save.title === id ? '' : 'main', save.title === id));
+  return el;
+}
+
+/* ---------- guild hall: a shared room for one guild with rotating events that give experience ---------- */
+const GH_ID = 'ghall';
+const GH_EV = {
+  feast: { n: 'Пир гильдии', d: 'Стойте у костра в центре зала: каждые 10 секунд — опыт. Чем больше соратников рядом, тем больше опыта.' },
+  guard: { n: 'Вызов стража', d: 'В зал является древний страж гильдии. Победите его вместе — все в зале получат много опыта.' },
+  wisps: { n: 'Охота на духов', d: 'Зал наполняют блуждающие духи. Каждый пойманный дух даёт тройной опыт и очки гильдии.' }
+};
+const GH_ORDER = ['feast', 'guard', 'wisps'], GH_SLOT = 15 * 60000, GH_LEN = 6 * 60000;
+Object.assign(MOBS, {
+  ghguard: { name: 'Страж гильдии', key: 'golem', tint: 0xffd36a, boss: true, drops: [] },
+  ghwisp: { name: 'Блуждающий дух', key: 'shade', tint: 0x7ae8ff }
+});
+BEST_SKIP.add('ghguard'); BEST_SKIP.add('ghwisp');
+let GH_TEST = ''; try { GH_TEST = new URLSearchParams(location.search).get('gh') || ''; } catch (e) {}
+function ghState(now) {
+  now = now || Date.now(); const slot = Math.floor(now / GH_SLOT), t0 = slot * GH_SLOT, type = GH_TEST && GH_EV[GH_TEST] ? GH_TEST : GH_ORDER[slot % 3];
+  const live = GH_TEST ? true : now - t0 < GH_LEN;
+  return { type, live, id: 'gh' + slot + type, ends: t0 + GH_LEN, next: live ? t0 + GH_LEN : t0 + GH_SLOT, nextType: GH_ORDER[(slot + 1) % 3] };
+}
+const GH = { id: '', feastT: 0, done: '', spawned: '', sub: '', warned: '' };
+const ghKey = () => save.guild ? gtag(save.guild) : '';
+const ghMates = S => others().filter(o => (o.in || o.z) === S.inst);
+function ghEnter() {
+  const G = GAME; if (!G || !save.guild) { log('Зал есть только у гильдии.', 'bad'); return; }
+  if (G.zone.dungeon || G.zone.arena || G.tw) { log('Сначала выйдите отсюда.', 'bad'); return; }
+  G.travel({ to: GH_ID });
+}
+function ghSubscribe() {
+  const k = ghKey(); if (!k || GH.sub === k || !netOk() || NET_STATE !== 'online') return; GH.sub = k;
+  ROOM.listen(NET_NS + 'gh/' + k, d => { if (d && d.t === 'ghdone') ghGuardReward(d.id); }, NET_NS + 'gh/' + k);
+}
+function ghGuardReward(evId) {
+  const S = GAME; if (!S || S.zoneId !== GH_ID || GH.done === evId) return; GH.done = evId;
+  const x = Math.round(xpNeed(save.lv) * .18); S.gainXp(x); guildXp(25); save.gold += 300 + save.lv * 20;
+  banner('Страж повержен', '+' + x + ' опыта всем в зале'); log('Страж гильдии повержен! +' + x + ' опыта, монеты и 25 очков гильдии.', 'good'); persist();
+}
+function ghTick(S) {
+  const st = ghState(); ghSubscribe();
+  if (save.guild && st.live && GH.warned !== st.id && S.zoneId !== GH_ID) { GH.warned = st.id; log('В зале гильдии началось событие «' + GH_EV[st.type].n + '». Вход — «Мир» → «Гильдия».', 'info'); }
+  ghHud(S, st);
+  if (S.zoneId !== GH_ID) return;
+  if (!save.guild) { S.travel({ to: 'village' }); return; }
+  if (st.live && GH.id !== st.id) { GH.id = st.id; banner(GH_EV[st.type].n, 'Событие в зале гильдии'); }
+  if (!st.live || !S.hero.alive) return;
+  const host = !ghMates(S).some(o => o.pid < save.pid);
+  if (st.type === 'feast' && performance.now() > GH.feastT) {
+    GH.feastT = performance.now() + 10000;
+    if (Math.hypot(S.hero.x - C, S.hero.y - C) < 5) { const n = ghMates(S).length, x = Math.max(5, Math.round(xpNeed(save.lv) * .012 * (1 + .15 * n))); S.gainXp(x); guildXp(1); S.floatText(S.hero.x, S.hero.y - .4, '+' + x + ' опыта', '#b8ff9a', 14); }
+    else S.floatText(S.hero.x, S.hero.y - .4, 'к костру!', '#ffd36a', 12);
+  }
+  if (!host) return;
+  const lv = Math.max(save.lv, ...ghMates(S).map(o => +o.lv || 1)), crew = 1 + ghMates(S).length;
+  const put = (kind, k, r0, r1) => { for (let t = 0; t < 40; t++) { const a = rand(0, 6.28), r = rand(r0, r1), x = C + Math.cos(a) * r, y = C + Math.sin(a) * r; if (S.mobWalkable(x, y)) { const m = S.spawnMob(kind, x, y, lv); m.maxHp = m.hp = Math.round(m.maxHp * k * (1 + .4 * (crew - 1))); m.gh = true; S.drawBar(m); return m; } } };
+  if (st.type === 'guard' && GH.spawned !== st.id) { GH.spawned = st.id; const m = put('ghguard', 6, 4, 6); if (m) { m.angry = true; banner(MOBS.ghguard.name, 'явился в зал'); } }
+  if (st.type === 'wisps' && performance.now() > (GH.wispT || 0) && S.mobs.filter(m => m.alive && m.kind === 'ghwisp' && !m.remote).length < 4) { GH.wispT = performance.now() + 8000; for (let i = 0; i < 8; i++) put('ghwisp', .8, 4, 12); }
+}
+function ghKill(S, m) {
+  if (m.kind === 'ghwisp') { S.gainXp(m.xp * 2); guildXp(1); }
+  if (m.kind === 'ghguard') { const st = ghState(); netSend('gh/' + ghKey(), { t: 'ghdone', id: st.id, f: save.pid }); ghGuardReward(st.id); }
+}
+function ghHud(S, st) {
+  let el = $('ghHud'); if (S.zoneId !== GH_ID) { if (el) el.remove(); return; }
+  if (!el) { el = mk('div', 'invhud ghhud'); el.id = 'ghHud'; document.querySelector('.hud').appendChild(el); }
+  const left = Math.max(0, Math.ceil(((st.live ? st.ends : st.next) - Date.now()) / 1000));
+  setText(el, st.live ? GH_EV[st.type].n + ' · осталось ' + mmssLong(left * 1000) + ' · соратников в зале: ' + ghMates(S).length : 'Следующее событие «' + GH_EV[st.nextType].n + '» через ' + mmssLong(left * 1000));
+}
+function ghDecor(S) {
+  if (S.zoneId !== GH_ID) return;
+  const key = 'gh_fire';
+  if (!S.textures.exists(key)) S.canvasTex(key, 48, 48, c => {
+    c.fillStyle = '#5a3a1a'; for (const a of [-.5, .5]) { c.save(); c.translate(24, 40); c.rotate(a); c.fillRect(-14, -3, 28, 6); c.restore(); }
+    const g = c.createRadialGradient(24, 30, 2, 24, 26, 16); g.addColorStop(0, '#fff6b0'); g.addColorStop(.5, '#ff9a2a'); g.addColorStop(1, 'rgba(200,40,10,0)'); c.fillStyle = g;
+    c.beginPath(); c.moveTo(12, 38); c.quadraticCurveTo(10, 22, 24, 6); c.quadraticCurveTo(38, 22, 36, 38); c.closePath(); c.fill();
+  }, null, 2);
+  const p = iso(C, C), f = S.add.image(p.x, p.y, key).setOrigin(.5, .9).setScale(1.3).setDepth(p.y);
+  S.tweens.add({ targets: f, scaleY: 1.45, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+  S.add.image(p.x, p.y - 20, 'glow').setTint(0xff9a3a).setBlendMode(Phaser.BlendModes.ADD).setScale(2.4).setAlpha(.6).setDepth(185000);
+  if (save.guild) S.add.text(p.x, p.y - 150, save.guild.n + ' [' + save.guild.t + ']', { fontFamily: FONT, fontSize: '22px', color: '#ffd36a', stroke: '#000', strokeThickness: 4 }).setOrigin(.5).setDepth(185000);
+}
+function ghSection(body) {
+  const st = ghState(), left = Math.ceil(((st.live ? st.ends : st.next) - Date.now()) / 60000);
+  body.appendChild(mk('div', 'label', 'Зал гильдии'));
+  body.appendChild(mk('div', 'ds', 'Общий зал только для вашей гильдии. Каждые 15 минут — событие на 6 минут: ' + GH_ORDER.map(k => '«' + GH_EV[k].n + '»').join(', ') + '. За события дают опыт героя и очки гильдии.'));
+  body.appendChild(mk('div', 'ss', st.live ? 'Сейчас идёт «' + GH_EV[st.type].n + '» — ещё ' + left + ' мин. ' + GH_EV[st.type].d : 'Следующее: «' + GH_EV[st.nextType].n + '» через ' + left + ' мин.'));
+  body.appendChild(btn(GAME && GAME.zoneId === GH_ID ? 'Вы в зале' : 'Войти в зал гильдии', () => ghEnter(), 'main', !save.guild || (GAME && GAME.zoneId === GH_ID)));
+}
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
@@ -10425,6 +10628,7 @@ function renderWorld(soft) {
       body.appendChild(chatBox('g:' + g.n, 'Сообщение гильдии'));
     }
     if (save.guild) gwSection(body);
+    if (save.guild) ghSection(body);
     terrSection(body);
   } else if (WORLD_TAB === 'arena') {
     const L = league(A.r), pl = pvpLevel();
