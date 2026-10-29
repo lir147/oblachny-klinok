@@ -230,6 +230,7 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .btn.mini{padding:3px 8px;font-size:12px;min-height:0}
 .askp{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);z-index:99998;width:min(420px,calc(100vw - 32px));display:grid;gap:10px;padding:12px 14px;border:1px solid var(--gold);border-radius:8px;background:linear-gradient(160deg,rgba(40,30,14,.98),rgba(16,14,24,.98));box-shadow:0 10px 30px rgba(0,0,0,.6);color:var(--paper);font-size:15px;line-height:1.4;pointer-events:auto}
 .askp .acts{display:flex;gap:8px;justify-content:flex-end}
+.askp .ss{font-size:13px;color:var(--muted);line-height:1.35}
 .wbhud{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);width:min(380px,calc(100vw - 32px));padding:8px 12px;display:grid;gap:5px;pointer-events:auto;border-color:#8a2a2a !important}
 .wbhud .wbn{font-family:var(--display);color:#ff9a7a;font-size:16px}
 .wbhud .bar{height:10px}.wbhud .bar i{background:linear-gradient(90deg,#8a1020,#ff4d4d)}
@@ -472,7 +473,7 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
 
   <div id="inv" class="panel inv" hidden>
     <div class="phead"><b>Сумка</b><span id="bagCount">0 / 20</span><button class="x" id="invX" type="button" aria-label="Закрыть сумку">×</button></div>
-    <div class="acts"><button class="btn" id="bagSort" type="button">Упорядочить</button></div>
+    <div class="acts"><button class="btn" id="bagSort" type="button">Упорядочить</button><button class="btn" id="bagSellAll" type="button">Продать всё</button></div>
     <div class="bag" id="bag"></div>
     <div class="detail" id="detail"></div>
   </div>
@@ -3892,7 +3893,7 @@ function iconURL(it) {
     else { x.translate(32, 32); x.rotate(Math.PI * .75); x.scale(k0, k0 * (['mstaff', 'scepter', 'icestaff', 'bonestaff', 'hammer', 'zanbato'].includes(b) ? 1.4 : 1.9)); x.rotate(-ang); x.translate(-(G.b[0] + ex) / 2, -(G.b[1] + ey) / 2); }
     paintWeapon2D(x, b, it.rarity); x.restore();
   } else if (b === 'haori' || b === 'leather' || b === 'legarmor' || COSTUMES[b]) {
-    const o = COSTUMES[b] ? OUTFITS[b] : OUTFITS[b][it.rarity];
+    const o = COSTUMES[b] ? OUTFITS[b] : (Array.isArray(OUTFITS[b]) ? OUTFITS[b][Math.min(it.rarity, OUTFITS[b].length - 1)] : OUTFITS[b]);
     const body = [[14, 16], [26, 13], [32, 21], [38, 13], [50, 16], [60, 30], [52, 35], [48, 29], [48, 56], [16, 56], [16, 29], [12, 35], [4, 30]];
     poly(body, css(o.coat));
     poly([[26, 13], [32, 21], [38, 13], [36, 56], [28, 56]], css(o.inner));
@@ -7034,7 +7035,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '41', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '42', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = [];
 window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
@@ -7336,6 +7337,38 @@ $('tabGear').addEventListener('click', () => { if (GAME) { GAME.heroTab = 'gear'
 $('catX').addEventListener('click', () => { $('catP').hidden = true; });
 $('tabLook').addEventListener('click', () => { if (GAME) { GAME.heroTab = 'look'; GAME.heroSel = null; GAME.renderHeroPanel(); } });
 $('skWheel').addEventListener('click', openWheel);
+/* sell everything at once: only gear (weapon, armor, jewellery) up to the chosen rarity;
+   collectibles, legendary/mythic, items with gems and consumables stay */
+const SELL_SLOTS = ['weapon', 'armor', 'ring', 'ring2', 'earring', 'charm'];
+let SELL_MAX = 2;
+const sellAllList = max => save.inv.filter(it => it && !it.kind && !it.grow && !it.excl && SELL_SLOTS.includes(it.slot) && it.rarity <= max && !(it.gems && it.gems.some(Boolean)));
+function sellAllPopup() {
+  const G = GAME; if (!G) return;
+  if (!(G.zone.village && G.safeAt(G.hero.x, G.hero.y))) { log('Продать можно, вернувшись в деревню Кумо.', 'bad'); return; }
+  let box = $('askP'); if (box) box.remove();
+  box = mk('div', 'askp'); box.id = 'askP';
+  const draw = () => {
+    box.innerHTML = '';
+    const list = sellAllList(SELL_MAX), sum = list.reduce((a, it) => a + sellPrice(it), 0);
+    box.appendChild(mk('div', 'askt', 'Продать всё снаряжение из сумки (оружие, доспехи, украшения) до редкости:'));
+    const r = mk('div', 'acts'); r.style.justifyContent = 'flex-start'; r.style.flexWrap = 'wrap';
+    [[0, 'Обычные'], [1, 'До редких'], [2, 'До эпических'], [3, 'До легендарных']].forEach(([k, n]) => r.appendChild(btn(n, () => { SELL_MAX = k; draw(); }, k === SELL_MAX ? 'main' : '')));
+    box.appendChild(r);
+    box.appendChild(mk('div', 'ss', list.length ? 'Будет продано вещей: ' + list.length + ' на ' + sum.toLocaleString('ru-RU') + ' мон.' : 'Подходящих вещей нет.'));
+    box.appendChild(mk('div', 'ss', 'Не продаются: надетое, мифическое и растущее легендарное, вещи со вставленными камнями, наряды, крылья, маунты, питомцы, колобки, свитки, камни и материалы.'));
+    const a = mk('div', 'acts');
+    a.append(btn('Отмена', () => box.remove(), ''), btn(list.length ? 'Продать за ' + sum.toLocaleString('ru-RU') + ' мон' : 'Продать', () => {
+      const L = sellAllList(SELL_MAX); let got = 0;
+      for (const it of L) { const i = save.inv.indexOf(it); if (i >= 0) { got += sellPrice(it); save.inv.splice(i, 1); } }
+      save.gold += got; G.selItem = null; box.remove(); sfx('loot');
+      persist(); G.renderInv(); G.renderDlg();
+      log('Продано вещей: ' + L.length + ' за ' + got.toLocaleString('ru-RU') + ' мон.', 'xp');
+    }, 'main', !list.length));
+    box.appendChild(a);
+  };
+  draw(); document.body.appendChild(box);
+}
+$('bagSellAll').addEventListener('click', () => sellAllPopup());
 $('bagSort').addEventListener('click', () => {
   const order = { weapon: 0, armor: 1, wings: 2, mount: 3, costume: 4, head: 5, wskin: 6, wingskin: 7, ring: 8, earring: 9, charm: 10, use: 11 };
   save.inv.sort((a, b) => (order[a.slot] - order[b.slot]) || (b.rarity - a.rarity) || ((b.plus || 0) - (a.plus || 0)) || ((b.lv || 0) - (a.lv || 0)));
