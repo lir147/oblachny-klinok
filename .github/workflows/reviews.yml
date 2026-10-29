@@ -2,7 +2,7 @@ name: Отзывы игроков
 
 on:
   schedule:
-    - cron: '7,37 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:
