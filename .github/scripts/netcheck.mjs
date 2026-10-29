@@ -23,7 +23,7 @@ for (const url of servers) {
   A.onmsg = (t, body) => {
     try {
       const d = JSON.parse(body);
-      if (t.startsWith(NS + 'p/') && d && d.pr) (peers[t.slice(NS.length + 2)] ||= { n: d.pr.n, lv: d.pr.lv, z: d.pr.z, via: new Set() }).via.add(url.replace(/^wss:\/\//, '').replace(/[:/].*/, ''));
+      if (t.startsWith(NS + 'p/') && d && d.pr) { const q = d.pr.ok || d.pr; (peers[t.slice(NS.length + 2)] ||= { n: q.n, lv: q.lv, z: q.z, via: new Set() }).via.add(url.replace(/^wss:\/\//, '').replace(/[:/].*/, '')); }
       if (t.startsWith(NS + 'diag/') && d) diag[d.pid] = d;
     } catch (e) {}
   };
@@ -35,7 +35,7 @@ const pl = Object.entries(peers);
 out.push(pl.length ? pl.map(([id, p]) => `- ${p.n} (ур. ${p.lv}, зона ${p.z}) — виден через: ${[...p.via].join(', ')}`).join('\n') : 'Никого.');
 out.push('', '## Отчёты игроков о связи (последний вход каждого)', '');
 const dl = Object.values(diag).sort((x, y) => y.t - x.t).slice(0, 40);
-out.push(dl.length ? dl.map(d => `- ${d.n} · версия ${d.v} · ${new Date(d.t).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' })} — на связи: ${(d.ok || []).join(', ') || 'нет'}; не удалось: ${Object.keys(d.fail || {}).join(', ') || 'нет'}; видит игроков: ${d.peers ?? '?'}; зависаний: ${d.stall ?? '?'}, замен: ${d.rot ?? '?'} · ${String(d.ua || '').slice(0, 90)}`).join('\n') : 'Пока нет.');
+out.push(dl.length ? dl.map(d => `- ${d.n} · версия ${d.v} · ${new Date(d.t).toLocaleString('ru-RU', { timeZone: 'Asia/Yekaterinburg' })} — на связи: ${(d.ok || []).join(', ') || 'нет'}; не удалось: ${Object.keys(d.fail || {}).join(', ') || 'нет'}; видит игроков: ${d.peers ?? '?'}; зависаний: ${d.stall ?? '?'}, замен: ${d.rot ?? '?'}, получено чужих сигналов: ${d.rx ?? '?'} · ${String(d.ua || '').slice(0, 90)}`).join('\n') : 'Пока нет.');
 for (const c of listeners) c.close();
 fs.writeFileSync('netcheck.md', out.join('\n') + '\n');
 console.log(out.join('\n'));
