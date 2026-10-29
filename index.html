@@ -7147,7 +7147,7 @@ async function mqttRoom() {
   // connect to every server at once: friends see each other as long as they share at least one working server
   const openOne = async url => {
     if (closed || conns.has(url)) return;
-    const c = await mqConnect(url, 'okl_' + me + '_' + Math.random().toString(36).slice(2, 6), [NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })], 9000);
+    const c = await mqConnect(url, 'okl_' + me + '_' + Math.random().toString(36).slice(2, 6), [NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })], 15000);
     if (!c) { fails[host(url)] = (fails[host(url)] || 0) + 1; updState(); setTimeout(() => openOne(url), conns.size ? 30000 : 10000); return; }
     delete fails[host(url)];
     c.onmsg = onmsg; c.sub(NET_NS + 'p/+'); c.sub(NET_NS + 'm/+'); c.sub(NET_NS + 'fb/+');

@@ -12,12 +12,13 @@ const peers = {}, diag = {};
 const listeners = [];
 for (const url of servers) {
   const t0 = Date.now();
-  const A = await lib.mqConnect(url, 'chkA' + Date.now(), null, 10000);
-  const B = A && await lib.mqConnect(url, 'chkB' + Date.now(), null, 10000);
+  const A = await lib.mqConnect(url, 'chkA' + Date.now(), null, 15000);
+  const B = A && await lib.mqConnect(url, 'chkB' + Date.now(), null, 15000);
+  const tc = Date.now() - t0;
   if (!A || !B) { out.push(`- ${url} — **не подключается**`); continue; }
   let got = false; const topic = NS + 'check/' + Date.now();
   A.onmsg = t => { if (t === topic) got = true; }; A.sub(topic); await wait(1500); B.pub(topic, 'ping'); await wait(3000);
-  out.push(`- ${url} — подключение ${Date.now() - t0} мс, пересылка сообщений: ${got ? 'работает' : '**не работает**'}`);
+  out.push(`- ${url} — подключение двух клиентов ${tc} мс, пересылка сообщений: ${got ? 'работает' : '**не работает**'}`);
   B.close();
   A.onmsg = (t, body) => {
     try {
