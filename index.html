@@ -96,6 +96,11 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var
 .tier .ds{font-size:12px;color:var(--muted)}
 .fbp{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);width:min(460px,calc(100vw - 32px))}
 .fbp p{margin:0;font-size:14px;line-height:1.45;color:var(--paper)}
+.fbp{max-height:calc(100% - 24px)}
+#fbIn{font:15px var(--body);padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:#0b1020;color:var(--paper);resize:vertical;min-height:90px;width:100%;box-sizing:border-box}
+.fbstars{display:flex;gap:4px}.fbstars button{background:none;border:0;font-size:28px;line-height:1;color:#4a4f60;cursor:pointer;padding:0 2px}.fbstars button.on{color:var(--gold)}
+.fbp .acts{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.fbp .acts .ds{margin-right:auto;font-size:13px;color:var(--muted)}
+.fblist{display:grid;gap:6px;max-height:300px;overflow:auto}.fbrev{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#0f1528;font-size:14px;line-height:1.4;display:grid;gap:3px}.fbrev .fh{display:flex;gap:8px;align-items:baseline;color:var(--muted);font-size:12px}.fbrev .fh b{color:var(--paper);font-weight:400;font-size:14px}.fbrev .st{color:var(--gold);letter-spacing:1px}.fk{font-size:11px;padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--paper)}.fk-bug{border-color:#8a2a2a;background:#3a1418}.fk-idea{border-color:#2a6a8a;background:#10283a}.fk-review{border-color:#6a5a2a;background:#2a2410}.fbrev .tx{white-space:pre-wrap;overflow-wrap:anywhere}
 .cell.sel{outline:2px solid var(--gold);outline-offset:1px}
 .cell.empty{cursor:default;opacity:.45}
 .cell .pl{position:absolute;top:1px;right:3px;font:700 12px var(--body);color:var(--gold);text-shadow:0 1px 2px #000}
@@ -352,8 +357,13 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
 
   <div id="fbP" class="panel fbp" hidden>
     <div class="phead"><b>Отзыв о игре</b><span>чего не хватает?</span><button class="x" id="fbX" type="button" aria-label="Закрыть отзыв">×</button></div>
-    <p id="fbText">Напишите, что понравилось, что сломано и чего не хватает. Отзыв уйдёт автору игры комментарием к этой странице.</p>
-    <div class="acts"><button class="btn main" id="fbGo" type="button">Написать отзыв</button></div>
+    <p id="fbText">Нашли ошибку или есть идея? Напишите — сообщение придёт автору игры, и он исправит. Отзывы видят и другие игроки.</p>
+    <div class="tabs" id="fbKinds" role="tablist"><button class="tab on" data-fk="bug" type="button" role="tab">Ошибка</button><button class="tab" data-fk="idea" type="button" role="tab">Идея</button><button class="tab" data-fk="review" type="button" role="tab">Отзыв</button></div>
+    <div class="fbstars" id="fbStars" role="radiogroup" aria-label="Оценка игры"></div>
+    <textarea id="fbIn" maxlength="600" rows="5" placeholder="Ваш отзыв: что понравилось, что исправить, что добавить…" aria-label="Текст отзыва"></textarea>
+    <div class="acts"><span id="fbNote" class="ds"></span><button class="btn" id="fbGo" type="button">Комментарий на claude.ai</button><button class="btn main" id="fbSend" type="button">Отправить отзыв</button></div>
+    <div class="label">Отзывы игроков</div>
+    <div id="fbList" class="fblist"></div>
   </div>
 
   <div id="catP" class="panel catp" hidden>
@@ -4093,7 +4103,7 @@ class World extends Phaser.Scene {
       else if (k === ' ') { e.preventDefault(); this.targetNearest(); }
     });
 
-    this.allies = [];
+    this.allies = []; this.remotes = new Map();
     if (this.zone.dungeon) { this.dg = { wave: 0, state: 'wait', t: 3 }; this.makeAllies(); }
     else for (let k = 0; k < 30; k++) this.trySpawn(true);
     this.updatePartyHud(true);
@@ -6271,6 +6281,7 @@ class World extends Phaser.Scene {
     if (this.mobs.some(m => m.gone)) this.mobs = this.mobs.filter(m => !m.gone);
     if (this.allies.length) this.updateAllies(dt);
     if (this.pet) this.updatePet(dt);
+    netUpdate(this, dt);
     if (this.zone.dungeon) this.updateDungeon();
     for (const n of this.npcs) this.placeUnit(n, Math.sin(this.now * 1.6 + n.off) * .8);
 
@@ -6637,10 +6648,47 @@ $('skBag').addEventListener('click', () => GAME && GAME.toggleInv());
 $('skBook').addEventListener('click', () => openSkills());
 $('skTop').addEventListener('click', () => { const p = $('topP'); p.hidden = !p.hidden; renderTopup(); });
 $('topX').addEventListener('click', () => { $('topP').hidden = true; });
-$('skFb').addEventListener('click', () => { const p = $('fbP'); p.hidden = !p.hidden; });
+$('skFb').addEventListener('click', () => openFeedback());
 $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
-(async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) { $('fbText').textContent = 'Напишите автору игры, чего не хватает: что добавить, что исправить, где было скучно или сложно.'; $('fbGo').hidden = true; $('fbGo').hidden = true; } })();
+(async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
+let FB_STARS = 5, FB_KIND = 'bug';
+const GAME_VER = '30', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const JS_ERRS = [];
+window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
+window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
+function setFbKind(k) { FB_KIND = k; for (const b of document.querySelectorAll('#fbKinds .tab')) b.classList.toggle('on', b.dataset.fk === k); $('fbIn').placeholder = FB_PH[k]; $('fbStars').hidden = k !== 'review'; }
+for (const b of document.querySelectorAll('#fbKinds .tab')) b.addEventListener('click', () => setFbKind(b.dataset.fk));
+const REVIEWS = new Map();
+function renderStars() { const b = $('fbStars'); b.innerHTML = ''; for (let i = 1; i <= 5; i++) { const s = mk('button', i <= FB_STARS ? 'on' : '', '★'); s.type = 'button'; s.setAttribute('role', 'radio'); s.setAttribute('aria-checked', String(i === FB_STARS)); s.setAttribute('aria-label', i + ' из 5'); s.addEventListener('click', () => { FB_STARS = i; renderStars(); }); b.appendChild(s); } }
+function addReview(r) {
+  if (!r || typeof r.s !== 'string' || !r.k) return;
+  REVIEWS.set(String(r.k), { k: String(r.k), n: cleanText(r.n).slice(0, 20) || 'Игрок', c: CLASSES[r.c] ? r.c : null, lv: +r.lv || 1, st: Math.max(0, Math.min(5, +r.st || 0)), kind: FB_KINDS[r.kind] ? r.kind : 'review', s: cleanText(r.s).slice(0, 600), t: +r.t || 0, me: r.pid === save.pid });
+  if (!$('fbP').hidden) renderReviews();
+}
+function renderReviews() {
+  const box = $('fbList'); box.innerHTML = '';
+  const list = [...REVIEWS.values()].sort((a, b) => b.t - a.t).slice(0, 80);
+  if (!list.length) { box.appendChild(mk('div', 'ds', ROOM && ROOM.review ? 'Отзывов пока нет — станьте первым.' : NET_STATE === 'connecting' ? 'Загружаем отзывы…' : 'Отзывы других игроков видны, когда есть связь с игровым сервером.')); return; }
+  for (const r of list) {
+    const el = mk('div', 'fbrev'), hd = mk('div', 'fh'), d = new Date(r.t);
+    hd.append(mk('span', 'fk fk-' + r.kind, FB_KINDS[r.kind]), mk('b', '', r.n + (r.me ? ' (вы)' : '')), mk('span', 'st', r.st ? '★'.repeat(r.st) + '☆'.repeat(5 - r.st) : ''), mk('span', '', (r.c ? CLASSES[r.c].name + ' · ' : '') + 'ур. ' + r.lv + ' · ' + d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })));
+    el.append(hd, mk('div', 'tx', r.s)); box.appendChild(el);
+  }
+}
+function openFeedback(open) { const p = $('fbP'); p.hidden = open === true ? false : open === false ? true : !p.hidden; if (!p.hidden) { if (typeof bringFront === 'function') bringFront(p); renderStars(); setFbKind(FB_KIND); renderReviews(); } }
+$('fbSend').addEventListener('click', () => {
+  const text = cleanText($('fbIn').value).slice(0, 600);
+  if (text.length < 3) { $('fbNote').textContent = 'Напишите хотя бы пару слов.'; return; }
+  const t = Date.now(), r = { k: save.pid + '-' + t, pid: save.pid, n: save.name, c: save.cls, lv: save.lv, st: FB_KIND === 'review' ? FB_STARS : 0, kind: FB_KIND, s: text, t,
+    v: GAME_VER, z: GAME ? GAME.zoneId : '', ua: navigator.userAgent.slice(0, 160), scr: innerWidth + 'x' + innerHeight, err: FB_KIND === 'bug' ? JS_ERRS.slice() : [] };
+  if (!save.myReviews) save.myReviews = []; save.myReviews.push(r); save.myReviews = save.myReviews.slice(-20); persist();
+  addReview(r);
+  if (ROOM && ROOM.review) { ROOM.review(r); $('fbNote').textContent = FB_KIND === 'bug' ? 'Спасибо! Сообщение об ошибке отправлено автору.' : 'Спасибо! Отправлено автору.'; }
+  else $('fbNote').textContent = 'Нет связи с сервером — отзыв сохранён у вас, но автор его пока не увидит. Отправьте позже.';
+  $('fbIn').value = ''; renderReviews();
+});
+(save.myReviews || []).forEach(addReview);
 $('fbGo').addEventListener('click', async () => {
   if (!COMMENTS) return;
   try { const r = await COMMENTS.openComposer({ element: $('fbText') }); if (r && r.opened === false) $('fbText').textContent = 'Нажмите кнопку ещё раз, когда страница в фокусе, или используйте «Комментировать» в меню страницы.'; }
@@ -7000,12 +7048,13 @@ function myPresence() {
   const f = myFighter(), a = save.eq.armor, c = save.eq.costume, w = save.eq.weapon;
   return { pid: save.pid, n: cleanText(save.name).slice(0, 20), c: f.c, lv: f.lv, bm: f.bm, a: f.a, hp: f.hp, d: f.d, cr: f.cr, pl: f.pl, r: save.arena.r,
     g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId,
-    look: { ar: a ? a.base : null, r: a ? Math.min(2, a.rarity) : 0, co: c ? c.base : null, w: w ? w.base : null, wr: w ? w.rarity : 0 }, chat: MY_CHAT.slice(-6) };
+    x: Math.round(GAME.hero.x * 10) / 10, y: Math.round(GAME.hero.y * 10) / 10,
+    look: { ar: a ? a.base : null, r: a ? Math.min(2, a.rarity) : 0, co: c ? c.base : null, w: w ? w.base : null, wr: w ? w.rarity : 0, wg: GAME.wingLook ? GAME.wingLook() : null, mt: save.eq.mount ? save.eq.mount.base : null, b: save.body || 'anime' }, chat: MY_CHAT.slice(-6) };
 }
-let PRES_T = 0, PRES_LAST = '';
+let PRES_T = 0, PRES_LAST = '', PRES_HB = 0;
 function pushPresence(force) {
   if (!ROOM) return; const now = Date.now(); if (!force && now < PRES_T) return; PRES_T = now + 2500;
-  const p = myPresence(); if (!p) return; const s = JSON.stringify(p); if (s === PRES_LAST && !force) return; PRES_LAST = s;
+  const p = myPresence(); if (!p) return; const s = JSON.stringify(p); if (s === PRES_LAST && !force && now < PRES_HB) return; PRES_LAST = s; PRES_HB = now + 8000;
   ROOM.presence({ ok: p }).catch(() => {});
 }
 function others() {
@@ -7014,9 +7063,187 @@ function others() {
   const seen = new Set(); return out.filter(p => !seen.has(p.pid) && seen.add(p.pid));
 }
 const fighterOf = p => ({ n: cleanText(p.n).slice(0, 20) || 'Игрок', c: p.c, lv: +p.lv || 1, a: +p.a || 10, hp: +p.hp || 100, d: +p.d || 0, cr: Math.min(75, +p.cr || 15), bm: +p.bm || 0, pl: +p.pl || 1, r: +p.r || 1000, look: p.look || {}, pid: p.pid });
+/* ---------- online outside Claude: tiny MQTT 3.1.1 client over WebSocket + a room-like adapter ---------- */
+const NET_NS = 'oblklinok/v2/';
+const NET_SERVERS = (() => {
+  let extra = []; try { extra = (new URLSearchParams(location.search).get('mq') || '').split(',').filter(Boolean); } catch (e) {}
+  return extra.concat(['wss://broker.emqx.io:8084/mqtt', 'wss://broker.hivemq.com:8884/mqtt', 'wss://test.mosquitto.org:8081/mqtt']);
+})();
+const MQ_TE = new TextEncoder(), MQ_TD = new TextDecoder();
+function mqStr(s) { const b = MQ_TE.encode(s); return [b.length >> 8, b.length & 255, ...b]; }
+function mqPacket(head, body) {
+  const len = [], out = [head]; let n = body.length;
+  do { let d = n % 128; n = Math.floor(n / 128); if (n > 0) d |= 128; len.push(d); } while (n > 0);
+  return new Uint8Array(out.concat(len, body));
+}
+function mqConnect(url, cid, will, timeout) {
+  return new Promise(resolve => {
+    let ws, done = false, buf = new Uint8Array(0), pid = 1, ping = null;
+    const api = { url, onmsg: null, onclose: null, open: false,
+      pub(topic, str, retain) { if (!api.open) return; try { ws.send(mqPacket(0x30 | (retain ? 1 : 0), [...mqStr(topic), ...MQ_TE.encode(str)])); } catch (e) {} },
+      sub(filter) { if (!api.open) return; pid = pid % 60000 + 1; try { ws.send(mqPacket(0x82, [pid >> 8, pid & 255, ...mqStr(filter), 0])); } catch (e) {} },
+      close() { try { ws.send(new Uint8Array([0xe0, 0])); ws.close(); } catch (e) {} } };
+    const finish = ok => { if (done) return; done = true; clearTimeout(tm); resolve(ok ? api : null); if (!ok) try { ws.close(); } catch (e) {} };
+    const tm = setTimeout(() => finish(false), timeout || 7000);
+    try { ws = new WebSocket(url, ['mqtt']); } catch (e) { finish(false); return; }
+    ws.binaryType = 'arraybuffer';
+    ws.onopen = () => {
+      const flags = 0x02 | (will ? 0x04 : 0);
+      const body = [...mqStr('MQTT'), 4, flags, 0, 40, ...mqStr(cid)];
+      if (will) body.push(...mqStr(will[0]), ...mqStr(will[1]));
+      ws.send(mqPacket(0x10, body));
+    };
+    ws.onmessage = ev => {
+      const add = new Uint8Array(ev.data), nb = new Uint8Array(buf.length + add.length); nb.set(buf); nb.set(add, buf.length); buf = nb;
+      for (;;) {
+        if (buf.length < 2) break;
+        let mul = 1, len = 0, i = 1, b;
+        do { if (i >= buf.length) return; b = buf[i++]; len += (b & 127) * mul; mul *= 128; } while (b & 128);
+        if (buf.length < i + len) break;
+        const type = buf[0] >> 4, qos = (buf[0] >> 1) & 3, p = buf.subarray(i, i + len); buf = buf.slice(i + len);
+        if (type === 2) { if (p[1] === 0) { api.open = true; ping = setInterval(() => { try { ws.send(new Uint8Array([0xc0, 0])); } catch (e) {} }, 20000); finish(true); } else finish(false); }
+        else if (type === 3) { const tl = (p[0] << 8) | p[1], topic = MQ_TD.decode(p.subarray(2, 2 + tl)); const body = MQ_TD.decode(p.subarray(2 + tl + (qos ? 2 : 0))); if (api.onmsg) try { api.onmsg(topic, body); } catch (e) { console.warn(e); } }
+      }
+    };
+    ws.onclose = ws.onerror = () => { const was = api.open; api.open = false; clearInterval(ping); finish(false); if (was && api.onclose) { const f = api.onclose; api.onclose = null; f(); } };
+  });
+}
+async function mqttRoom() {
+  if (typeof WebSocket === 'undefined') return null;
+  const me = save.pid, peers = new Map(), handlers = [], moveH = [];
+  let conn = null, myPres = null, closed = false;
+  const fire = (joined, left, updated) => { const ch = { peers: [...peers.values()], joined, left, updated }; for (const h of handlers) try { h(ch); } catch (e) { console.warn(e); } };
+  const onmsg = (topic, body) => {
+    if (topic.startsWith(NET_NS + 'p/')) {
+      const id = topic.slice(NET_NS.length + 2); if (!id || id === me) return;
+      let d = null; try { d = body ? JSON.parse(body) : null; } catch (e) { return; }
+      if (!d || d.gone || !d.pr) { const pe = peers.get(id); if (pe) { peers.delete(id); fire([], [pe], []); } return; }
+      const was = peers.get(id), pe = { peer: id, presence: d.pr, updatedAt: Date.now(), guest: false, kind: 'user' };
+      peers.set(id, pe); was ? fire([], [], [pe]) : fire([pe], [], []);
+    } else if (topic.startsWith(NET_NS + 'fb/')) {
+      let d = null; try { d = JSON.parse(body); } catch (e) { return; }
+      if (d && d.k === topic.slice(NET_NS.length + 3)) addReview(d);
+    } else if (topic.startsWith(NET_NS + 'm/')) {
+      let d = null; try { d = JSON.parse(body); } catch (e) { return; }
+      if (d && d.i && d.i !== me) for (const h of moveH) h(d);
+    }
+  };
+  const open = async () => {
+    for (const url of NET_SERVERS) {
+      const c = await mqConnect(url, 'okl_' + me + '_' + Math.random().toString(36).slice(2, 6), [NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })]);
+      if (c) { c.onmsg = onmsg; c.sub(NET_NS + 'p/+'); c.sub(NET_NS + 'm/+'); c.sub(NET_NS + 'fb/+'); c.onclose = () => { conn = null; if (!closed) setTimeout(reopen, 2500); }; return c; }
+    }
+    return null;
+  };
+  const reopen = async () => { if (conn || closed) return; conn = await open(); if (conn) { NET_STATE = 'online'; if (myPres) conn.pub(NET_NS + 'p/' + me, JSON.stringify({ pr: myPres })); } else { NET_STATE = 'offline'; setTimeout(reopen, 8000); } renderWorld(true); };
+  conn = await open();
+  if (!conn) return null;
+  NET_STATE = 'online';
+  // peers that stop sending heartbeats (tab closed without a clean goodbye) drop out after a while
+  setInterval(() => { const now = Date.now(), gone = []; for (const [id, pe] of peers) if (now - pe.updatedAt > 14000) { peers.delete(id); gone.push(pe); } if (gone.length) fire([], gone, []); }, 3000);
+  window.addEventListener('pagehide', () => { if (conn) { conn.pub(NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })); conn.close(); } closed = true; });
+  return {
+    net: true,
+    async presence(patch) { myPres = Object.assign({}, myPres, patch); if (conn) conn.pub(NET_NS + 'p/' + me, JSON.stringify({ pr: myPres })); },
+    peers() { return [...peers.values()]; },
+    onPeers(h) { handlers.push(h); return () => {}; },
+    move(d) { if (conn) conn.pub(NET_NS + 'm/' + (d.z || 'x'), JSON.stringify(d)); },
+    review(r) { if (conn) conn.pub(NET_NS + 'fb/' + r.k, JSON.stringify(r), true); },
+    onMove(h) { moveH.push(h); }
+  };
+}
+let NET_STATE = 'none';
+const NET_MOVES = new Map();
+
+/* ---------- other players drawn in the world ---------- */
+function remoteLook(p) {
+  const L = p.look || {};
+  return Object.assign({}, classLook(CLASSES[p.c] ? p.c : 'warrior'), { armor: L.ar && typeof L.ar === 'string' ? L.ar : null, r: Math.min(2, +L.r || 0), costume: L.co && COSTUMES[L.co] ? L.co : null, head: L.hd && typeof L.hd === 'string' ? L.hd : null, body: L.b === 'warrior' ? 'warrior' : 'anime' });
+}
+function makeRemote(S, p, mv) {
+  const L = p.look || {}, look = remoteLook(p), u = { pid: p.pid, x: mv ? mv.x : +p.x || S.hero.x, y: mv ? mv.y : +p.y || S.hero.y, lungeT: -9, cur: '', sig: '' };
+  u.tex = {}; for (const pose of Object.keys(POSES)) { try { u.tex[pose] = S.heroTexKey(Object.assign({}, look, { pose })); } catch (e) { u.tex[pose] = u.tex.idle; } }
+  u.shadow = S.add.image(0, 0, 'shadow').setScale(WK);
+  const wo = WING_AX / WING_SIZE, wy = WING_AY / WING_SIZE;
+  if (L.wg && WINGS[L.wg]) { const k = S.wingTexKey(L.wg); u.wingR = S.add.image(0, 0, k).setOrigin(wo, wy).setScale(WING_WORLD / 2); u.wingL = S.add.image(0, 0, k).setOrigin(1 - wo, wy).setFlipX(true).setScale(WING_WORLD / 2); }
+  if (L.mt && MOUNTS[L.mt]) { const mg = mountGeom(L.mt); u.mt = L.mt; u.mg = mg; u.mframe = 0; u.mT = 0;
+    u.mountB = S.add.image(0, 0, S.mountTexKey(L.mt, 0, 'back')).setOrigin(.5, mg.oy / mg.h).setScale(mg.k);
+    u.mountF = S.add.image(0, 0, S.mountTexKey(L.mt, 0, 'front')).setOrigin(.5, mg.oy / mg.h).setScale(mg.k); }
+  u.spr = S.add.image(0, 0, u.tex.idle).setOrigin(.5, HERO_FY / HERO_H).setScale(HERO_K / HRES);
+  const wb = L.w && WGEO[L.w] ? L.w : (CLASSES[p.c] || CLASSES.warrior).starter;
+  u.wspr = S.add.image(0, 0, S.weaponTexKey(wb, Math.min(3, +L.wr || 0))).setOrigin(GRIP[0] / HERO_W, GRIP[1] / HERO_H).setScale(HERO_K / 4);
+  const name = cleanText(p.n).slice(0, 20) || 'Игрок', tag = p.g && p.g.t ? ' [' + cleanText(p.g.t).slice(0, 4) + ']' : '';
+  const fr = save.friends && save.friends.some(f => f.pid === p.pid);
+  u.label = S.add.text(0, 0, name + tag + ' · ' + (+p.lv || 1), { fontFamily: FONT, fontSize: '12px', color: fr ? '#8fe3bf' : '#ffe08a', stroke: '#000', strokeThickness: 3 }).setOrigin(.5, 1).setDepth(190000);
+  u.mark = { setPosition() { return this; } };
+  u.sig = remoteSig(p, fr);
+  u.parts = [u.shadow, u.spr, u.wspr, u.label, u.wingR, u.wingL, u.mountB, u.mountF].filter(Boolean);
+  for (const o of u.parts) if (o.setInteractive && o === u.spr) o.setInteractive({ useHandCursor: true }).on('pointerdown', (pt, lx, ly, ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); openPeerCard(p.pid); });
+  return u;
+}
+const remoteSig = (p, fr) => JSON.stringify([p.look, p.n, p.g && p.g.t, p.lv, p.c, !!fr]);
+function dropRemote(u) { for (const o of u.parts) try { o.destroy(); } catch (e) {} }
+function openPeerCard(pid) {
+  WORLD_TAB = 'friends'; toggleWorld(true);
+  const p = others().find(o => o.pid === pid); if (p) log(cleanText(p.n) + ' · ' + CLASSES[p.c].name + ' · ур. ' + p.lv + ' · БМ ' + p.bm + (p.g ? ' · гильдия «' + cleanText(p.g.n) + '»' : ''), 'good');
+}
+function netUpdate(S, dt) {
+  if (!S.remotes) S.remotes = new Map();
+  const h = S.hero;
+  // send my position: often while moving, a heartbeat when standing
+  if (ROOM && ROOM.move && h) {
+    const now = S.now, moved = !S.netLast || Math.hypot(h.x - S.netLast.x, h.y - S.netLast.y) > .04;
+    if ((moved && now > (S.netT || 0)) || now > (S.netT || 0) + 2.5) {
+      S.netT = now + .15; S.netLast = { x: h.x, y: h.y };
+      ROOM.move({ i: save.pid, z: S.zoneId, x: Math.round(h.x * 100) / 100, y: Math.round(h.y * 100) / 100, f: h.spr && h.spr.flipX ? 1 : 0, m: h.moving ? 1 : 0 });
+    }
+  }
+  const want = new Map();
+  if (ROOM) for (const p of others()) { const mv = NET_MOVES.get(p.pid); const z = mv && Date.now() - mv.t < 15000 ? mv.z : p.z; if (z === S.zoneId) want.set(p.pid, { p, mv: mv && mv.z === S.zoneId ? mv : null }); }
+  for (const [pid, u] of S.remotes) if (!want.has(pid)) { dropRemote(u); S.remotes.delete(pid); }
+  for (const [pid, w] of want) {
+    let u = S.remotes.get(pid);
+    const fr = save.friends && save.friends.some(f => f.pid === pid);
+    if (u && u.sig !== remoteSig(w.p, fr)) { dropRemote(u); S.remotes.delete(pid); u = null; }
+    if (!u) { try { u = makeRemote(S, w.p, w.mv); } catch (e) { console.warn(e); continue; } S.remotes.set(pid, u); }
+    const tx = w.mv ? w.mv.x : +w.p.x || u.x, ty = w.mv ? w.mv.y : +w.p.y || u.y;
+    const d = Math.hypot(tx - u.x, ty - u.y);
+    if (d > 8) { u.x = tx; u.y = ty; } else { const k = Math.min(1, dt * 9); u.x += (tx - u.x) * k; u.y += (ty - u.y) * k; }
+    const moving = d > .05 || (w.mv && w.mv.m && Date.now() - w.mv.t < 600);
+    if (Math.abs(tx - u.x) > .01) u.flip = iso(tx, ty).x < iso(u.x, u.y).x; else if (w.mv) u.flip = !!w.mv.f;
+    placeRemote(S, u, moving);
+  }
+}
+function placeRemote(S, u, moving) {
+  const t = S.now, bob = moving && !u.mt ? Math.abs(Math.sin(t * 9)) * 1.4 : Math.sin(t * 2 + u.x) * .4;
+  S.placeUnit(u, bob);
+  u.spr.setFlipX(!!u.flip); u.wspr.setFlipX(!!u.flip);
+  if (u.mt) {
+    const fly = u.mg.fly;
+    if ((moving || fly) && t > u.mT) { u.mT = t + (fly ? .11 : .085); u.mframe = (u.mframe + 1) % 4; }
+    const my = u.spr.y - (fly ? 16 + Math.sin(t * 2.2) * 3 : 0);
+    u.mountB.setTexture(S.mountTexKey(u.mt, u.mframe, 'back')).setPosition(u.spr.x, my).setFlipX(!!u.flip).setDepth(u.spr.depth - .5);
+    u.mountF.setPosition(u.spr.x, my).setFlipX(!!u.flip).setDepth(u.spr.depth + .15);
+    u.spr.y = fly ? my - (u.mg.oy - u.mg.seat) * u.mg.k + (fly === 'ride' ? (HERO_FY - HIP_Y) * HERO_K : 0) : my - (24 * WK - (HERO_FY - HIP_Y) * HERO_K);
+    if (fly !== 'stand' && !u.cropped) { u.spr.setCrop(0, 0, HERO_W * HRES, HIP_Y * HRES); u.cropped = true; }
+    u.label.setY(u.spr.y - u.spr.displayHeight * (HERO_FY / HERO_H) - 6);
+  }
+  const pose = u.mt ? 'idle' : moving ? 'w' + (Math.floor(t * 9) % 4) : 'idle';
+  if (pose !== u.cur && u.tex[pose]) { u.spr.setTexture(u.tex[pose]); u.cur = pose; }
+  const fs = u.flip ? -1 : 1;
+  u.wspr.setPosition(u.spr.x + fs * (GRIP[0] - 32) * HERO_K, u.spr.y + (GRIP[1] - HERO_FY) * HERO_K).setDepth(u.spr.depth + .2);
+  if (u.wingR) {
+    const flap = Math.sin(t * 3) * 10 + (moving ? Math.sin(t * 10) * 7 : 0), sy = u.spr.y + (SHOULDER_Y - HERO_FY) * HERO_K, d2 = u.spr.depth - .3;
+    u.wingR.setPosition(u.spr.x + 1.5, sy).setAngle(-flap).setDepth(d2); u.wingL.setPosition(u.spr.x - 1.5, sy).setAngle(flap).setDepth(d2);
+  }
+}
+
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
+  if (!ROOM) { NET_STATE = 'connecting'; renderWorld(); try { ROOM = await mqttRoom(); } catch (e) { console.warn(e); ROOM = null; } if (!ROOM) NET_STATE = 'offline'; }
   if (!ROOM) { renderWorld(); return; }
+  if (save.myReviews && ROOM.review) for (const r of save.myReviews) ROOM.review(r);
+  if (ROOM.onMove) ROOM.onMove(d => { NET_MOVES.set(String(d.i), { z: String(d.z), x: +d.x, y: +d.y, f: d.f, m: d.m, t: Date.now() }); });
   ROOM.onPeers(ch => { ROOM_PEERS = ch.peers; for (const p of ch.joined) { const o = p.presence && p.presence.ok; if (o && save.friends.some(f => f.pid === o.pid)) log('Друг в сети: ' + cleanText(o.n), 'good'); } renderWorld(true); }, () => { ROOM = null; renderWorld(); });
   setInterval(() => pushPresence(false), 3000); setTimeout(() => pushPresence(true), 1500);
 })();
@@ -7039,7 +7266,7 @@ function chatLines(ch) {
 }
 function chatBox(ch, ph) {
   const wrap = mk('div', 'chat'), log2 = mk('div', 'chatlog'), lines = chatLines(ch);
-  if (!lines.length) log2.appendChild(mk('div', 'ds', ROOM ? 'Сообщений пока нет. Напишите первым — его увидят все, кто сейчас в игре.' : 'Чат работает, когда друзья открыли игру одновременно с вами и вошли в Claude.'));
+  if (!lines.length) log2.appendChild(mk('div', 'ds', ROOM ? 'Сообщений пока нет. Напишите первым — его увидят все, кто сейчас в игре.' : (NET_STATE === 'connecting' ? 'Подключаемся к игровому серверу…' : 'Нет связи с игровым сервером — чат недоступен. Проверьте интернет и обновите страницу.')));
   for (const l of lines) { const d = mk('div', 'cl' + (l.me ? ' me' : '')), b = mk('b', '', l.who + ': '); b.style.color = l.me ? '#ffd36a' : '#bfe3ff'; d.append(b, document.createTextNode(l.s)); log2.appendChild(d); }
   const row = mk('div', 'chatrow'), inp = mk('input'); inp.type = 'text'; inp.maxLength = 140; inp.placeholder = ph; inp.id = 'chatIn_' + ch.replace(/\W/g, '');
   const go = () => { sendChat(inp.value, ch === 'w' ? 'w' : 'g'); };
@@ -7065,7 +7292,7 @@ function renderWorld(soft) {
   WORLD_RT = Date.now() + 1500;
   for (const b of p.querySelectorAll('[data-wt]')) { b.classList.toggle('on', b.dataset.wt === WORLD_TAB); b.setAttribute('aria-selected', String(b.dataset.wt === WORLD_TAB)); }
   const on = others(), A = save.arena; arenaDaily();
-  setText($('worldSub'), ROOM ? 'в игре сейчас: ' + (on.length + 1) : 'одиночный режим');
+  setText($('worldSub'), ROOM ? 'в игре сейчас: ' + (on.length + 1) : NET_STATE === 'connecting' ? 'подключение…' : 'нет связи');
   const body = $('worldBody'); body.innerHTML = '';
   const note = t => body.appendChild(mk('div', 'ds', t));
   if (WORLD_TAB === 'friends') {
@@ -7073,7 +7300,7 @@ function renderWorld(soft) {
     inp.addEventListener('keydown', e => e.stopPropagation());
     me.append(mk('span', 'label', 'Ваш ник'), inp, btn('Сохранить', () => { const v = cleanText(inp.value).slice(0, 20); if (v.length >= 2) { save.name = v; persist(); pushPresence(true); log('Ник изменён: ' + v, 'good'); renderWorld(); } }, ''));
     body.appendChild(me);
-    if (!ROOM) note('Друзья видят друг друга, когда одновременно открыли эту игру по вашей ссылке и вошли в Claude. Сейчас связь с комнатой недоступна — список друзей сохранён, но их статус не виден.');
+    if (!ROOM) note(NET_STATE === 'connecting' ? 'Подключаемся к игровому серверу…' : 'Нет связи с игровым сервером. Список друзей сохранён, но их статус не виден. Проверьте интернет и обновите страницу.');
     body.appendChild(mk('div', 'label', 'Друзья · ' + save.friends.length));
     if (!save.friends.length) note('Друзей пока нет. Добавьте игроков из списка «Сейчас в игре».');
     for (const f of save.friends) {
