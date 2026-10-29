@@ -1,0 +1,25 @@
+name: Проба серверов
+on:
+  workflow_dispatch:
+    inputs:
+      servers:
+        description: список адресов через запятую
+        required: true
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node .github/scripts/probe.mjs
+        env:
+          PROBE: ${{ inputs.servers }}
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p diag && mv probe.md diag/
+          git add diag && (git diff --cached --quiet || (git commit -m "Проба серверов" && (git push || (git pull --rebase && git push))))
