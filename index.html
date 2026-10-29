@@ -97,6 +97,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var
 .fbp{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);width:min(460px,calc(100vw - 32px))}
 .fbp p{margin:0;font-size:14px;line-height:1.45;color:var(--paper)}
 .fbp{max-height:calc(100% - 24px)}
+.updbar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:99999;display:flex;gap:10px;align-items:center;padding:8px 12px;border:1px solid var(--gold);border-radius:8px;background:#1a1408;color:var(--paper);font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.6);max-width:calc(100vw - 32px)}
 #fbIn{font:15px var(--body);padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:#0b1020;color:var(--paper);resize:vertical;min-height:90px;width:100%;box-sizing:border-box}
 .fbstars{display:flex;gap:4px}.fbstars button{background:none;border:0;font-size:28px;line-height:1;color:#4a4f60;cursor:pointer;padding:0 2px}.fbstars button.on{color:var(--gold)}
 .fbp .acts{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.fbp .acts .ds{margin-right:auto;font-size:13px;color:var(--muted)}
@@ -4039,6 +4040,8 @@ class World extends Phaser.Scene {
     let start = { x: C + .5, y: C + .5 };
     if (data && data.from) { const p = this.zone.portals.find(pp => pp.to === data.from); if (p) start = portalInward(p); }
     else if (!this.zone.village) start = portalInward(this.zone.portals[0]);
+    // spread players out so friends who arrive at the same spot do not stand inside each other
+    for (let k = 0, R = data && data.from ? .9 : 2.4; k < 30; k++) { const a = Math.random() * 6.283, r = .6 + Math.random() * R, x = start.x + Math.cos(a) * r, y = start.y + Math.sin(a) * r; if (this.walkable && this.walkable(x, y)) { start = { x, y }; break; } }
     this.hero = { x: start.x, y: start.y, alive: true, nextAtk: 0, lastHit: -99, target: null, dest: null, talk: null, cds: {}, cdRice: 0, lungeT: -9, hasteUntil: 0, stanceUntil: 0 };
     this.recalc(true);
     if (CARRY) { this.hero.hp = Math.min(this.hero.maxHp, CARRY.hp); this.hero.mp = Math.min(this.hero.maxMp, CARRY.mp); CARRY = null; }
@@ -6653,12 +6656,20 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '30', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '31', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = [];
 window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 function setFbKind(k) { FB_KIND = k; for (const b of document.querySelectorAll('#fbKinds .tab')) b.classList.toggle('on', b.dataset.fk === k); $('fbIn').placeholder = FB_PH[k]; $('fbStars').hidden = k !== 'review'; }
 for (const b of document.querySelectorAll('#fbKinds .tab')) b.addEventListener('click', () => setFbKind(b.dataset.fk));
+{ const hp = document.querySelector('.help'); if (hp) hp.append(' · версия ' + GAME_VER); }
+// a newer copy of the game on the site: offer a reload (the browser may keep the old page cached for a while)
+async function checkUpdate() {
+  if (!/^https?:/.test(location.protocol) || /claude\.ai|claudeusercontent/.test(location.host)) return;
+  try { const r = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' }); const t = await r.text(); const m = t.match(/const GAME_VER = '(\d+)'/); if (m && +m[1] > +GAME_VER && !$('updBar')) {
+    const bar = mk('div', 'updbar'); bar.id = 'updBar'; bar.append(mk('span', '', 'Вышла новая версия игры (' + m[1] + ').'), btn('Обновить', () => location.replace(location.pathname + '?v=' + m[1]), 'main')); document.body.appendChild(bar); } } catch (e) {}
+}
+setTimeout(checkUpdate, 4000); setInterval(checkUpdate, 5 * 60000);
 const REVIEWS = new Map();
 function renderStars() { const b = $('fbStars'); b.innerHTML = ''; for (let i = 1; i <= 5; i++) { const s = mk('button', i <= FB_STARS ? 'on' : '', '★'); s.type = 'button'; s.setAttribute('role', 'radio'); s.setAttribute('aria-checked', String(i === FB_STARS)); s.setAttribute('aria-label', i + ' из 5'); s.addEventListener('click', () => { FB_STARS = i; renderStars(); }); b.appendChild(s); } }
 function addReview(r) {
