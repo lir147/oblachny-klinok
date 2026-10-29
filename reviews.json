@@ -1,4 +1,20 @@
 {
+ "7pyd2qs89z-1793287934398": {
+  "c": "Лучник",
+  "err": [],
+  "issue": 2,
+  "k": "7pyd2qs89z-1793287934398",
+  "kind": "bug",
+  "lv": 14,
+  "n": "Админ",
+  "s": "Авто атака не везде работает",
+  "scr": "1920x928",
+  "st": 0,
+  "t": 1793287934398,
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 YaBrowser/26.10.0.0 Safari/537.36",
+  "v": "40",
+  "z": "village"
+ },
  "kgp3x4kkbn-1793286982898": {
   "c": "Маг",
   "err": [],
