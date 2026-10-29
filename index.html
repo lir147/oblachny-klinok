@@ -86,9 +86,9 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var
 .bag{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
 .cell{position:relative;aspect-ratio:1;max-width:100%;width:100%;border-radius:6px;border:1px solid #2a3552;background:#0b1020;color:var(--paper);cursor:pointer;display:grid;place-items:center;padding:0;overflow:visible}
 .cell img{width:100%;height:100%;border-radius:5px;display:block}
-.cell.r0{border-color:#59576a}.cell.r1{border-color:#3d67b0}.cell.r2{border-color:#7a52b8}.cell.r3{border-color:#ff9a2a;box-shadow:0 0 8px rgba(255,154,42,.55)}
+.cell.r0{border-color:#59576a}.cell.r1{border-color:#3d67b0}.cell.r2{border-color:#7a52b8}.cell.cell.r3,.ski.r3{border-color:#ff9a2a;box-shadow:0 0 8px rgba(255,154,42,.55)}
 .r3{color:#ffb040}
-.r4{border-color:#ff3d7a;box-shadow:0 0 10px rgba(255,61,122,.7),inset 0 0 6px rgba(255,120,60,.4)}
+.cell.r4,.ski.r4{border-color:#ff3d7a;box-shadow:0 0 10px rgba(255,61,122,.7),inset 0 0 6px rgba(255,120,60,.4)}
 .r4{color:#ff5a8a;text-shadow:0 0 6px rgba(255,61,122,.5)}
 .cls.armed{outline:2px solid var(--gold);box-shadow:0 0 18px rgba(224,176,79,.5)}
 .topp{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);width:min(620px,calc(100vw - 32px));max-height:calc(100% - 100px)}
@@ -102,6 +102,24 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var
 .fbp{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);width:min(460px,calc(100vw - 32px))}
 .fbp p{margin:0;font-size:14px;line-height:1.45;color:var(--paper)}
 .fbp{max-height:calc(100% - 24px)}
+.auprice{font-family:var(--display);color:var(--gold);white-space:nowrap;font-size:15px}
+.aufilter,.mailform{display:flex;flex-wrap:wrap;gap:6px}
+.aufilter select,.aufilter input,.mailform select,.mailform input{font:14px var(--body);padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:#0b1020;color:var(--paper);min-width:0;flex:1 1 140px}
+.mailform input[type=number]{flex:0 1 100px}
+.sndbtn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:calc(max(16px,env(safe-area-inset-right,0px)) + 228px);width:34px;height:34px;border-radius:50%;border:1px solid #5a4424;background:rgba(18,14,28,.9);color:var(--gold);font-size:17px;cursor:pointer;pointer-events:auto;z-index:4}
+.sndp{position:absolute;top:calc(env(safe-area-inset-top,0px) + 54px);right:calc(max(16px,env(safe-area-inset-right,0px)) + 228px);width:210px;display:grid;gap:8px;padding:10px 12px;border:1px solid #5a4424;border-radius:8px;background:rgba(14,12,24,.96);pointer-events:auto;z-index:6;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.sndrow{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--paper)}.sndrow span{min-width:64px}.sndrow input[type=range]{flex:1;accent-color:var(--gold)}
+html.mob .sndbtn{right:calc(max(6px,env(safe-area-inset-right,0px)) + 134px);top:calc(env(safe-area-inset-top,0px) + 8px)}
+html.mob .sndp{right:max(6px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 48px)}
+.seasonhead{display:grid;gap:4px;padding:10px 12px;border:1px solid #5a4424;border-radius:6px;background:linear-gradient(#21180a,#120d06)}
+.seasonhead b{font-family:var(--display);font-weight:400;color:var(--gold);font-size:18px}.seasonhead .bar{height:8px}
+.seasongrid{display:grid;grid-template-columns:34px 1fr 1fr;gap:4px;align-items:stretch}
+.sgh{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sgl{display:grid;place-items:center;font-family:var(--display);color:var(--muted);border:1px solid var(--line);border-radius:6px}.sgl.open{color:var(--gold);border-color:#8a6a2a}
+.sgc{display:grid;gap:4px;align-content:start;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:#0f1528;font-size:12px;color:var(--muted);line-height:1.3}
+.sgc.open{color:var(--paper)}.sgc.prem{background:linear-gradient(135deg,#1f1430,#0f1528);border-color:#4a3470}
+.sgc .btn{justify-self:start}.sgot{color:#7aff9a;font-size:11px}
+
 .diaryp{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);width:min(640px,calc(100vw - 32px));max-height:calc(100% - 120px)}
 .dq .dqi{display:grid;place-items:center;font-family:serif;font-size:22px;color:var(--gold)}
 .dq .bar{height:5px;margin-top:4px}
@@ -397,6 +415,7 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
     <button class="skill" id="skForge" type="button" aria-label="Кузница (F)"><kbd>F</kbd><span class="ic">鍛</span><em>Кузница</em></button>
     <button class="skill" id="skBook" type="button" aria-label="Навыки (K)"><kbd>K</kbd><span class="ic">技</span><em>Навыки</em></button>
     <button class="skill" id="skDiary" type="button" aria-label="Дневник (J)"><kbd>J</kbd><span class="ic">日</span><em>Дневник</em></button>
+    <button class="skill" id="skMarket" type="button" aria-label="Рынок (B)"><kbd>B</kbd><span class="ic">市</span><em>Рынок</em></button>
     <button class="skill" id="skBag" type="button" aria-label="Сумка (I)"><kbd>I</kbd><span class="ic">袋</span><em>Сумка</em></button>
     <button class="skill" id="skRice" type="button" aria-label="Рисовый колобок (R)"><kbd>R</kbd><span class="qty" id="riceQty">0</span><span class="ic">飯</span><em>Колобок</em><i class="cd"></i></button>
     <span class="sep" aria-hidden="true"></span>
@@ -413,9 +432,17 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
 
   <div id="mobMenu" hidden></div>
 
+  <div id="marketP" class="panel diaryp" hidden>
+    <div class="phead"><b>Рынок</b><span>аукцион и почта</span><button class="x" id="marketX" type="button" aria-label="Закрыть рынок">×</button></div>
+    <div class="tabs" role="tablist"><button class="tab on" data-mt="au" type="button" role="tab">Аукцион</button><button class="tab" data-mt="mine" type="button" role="tab">Мои лоты</button><button class="tab" data-mt="mail" type="button" role="tab">Почта</button></div>
+    <div id="marketBody" class="shop"></div>
+  </div>
+  <button id="sndBtn" class="sndbtn" type="button" aria-label="Звук">♪</button>
+  <div id="sndP" class="sndp" hidden></div>
+
   <div id="diaryP" class="panel diaryp" hidden>
     <div class="phead"><b>Дневник</b><span>задания, награды, достижения</span><button class="x" id="diaryX" type="button" aria-label="Закрыть дневник">×</button></div>
-    <div class="tabs" role="tablist"><button class="tab on" data-dt="daily" type="button" role="tab">Задания дня</button><button class="tab" data-dt="login" type="button" role="tab">Вход</button><button class="tab" data-dt="ach" type="button" role="tab">Достижения</button><button class="tab" data-dt="titles" type="button" role="tab">Титулы</button><button class="tab" data-dt="cook" type="button" role="tab">Готовка</button><button class="tab" data-dt="events" type="button" role="tab">События</button></div>
+    <div class="tabs" role="tablist"><button class="tab on" data-dt="daily" type="button" role="tab">Задания дня</button><button class="tab" data-dt="login" type="button" role="tab">Вход</button><button class="tab" data-dt="ach" type="button" role="tab">Достижения</button><button class="tab" data-dt="titles" type="button" role="tab">Титулы</button><button class="tab" data-dt="cook" type="button" role="tab">Готовка</button><button class="tab" data-dt="season" type="button" role="tab">Сезон</button><button class="tab" data-dt="events" type="button" role="tab">События</button></div>
     <div id="diaryBody" class="shop"></div>
   </div>
 
@@ -707,7 +734,7 @@ function describe(it) {
 }
 function fixItem(it) {
   if (!it) return;
-  if (it.slot === 'use') { it.base = 'rice'; it.st = it.st || {}; return; }
+  if (it.slot === 'use') { if (it.kind && (!it.base || it.base === 'rice')) it.base = it.kind; if (!it.base) it.base = 'rice'; it.st = it.st || {}; return; }
   if (!it.base && BASES[it.slot]) {
     NAMES[it.slot].forEach((set, i) => { if (set.includes(it.name)) it.base = BASES[it.slot][i]; });
     if (!it.base) it.base = BASES[it.slot][0];
@@ -3954,6 +3981,13 @@ Object.assign(ZONES, {
 });
 const LV_CAP = 50;
 
+Object.assign(MOBS, {
+  eclipseqn: { name: 'Императрица Затмения', key: 'spiderqueen', tint: 0xc080ff, boss: true, drops: [['wings', 'void', .2], ['costume', 'seraphknight', .2], ['mount', 'skydragon', .08]] },
+  eclcrystal: { name: 'Кристалл затмения', key: 'shade', tint: 0x9a7aff, hover: true }
+});
+ZONES.r_eclipse = { name: 'Цитадель Затмения', seed: 111, tiles: 'a', bg: '#0c0612', deco: 'ash', ambient: 'none', ponds: [], mobs: [['lavaoni', 34, 36, 0], ['ashronin', 34, 36, 1]], portals: [{ to: 'village', x: 14.5, y: 27 }], raid: true,
+  dungeon: { minLv: 30, lv: 36, raid: true, waves: [[['ashronin', 5], ['lavaoni', 4]], [['skywraith', 5], ['jadeguard', 3]]], boss: 'eclipseqn', gold: 15000,
+    looks: [['wings', 'celestial', .25], ['costume', 'seraphknight', .2], ['mount', 'skydragon', .08], ['wings', 'void', .2]] } };
 // zones were laid out on a 28x28 map; stretch each onto its own size (open worlds 150x150, dungeons 44x44)
 for (const z of Object.values(ZONES)) z.size = z.dungeon ? 44 : 150;
 { for (const z of Object.values(ZONES)) {
@@ -3977,7 +4011,7 @@ for (const z of Object.values(ZONES)) z.size = z.dungeon ? 44 : 150;
     }
   }
 }
-const DUNGEON_IDS = ['d_nest', 'd_moon', 'd_ice'];
+const DUNGEON_IDS = ['d_nest', 'd_moon', 'd_ice', 'r_eclipse'];
 const ALLY_DEFS = {
   tank: { name: 'Страж Ивао', look: { cls: 'guard', costume: 'allytank', npc: true, noBand: true, hair: [0x3a2a20, 0x8a6a4a] }, weapon: ['kanabo', 1], hp: 1.4, atk: .45, def: 14, range: 1.05, cd: 1.2 },
   heal: { name: 'Жрица Юки', look: { cls: 'dancer', costume: 'allyheal', npc: true, noBand: true, hair: [0xe8e4f0, 0xffffff] }, weapon: ['bo', 2], hp: .85, atk: .3, def: 4, range: 4, cd: 1.6 },
@@ -4140,6 +4174,7 @@ function log(msg, cls) {
   while (el.children.length > 5) el.firstChild.remove();
 }
 function banner(title, sub) {
+  if (typeof sfx === 'function') sfx('chime');
   const b = $('banner'); b.innerHTML = ''; b.append(mk('small', '', sub || ''), document.createTextNode(title));
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
 }
@@ -4278,6 +4313,7 @@ class World extends Phaser.Scene {
       else if (k === 'k' || k === 'л') openSkills();
       else if (k === 'o' || k === 'щ') toggleWorld();
       else if (k === 'j' || k === 'о') openDiary();
+      else if (k === 'b' || k === 'и') openMarket();
       else if (k === 'f' || k === 'а') toggleForge();
       else if (k === 'escape') { this.closeDlg(); $('inv').hidden = true; $('heroP').hidden = true; $('wheelP').hidden = true; $('catP').hidden = true; $('skillP').hidden = true; $('topP').hidden = true; $('fbP').hidden = true; $('forgeP').hidden = true; $('worldP').hidden = true; $('duelO').hidden = true; }
       else if (k === ' ') { e.preventDefault(); this.targetNearest(); }
@@ -4587,7 +4623,7 @@ class World extends Phaser.Scene {
 
   travel(po) {
     if (po.minLv && save.lv < po.minLv) { log('Портал не пускает. Нужен ' + po.minLv + ' уровень.', 'bad'); return; }
-    this.travelling = true;
+    this.travelling = true; sfx('portal');
     CARRY = { hp: this.hero.hp, mp: this.hero.mp };
     const from = this.zoneId;
     this.cameras.main.fadeOut(350, 0, 0, 0);
@@ -4959,7 +4995,7 @@ class World extends Phaser.Scene {
     }
     if (!quiet) log('Получено: ' + itemName(it) + (it.qty > 1 ? ' ×' + it.qty : ''), 'r' + it.rarity);
     if (it.crafted && !it.counted) { it.counted = true; stat('crafted'); }
-    if (it.rarity === 4 && !it.counted4) { it.counted4 = true; stat('myth'); }
+    if (it.rarity === 4 && !it.counted4) { it.counted4 = true; stat('myth'); sfx('myth'); } else if (it.rarity >= 2 && !quiet) sfx('loot');
     if (addColl(it)) { log('Новый облик в справочнике: ' + it.name + '. Бонус коллекции вырос.', 'good'); this.recalc(); }
     persist(); this.renderInv();
     return true;
@@ -5296,6 +5332,7 @@ class World extends Phaser.Scene {
       }
       acts.appendChild(btn('Продать за ' + sellPrice(it) + ' мон', () => this.sell(this.selItem.i), '', !village));
       if (!it.kind && it.slot !== 'use') tradeFormInto(det, this, it);
+      if (!it.grow) auFormInto(det, this, it);
       if (!village) det.appendChild(mk('div', 'ds', 'Продать можно, вернувшись в деревню Кумо.'));
     } else {
       acts.appendChild(btn('Снять', () => this.unequip(this.selItem.slot), '', save.inv.length >= BAG));
@@ -5796,6 +5833,7 @@ class World extends Phaser.Scene {
     const h = this.hero;
     h.nextAtk = this.now + h.aspd * (this.now < h.hasteUntil ? .6 : 1);
     let dmg = h.atk * rand(.85, 1.15); const crit = Math.random() * 100 < h.crit; if (crit) dmg *= 1.8;
+    sfx(save.cls === 'mage' ? 'zap' : save.cls === 'archer' ? 'bow' : 'swing');
     if (save.cls === 'mage' || save.cls === 'archer') {
       h.pose = { type: 'raise', t0: this.now, dur: .28, dir: 1 }; h.poseUntil = this.now + .3;
       this.shoot(h, m, save.cls === 'mage' ? 'bolt' : 'arrow', () => { if (m.alive) this.hurtMob(m, Math.round(dmg), crit); });
@@ -5813,11 +5851,13 @@ class World extends Phaser.Scene {
     if (m.remote) { netHitRemote(this, m, d, crit); return; }
     if (m.sb) { sbHit(this, m, d, crit); return; }
     if (m.pvp) { pvpHit(this, m, d, crit); return; }
+    if (m.shield) { this.floatText(m.x, m.y, 'щит', '#9ab8ff', 16); return; }
     m.hp -= d; m.angry = true;
     this.flash(m.spr);
     this.floatText(m.x, m.y, crit ? d + '!' : String(d), crit ? '#ffd36a' : '#ffffff', crit ? 26 : 18, crit);
     this.burst(m.x, m.y, crit ? [0xffd36a, 0xffffff, 0xff8a3c] : [0xffffff, 0xbfe3ff], crit ? 14 : 7, crit ? 34 : 22);
     if (crit && !fromNet) this.cameras.main.shake(70, .003);
+    sfx(crit ? 'crit' : 'hit');
     this.drawBar(m);
     if (m.hp <= 0) this.killMob(m);
   }
@@ -5842,6 +5882,7 @@ class World extends Phaser.Scene {
     if (m.sb) return;
     if (!m.remote && !m.netDeath) netMobDied(this, m);
     if (m.pvp) return;
+    sfx(m.boss ? 'boom' : 'kill'); sfx('coin');
     m.gold = Math.round(m.gold * evMul('gold'));
     stat('kills'); stat('goldEarned', m.gold); if (inParty()) stat('partyKills'); if (eventsNow().length) stat('eventKills');
     if (m.boss) { stat('bosses'); save.stats.bossKinds[m.kind] = (save.stats.bossKinds[m.kind] || 0) + 1; }
@@ -5884,7 +5925,7 @@ class World extends Phaser.Scene {
     col.fillStyle(0xfff3c4, .5).fillRect(-5, -120, 10, 120);
     col.setPosition(p.x, p.y).setBlendMode(Phaser.BlendModes.ADD);
     this.tweens.add({ targets: col, alpha: 0, scaleX: 2.2, duration: 1100, onComplete: () => col.destroy() });
-    this.floatText(h.x, h.y, 'Уровень ' + save.lv + '!', '#ffd36a', 26);
+    this.floatText(h.x, h.y, 'Уровень ' + save.lv + '!', '#ffd36a', 26); sfx('levelup');
     log('Новый уровень: ' + save.lv + '. Здоровье и сила выросли.', 'xp');
     save.sp = (save.sp || 0) + 1;
     log('+1 очко навыков. Изучайте и улучшайте техники во вкладке «Навыки» (K).', 'good');
@@ -5904,14 +5945,14 @@ class World extends Phaser.Scene {
       const a = Math.min(h.shield, d); h.shield -= a; d -= a;
       if (d <= 0) { this.floatText(h.x, h.y, 'щит', '#ffd36a', 15); return; }
     }
-    h.hp -= d; h.lastHit = this.now;
+    h.hp -= d; h.lastHit = this.now; sfx('hurt');
     this.flash(h.spr);
     this.floatText(h.x, h.y, '−' + d, '#ff6b5e', 18);
     if (h.hp <= 0) { if (LIVE) { h.hp = 1; liveDuelEnd(false, true); return; } this.die(); }
   }
 
   die() {
-    stat('deaths');
+    stat('deaths'); sfx('death');
     const h = this.hero; h.alive = false; h.hp = 0; h.target = null; h.dest = null; h.talk = null;
     h.spr.setTint(0x666677).setAlpha(.6).setAngle(80);
     for (const m of this.mobs) m.angry = false;
@@ -5952,6 +5993,7 @@ class World extends Phaser.Scene {
     const ok = this['sk_' + id](h);
     h.atk = a0;
     if (ok === false) return;
+    sfx(/fire|meteor|phoenix/.test(id) ? 'fire' : /frost|blizzard/.test(id) ? 'ice' : /heal|tea|shield|stance/.test(id) ? 'heal' : 'whoosh');
     const ptype = SKILL_POSE[id] || 'slash';
     h.pose = { type: ptype, t0: this.now, dur: ptype === 'spin' ? .45 : .36, dir: 1 }; h.poseUntil = this.now + (ptype === 'spin' ? .5 : .42);
     h.mp -= sk.cost; h.cds[id] = this.now + skCd(id);
@@ -6244,6 +6286,7 @@ class World extends Phaser.Scene {
       const info = mk('div'); info.style.minWidth = '0';
       info.append(mk('div', 'sn r2', z.name), mk('div', 'ss', 'С ' + d.minLv + ' ур. · враги ' + d.lv + ' ур. · ' + d.gold + ' мон, эпическое снаряжение, шанс на редкие облики' + (save.dgDone[id] ? ' · пройдено ' + save.dgDone[id] + ' раз' : '')));
       const lead = inParty() && PARTY.lead === save.pid;
+      if (d.raid) { info.appendChild(mk('div', 'ss', 'Рейд для отряда от 2 человек: огненные круги, щит из кристаллов, метка затмения. Войти может лидер отряда.')); r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Начать рейд' : 'Нужен отряд', () => { this.closeDlg(); this.travel({ to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id } }); }, 'main', save.lv < d.minLv || !lead)); list.appendChild(r); continue; }
       r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Войти с друзьями' : 'Войти с отрядом', () => { this.closeDlg(); this.travel(lead ? { to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id } } : { to: id }); }, 'main', save.lv < d.minLv));
       list.appendChild(r);
     }
@@ -6355,7 +6398,7 @@ class World extends Phaser.Scene {
       if (D.wave < cfg.waves.length) { D.state = 'wait'; D.t = this.now + 3; log('Волна отбита. Следующая через 3 секунды.', 'good'); }
       else { D.state = 'bosswait'; D.t = this.now + 3.5; banner(MOBS[cfg.boss].name, 'Хозяин логова приближается'); tell({ t: 'wave', b: cfg.boss }); }
     } else if (D.state === 'bosswait' && this.now > D.t) {
-      const b = spawnAround(cfg.boss, cfg.lv + 2); if (b) { b.maxHp = b.hp = Math.round(b.maxHp * 1.3); this.drawBar(b); }
+      const b = spawnAround(cfg.boss, cfg.lv + 2); if (b) { b.maxHp = b.hp = Math.round(b.maxHp * (cfg.raid ? 4 : 1.3)); if (cfg.raid) b.atk *= 1.3; this.drawBar(b); this.raid = null; }
       D.state = 'boss';
     } else if (D.state === 'boss' && !this.mobs.some(m => m.alive)) {
       D.state = 'done'; tell({ t: 'dgdone' });
@@ -6365,6 +6408,7 @@ class World extends Phaser.Scene {
   dgReward() {
     const cfg = this.zone.dungeon;
     stat('dg'); save.stats.dgKinds[this.zoneId] = (save.stats.dgKinds[this.zoneId] || 0) + 1;
+    if (cfg.raid) { stat('raids'); if (Math.random() < .15) { const it = mythWeapon(cfg.lv + 2); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); } }
     {
       save.gold += cfg.gold; save.dgDone[this.zoneId] = (save.dgDone[this.zoneId] || 0) + 1;
       const sealN = SEAL_PER[this.zoneId] || 15; save.seals += sealN; save.mats.ore += 10; save.mats.ess += 4; save.mats.star += 1; if (save.guild) guildXp(50);
@@ -6513,7 +6557,7 @@ class World extends Phaser.Scene {
     if (this.allies.length) this.updateAllies(dt);
     if (this.pet) this.updatePet(dt);
     netUpdate(this, dt);
-    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this);
+    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this);
     if (performance.now() > (this.achT || 0)) { this.achT = performance.now() + 2000; checkAch(this); evHud(); }
     if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); }
     if (this.zone.dungeon) this.updateDungeon();
@@ -6887,7 +6931,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '39', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '40', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = [];
 window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
@@ -6895,7 +6939,7 @@ function setFbKind(k) { FB_KIND = k; for (const b of document.querySelectorAll('
 for (const b of document.querySelectorAll('#fbKinds .tab')) b.addEventListener('click', () => setFbKind(b.dataset.fk));
 { const hp = document.querySelector('.help'); if (hp) hp.append(' · версия ' + GAME_VER); }
 /* ---------- phone layout: compact HUD, menu buttons folded behind one button ---------- */
-const MENU_IDS = ['skHero', 'skBag', 'skDiary', 'skBook', 'skWorld', 'skForge', 'skWheel', 'skTop', 'skFb'];
+const MENU_IDS = ['skHero', 'skBag', 'skDiary', 'skMarket', 'skBook', 'skWorld', 'skForge', 'skWheel', 'skTop', 'skFb'];
 function isMobileLayout() { return (window.matchMedia && matchMedia('(pointer: coarse)').matches) || innerWidth < 700 || innerHeight < 480; }
 function applyLayout() {
   const mob = isMobileLayout(), root = document.documentElement, menu = $('mobMenu'), bar = document.querySelector('.skills'), mb = $('skMenu');
@@ -6904,13 +6948,153 @@ function applyLayout() {
   mb.hidden = !mob;
   const sep = bar.querySelector('.sep');
   if (mob) { for (const id of MENU_IDS) { const b = $(id); if (b && b.parentNode !== menu) menu.appendChild(b); } }
-  else for (const id of ['skHero', 'skWheel', 'skTop', 'skFb', 'skWorld', 'skForge', 'skBook', 'skDiary', 'skBag']) { const b = $(id); if (b && b.parentNode !== bar) bar.insertBefore(b, $('skRice')); }
+  else for (const id of ['skHero', 'skWheel', 'skTop', 'skFb', 'skWorld', 'skForge', 'skBook', 'skDiary', 'skMarket', 'skBag']) { const b = $(id); if (b && b.parentNode !== bar) bar.insertBefore(b, $('skRice')); }
   if (!mob) { menu.hidden = true; mb.setAttribute('aria-expanded', 'false'); }
 }
 $('skMenu').addEventListener('click', e => { e.stopPropagation(); const m = $('mobMenu'); m.hidden = !m.hidden; $('skMenu').setAttribute('aria-expanded', String(!m.hidden)); });
 $('mobMenu').addEventListener('click', e => { if (e.target.closest('.skill')) setTimeout(() => { $('mobMenu').hidden = true; $('skMenu').setAttribute('aria-expanded', 'false'); }, 0); });
 document.addEventListener('pointerdown', e => { const m = $('mobMenu'); if (m && !m.hidden && !e.target.closest('#mobMenu') && !e.target.closest('#skMenu')) { m.hidden = true; $('skMenu').setAttribute('aria-expanded', 'false'); } }, true);
 window.addEventListener('resize', applyLayout);
+/* ---------- sound: everything is synthesized in the browser, no files to download ---------- */
+const SND = { ctx: null, master: null, music: null, sfx: null, verb: null, on: false, cfg: { music: .55, sfx: .7, mute: false }, last: {}, mus: null };
+try { Object.assign(SND.cfg, JSON.parse(localStorage.getItem('okl-sound') || '{}')); } catch (e) {}
+const sndSave = () => { try { localStorage.setItem('okl-sound', JSON.stringify(SND.cfg)); } catch (e) {} };
+function sndInit() {
+  if (SND.ctx) { if (SND.ctx.state === 'suspended') SND.ctx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  const c = SND.ctx = new AC();
+  SND.master = c.createGain(); SND.master.connect(c.destination);
+  SND.music = c.createGain(); SND.sfx = c.createGain();
+  // a small room: two feedback delays make plucks and bells ring softly
+  const wet = c.createGain(); wet.gain.value = .22; wet.connect(SND.master);
+  for (const [t, fb] of [[.113, .42], [.171, .36]]) { const d = c.createDelay(1); d.delayTime.value = t; const g = c.createGain(); g.gain.value = fb; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400; d.connect(lp); lp.connect(g); g.connect(d); d.connect(wet); SND.music.connect(d); SND.sfx.connect(d); }
+  SND.music.connect(SND.master); SND.sfx.connect(SND.master);
+  // shared noise buffer
+  const nb = c.createBuffer(1, c.sampleRate, c.sampleRate), ch = nb.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1; SND.noise = nb;
+  sndApply(); SND.on = true; musicStart();
+}
+function sndApply() { if (!SND.ctx) return; const t = SND.ctx.currentTime, m = SND.cfg.mute ? 0 : 1; SND.music.gain.setTargetAtTime(SND.cfg.music * .5 * m, t, .1); SND.sfx.gain.setTargetAtTime(SND.cfg.sfx * m, t, .05); }
+for (const ev of ['pointerdown', 'keydown', 'touchstart']) window.addEventListener(ev, sndInit, { passive: true });
+document.addEventListener('visibilitychange', () => { if (!SND.ctx) return; if (document.hidden) SND.ctx.suspend(); else SND.ctx.resume(); });
+/* building blocks */
+function tone(dest, type, f0, f1, t, dur, vol, att) {
+  const c = SND.ctx, o = c.createOscillator(), g = c.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + (att || .005)); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + .05);
+}
+function noise(dest, t, dur, vol, ftype, f0, f1, q) {
+  const c = SND.ctx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+  s.buffer = SND.noise; f.type = ftype || 'bandpass'; f.frequency.setValueAtTime(f0 || 1200, t); if (f1) f.frequency.exponentialRampToValueAtTime(f1, t + dur); f.Q.value = q || 1;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  s.connect(f); f.connect(g); g.connect(dest); s.start(t, Math.random() * .5); s.stop(t + dur + .05);
+}
+function pluck(dest, f, t, dur, vol) { // koto-like string
+  const c = SND.ctx, o = c.createOscillator(), o2 = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
+  o.type = 'sawtooth'; o2.type = 'triangle'; o.frequency.value = f; o2.frequency.value = f * 1.002;
+  lp.type = 'lowpass'; lp.frequency.setValueAtTime(f * 7, t); lp.frequency.exponentialRampToValueAtTime(f * 1.5, t + dur * .6); lp.Q.value = 2;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .004); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(dest); o.start(t); o2.start(t); o.stop(t + dur + .05); o2.stop(t + dur + .05);
+}
+function bell(dest, f, t, dur, vol) { for (const [k, v] of [[1, 1], [2.76, .35], [5.4, .15]]) tone(dest, 'sine', f * k, f * k, t, dur / k ** .4, vol * v, .003); }
+function flute(dest, f, t, dur, vol) { // shakuhachi-ish breathy tone
+  const c = SND.ctx, o = c.createOscillator(), lfo = c.createOscillator(), lg = c.createGain(), g = c.createGain();
+  o.type = 'sine'; o.frequency.value = f; lfo.frequency.value = 5; lg.gain.value = f * .012; lfo.connect(lg); lg.connect(o.frequency);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .25); g.gain.setValueAtTime(vol, t + dur - .3); g.gain.linearRampToValueAtTime(0, t + dur);
+  o.connect(g); g.connect(dest); o.start(t); lfo.start(t); o.stop(t + dur + .05); lfo.stop(t + dur + .05);
+  noise(dest, t, dur * .7, vol * .12, 'bandpass', f * 2, f * 2, 3);
+}
+function taiko(dest, t, vol, low) { tone(dest, 'sine', low ? 95 : 140, low ? 42 : 60, t, .45, vol, .002); noise(dest, t, .12, vol * .5, 'lowpass', 900, 200, .7); }
+/* sound effects */
+function sfx(name, opt) {
+  if (!SND.on || SND.cfg.mute || !SND.ctx || SND.ctx.state !== 'running') return;
+  const now = SND.ctx.currentTime, gap = { hit: .05, crit: .08, hurt: .25, swing: .08, coin: .06, click: .03, step: .2 }[name] || 0;
+  if (gap && now - (SND.last[name] || 0) < gap) return; SND.last[name] = now;
+  const d = SND.sfx, t = now + .005, v = (opt && opt.vol) || 1;
+  switch (name) {
+    case 'swing': noise(d, t, .16, .35 * v, 'bandpass', 900, 3200, 1.2); break;
+    case 'hit': noise(d, t, .09, .45 * v, 'bandpass', 1800, 600, 1.5); tone(d, 'triangle', 220, 90, t, .1, .25 * v); break;
+    case 'crit': noise(d, t, .14, .6 * v, 'bandpass', 2600, 700, 1.2); tone(d, 'square', 330, 110, t, .16, .18 * v); tone(d, 'sine', 1320, 1760, t + .02, .12, .12 * v); break;
+    case 'bow': tone(d, 'triangle', 600, 180, t, .12, .3 * v); noise(d, t + .02, .2, .2 * v, 'highpass', 2500, 5000, .7); break;
+    case 'zap': tone(d, 'sawtooth', 900, 300, t, .18, .16 * v); tone(d, 'sine', 1400, 600, t, .2, .14 * v); break;
+    case 'fire': noise(d, t, .5, .5 * v, 'lowpass', 2400, 300, .8); tone(d, 'sawtooth', 160, 70, t, .45, .18 * v); break;
+    case 'ice': for (let i = 0; i < 5; i++) bell(d, 1600 + i * 330, t + i * .03, .5, .07 * v); noise(d, t, .3, .2 * v, 'highpass', 4000, 7000, .5); break;
+    case 'heal': for (const [i, f] of [[0, 523], [1, 659], [2, 784], [3, 1047]]) bell(d, f, t + i * .07, .8, .12 * v); break;
+    case 'whoosh': noise(d, t, .3, .4 * v, 'bandpass', 500, 2500, 1); break;
+    case 'kill': tone(d, 'sine', 300, 120, t, .25, .2 * v); noise(d, t, .25, .15 * v, 'lowpass', 1200, 200, .7); break;
+    case 'coin': bell(d, 1568, t, .25, .1 * v); bell(d, 2093, t + .05, .3, .08 * v); break;
+    case 'loot': for (const [i, f] of [[0, 784], [1, 988], [2, 1175]]) bell(d, f, t + i * .06, .5, .12 * v); break;
+    case 'myth': for (const [i, f] of [[0, 523], [1, 659], [2, 784], [3, 1047], [4, 1319], [5, 1568]]) bell(d, f, t + i * .07, 1.2, .14 * v); taiko(d, t, .4, true); break;
+    case 'levelup': for (const [i, f] of [[0, 392], [1, 523], [2, 659], [3, 784], [4, 1047]]) { pluck(d, f, t + i * .09, .9, .22 * v); bell(d, f * 2, t + i * .09, .9, .05 * v); } taiko(d, t + .45, .5); break;
+    case 'chime': bell(d, 1047, t, .9, .12 * v); bell(d, 1568, t + .12, 1.1, .1 * v); break;
+    case 'hurt': tone(d, 'sawtooth', 180, 90, t, .14, .14 * v); noise(d, t, .1, .25 * v, 'lowpass', 1500, 300, .7); break;
+    case 'death': for (const [i, f] of [[0, 330], [1, 262], [2, 196], [3, 147]]) pluck(d, f, t + i * .22, 1.2, .2 * v); break;
+    case 'portal': tone(d, 'sine', 200, 1200, t, .6, .14 * v); noise(d, t, .6, .2 * v, 'bandpass', 400, 3000, 2); break;
+    case 'roar': tone(d, 'sawtooth', 110, 55, t, 1.2, .3 * v, .1); noise(d, t, 1.2, .4 * v, 'lowpass', 900, 150, .6); taiko(d, t, .7, true); taiko(d, t + .35, .6, true); break;
+    case 'bite': bell(d, 1760, t, .2, .14 * v); bell(d, 1760, t + .15, .2, .14 * v); break;
+    case 'splash': noise(d, t, .4, .45 * v, 'lowpass', 3000, 400, .6); break;
+    case 'click': tone(d, 'triangle', 1200, 900, t, .04, .08 * v); break;
+    case 'gather': for (let i = 0; i < 3; i++) noise(d, t + i * .07, .06, .2 * v, 'highpass', 3000, 3000, .8); break;
+    case 'circle': tone(d, 'square', 440, 440, t, .12, .1 * v); tone(d, 'square', 440, 440, t + .2, .12, .1 * v); break;
+    case 'boom': taiko(d, t, .8, true); noise(d, t, .6, .5 * v, 'lowpass', 1500, 120, .6); break;
+  }
+}
+document.addEventListener('click', e => { if (e.target.closest('.btn,.tab,.skill,.x')) sfx('click'); }, true);
+/* music: a pentatonic phrase generator per land, with taiko when danger is near */
+const MUSIC = {
+  village: { scale: [0, 2, 3, 7, 8], root: 293.66, bpm: 76, lead: 'pluck', pad: true, drums: 0, bell: .15 },
+  bamboo:  { scale: [0, 2, 3, 7, 8], root: 261.63, bpm: 92, lead: 'pluck', pad: true, drums: .2, flute: .5 },
+  snow:    { scale: [0, 2, 5, 7, 9], root: 329.63, bpm: 64, lead: 'bell', pad: true, drums: 0, flute: .3 },
+  ash:     { scale: [0, 1, 5, 7, 8], root: 220, bpm: 84, lead: 'pluck', pad: true, drums: .55 },
+  sky:     { scale: [0, 2, 4, 7, 9], root: 349.23, bpm: 70, lead: 'bell', pad: true, drums: 0, flute: .6 },
+  dungeon: { scale: [0, 1, 5, 7, 8], root: 196, bpm: 104, lead: 'pluck', pad: true, drums: 1 },
+  raid:    { scale: [0, 1, 3, 6, 7], root: 174.61, bpm: 116, lead: 'pluck', pad: true, drums: 1.3 }
+};
+function musicMood() { const S = GAME; if (!S || !S.zone) return null; if (S.zone.raid) return 'raid'; if (S.zone.dungeon) return 'dungeon'; return MUSIC[S.zoneId] ? S.zoneId : 'village'; }
+function musicStart() {
+  if (SND.mus) return;
+  SND.mus = { next: SND.ctx.currentTime + .3, step: 0, mood: null, last: 2, phrase: [] };
+  setInterval(musicTick, 100);
+}
+function musicTick() {
+  if (!SND.ctx || SND.ctx.state !== 'running' || !SND.mus) return;
+  const M = SND.mus, c = SND.ctx, mood = musicMood(); if (!mood) return;
+  const P = MUSIC[mood], beat = 60 / P.bpm / 2, S = GAME;
+  if (M.mood !== mood) { M.mood = mood; M.step = 0; M.phrase = []; }
+  const danger = S && S.hero && (S.mobs.some(m => m.alive && m.boss && Math.hypot(m.x - S.hero.x, m.y - S.hero.y) < 16) || (S.hero.target && S.hero.target.alive)) ? 1 : 0;
+  while (M.next < c.currentTime + .25) {
+    const t = M.next, st = M.step, d = SND.music, nf = i => P.root * Math.pow(2, (P.scale[((i % 5) + 5) % 5] + 12 * Math.floor(i / 5)) / 12);
+    if (st % 32 === 0) { M.phrase = []; let i = M.last; for (let k = 0; k < 8; k++) { i = Math.max(0, Math.min(9, i + [-2, -1, -1, 1, 1, 2, 0][Math.floor(Math.random() * 7)])); M.phrase.push(Math.random() < .25 ? null : i); } M.last = i; }
+    if (P.pad && st % 16 === 0) { const r = P.root / 2, g = .05; tone(d, 'sine', r, r, t, beat * 16, g, 1.2); tone(d, 'sine', r * 1.5, r * 1.5, t, beat * 16, g * .6, 1.5); }
+    if (st % 4 === 0) { const n = M.phrase[(st / 4) % 8]; if (n != null) { const f = nf(n); if (P.lead === 'bell') bell(d, f * 2, t, beat * 6, .07); else pluck(d, f, t, beat * 5, .11); } }
+    if (P.flute && st % 32 === 16 && Math.random() < P.flute) flute(d, nf(5 + Math.floor(Math.random() * 3)), t, beat * 10, .05);
+    if (P.bell && st % 16 === 8 && Math.random() < P.bell) bell(d, nf(7) * 2, t, beat * 8, .04);
+    const drums = P.drums + danger * .6;
+    if (drums > 0) {
+      if (st % 8 === 0) taiko(d, t, .22 * Math.min(1.4, drums), true);
+      if (drums > .5 && st % 8 === 4) taiko(d, t, .12 * drums);
+      if (drums > 1 && st % 2 === 1 && Math.random() < .35) noise(d, t, .05, .05, 'highpass', 5000, 5000, .7);
+    }
+    M.step++; M.next += beat;
+  }
+}
+/* settings */
+function renderSoundPanel() {
+  let p = $('sndP'); if (!p) return;
+  p.innerHTML = '';
+  const row = (label, key) => { const r = mk('label', 'sndrow'), inp = mk('input'); inp.type = 'range'; inp.min = '0'; inp.max = '1'; inp.step = '0.05'; inp.value = String(SND.cfg[key]); inp.addEventListener('input', () => { SND.cfg[key] = +inp.value; sndApply(); sndSave(); }); r.append(mk('span', '', label), inp); return r; };
+  const mute = mk('label', 'sndrow'), cb = mk('input'); cb.type = 'checkbox'; cb.checked = SND.cfg.mute; cb.addEventListener('change', () => { SND.cfg.mute = cb.checked; sndApply(); sndSave(); $('sndBtn').textContent = SND.cfg.mute ? '🔇' : '♪'; });
+  mute.append(cb, mk('span', '', 'Без звука'));
+  p.append(mk('div', 'label', 'Звук'), row('Музыка', 'music'), row('Эффекты', 'sfx'), mute);
+}
+
+$('sndBtn').textContent = SND.cfg.mute ? '🔇' : '♪';
+$('sndBtn').addEventListener('click', e => { e.stopPropagation(); sndInit(); const p = $('sndP'); p.hidden = !p.hidden; if (!p.hidden) renderSoundPanel(); });
+document.addEventListener('pointerdown', e => { const p = $('sndP'); if (p && !p.hidden && !e.target.closest('#sndP') && !e.target.closest('#sndBtn')) p.hidden = true; }, true);
+for (const b of document.querySelectorAll('#marketP [data-mt]')) b.addEventListener('click', () => { MARKET_TAB = b.dataset.mt; renderMarket(); });
+$('marketX').addEventListener('click', () => { $('marketP').hidden = true; });
+$('skMarket').addEventListener('click', () => openMarket());
+
 /* ---------- the Diary: daily tasks, login calendar, achievements, titles, cooking, events ---------- */
 let DIARY_TAB = 'daily';
 function openDiary(tab) { const p = $('diaryP'); if (tab) DIARY_TAB = tab; p.hidden = tab ? false : !p.hidden; if (!p.hidden) { if (typeof bringFront === 'function') bringFront(p); renderDiary(); } }
@@ -6923,7 +7107,7 @@ function renderDiary() {
   if (DIARY_TAB === 'daily') {
     note('Четыре задания на сегодня. Новые появляются каждый день в полночь. За все четыре — сундук с эпической вещью.');
     for (const q of save.daily.list) {
-      const d = dailyDef(q.id), v = dailyProg(q), done = v >= d.need, r = mk('div', 'srow dq');
+      const d = dailyDef(q.id), v = dailyProg(q), done = v >= d.need, r = mk('div', 'srow skrow dq');
       const info = mk('div'); info.style.minWidth = '0';
       const bar = mk('div', 'bar xp'), fi = mk('i'); bar.appendChild(fi); setBar(fi, v / d.need);
       info.append(mk('div', 'sn', d.name), mk('div', 'ss', v.toLocaleString('ru-RU') + ' / ' + d.need.toLocaleString('ru-RU') + ' · награда: ' + (300 + save.lv * 40) + ' мон, 5 печатей, материалы'), bar);
@@ -6965,7 +7149,7 @@ function renderDiary() {
     if (!inv.children.length) inv.appendChild(mk('span', 'ds', 'Ингредиентов пока нет.'));
     body.appendChild(inv);
     for (const [id, need] of RECIPES) {
-      const L = LIFE[id], r = mk('div', 'srow'), ic = mk('div', 'ski'); ic.style.backgroundImage = 'url(' + lifeIconURL({ base: id }) + ')';
+      const L = LIFE[id], r = mk('div', 'srow skrow'), ic = mk('div', 'ski'); ic.style.backgroundImage = 'url(' + lifeIconURL({ base: id }) + ')';
       const can = Object.entries(need).every(([k, n]) => cookCount(k) >= n);
       const info = mk('div'); info.style.minWidth = '0';
       info.append(mk('div', 'sn r' + L.r, L.name), mk('div', 'ss', L.desc + ' · нужно: ' + Object.entries(need).map(([k, n]) => (k === 'rice' ? 'колобок' : LIFE[k].name) + ' ×' + n + ' (' + cookCount(k) + ')').join(', ')));
@@ -6973,6 +7157,8 @@ function renderDiary() {
       body.appendChild(r);
     }
     const b = buffsActive(); if (Object.keys(b).length) note('Действует: ' + ($('buffTxt') ? $('buffTxt').textContent : ''));
+  } else if (DIARY_TAB === 'season') {
+    renderSeasonTab(body, G);
   } else if (DIARY_TAB === 'events') {
     const ev = eventsNow();
     note(ev.length ? 'Сейчас идёт: ' + ev.map(e => e.name).join('; ') + '.' : 'Сейчас событий нет.');
@@ -7214,13 +7400,14 @@ World.prototype.dropMats = function (m) {
 };
 
 /* ---------- dungeon seals & exclusive loot ---------- */
-const SEAL_PER = { d_nest: 15, d_moon: 25, d_ice: 40 };
+const SEAL_PER = { d_nest: 15, d_moon: 25, d_ice: 40, r_eclipse: 90 };
 const EXCL_W = {
   d_nest: { name: 'Жало Повелительницы', b: { warrior: 'tachi', mage: 'orb', archer: 'compbow' } },
   d_moon: { name: 'Клык Кровавой луны', b: { warrior: 'zanbato', mage: 'bonestaff', archer: 'crossbow' } },
   d_ice:  { name: 'Ледяной приговор', b: { warrior: 'odachi', mage: 'icestaff', archer: 'longbow' } }
 };
 const SEAL_SHOP = {
+  r_eclipse: [['wings', 'void', 600], ['costume', 'seraphknight', 500], ['pet', 'moonbat', 450]],
   d_nest: [['weapon', null, 120], ['costume', 'spidersilk', 80], ['pet', 'spiderling', 100], ['wings', 'emerald', 90]],
   d_moon: [['weapon', null, 220], ['costume', 'bloodmoonrobe', 140], ['pet', 'moonbat', 170], ['wings', 'bloodmoon', 180]],
   d_ice:  [['weapon', null, 340], ['costume', 'frostcitadel', 220], ['pet', 'frostpup', 260], ['wings', 'celestial', 280]]
@@ -7656,6 +7843,7 @@ const inParty = () => !!(PARTY && PARTY.mem.length > 1);
 function partyInit() {
   if (!netOk()) return;
   ROOM.listen(NET_NS + 'd/' + save.pid, onDirect, NET_NS + 'd/' + save.pid);
+  setTimeout(() => { mailSubscribe(); auSubscribe(); }, 1500);
   setInterval(partyTick, 3000);
 }
 function onDirect(d) {
@@ -7726,6 +7914,7 @@ function onParty(d, topic) {
     askPopup('Лидер отряда входит в подземелье «' + z.name + '». Пойти с отрядом?', save.lv >= z.dungeon.minLv ? 'Войти' : 'Нужен ' + z.dungeon.minLv + ' ур.', () => { if (save.lv >= z.dungeon.minLv && GAME) GAME.travel({ to: d.z, extra: { dgInst: d.i } }); }, null, save.lv < z.dungeon.minLv);
   }
   else if (d.t === 'wave' && d.i === S.inst && S.dgRemote) banner(d.b ? MOBS[d.b] ? MOBS[d.b].name : 'Хозяин логова' : 'Волна ' + d.w + ' из ' + d.n, d.b ? 'Хозяин логова приближается' : S.zone.name);
+  else if (d.t === 'rmech') raidMech(S, d);
   else if (d.t === 'dgdone' && d.i === S.inst && S.dgRemote && S.dg && S.dg.state !== 'done') { S.dg.state = 'done'; S.dgReward(); }
 }
 function partyTick() {
@@ -7828,6 +8017,7 @@ function netRemoteMob(S, m, dt) {
 }
 function netHitRemote(S, m, d, crit) {
   if (!m.alive) return;
+  if (m.rshield) { S.floatText(m.x, m.y, 'щит', '#9ab8ff', 16); return; }
   d = Math.max(1, Math.round(d)); m.hp = Math.max(1, m.hp - d); m.hitT = S.now;
   S.flash(m.spr);
   S.floatText(m.x, m.y, crit ? d + '!' : String(d), crit ? '#ffd36a' : '#ffffff', crit ? 26 : 18, crit);
@@ -7908,7 +8098,7 @@ function evHud() {
 }
 
 /* ---------- lifetime statistics ---------- */
-const STAT_KEYS = ['kills', 'bosses', 'dg', 'wbJoin', 'wbKill', 'wbTop1', 'arenaW', 'duelW', 'duelL', 'fish', 'herbs', 'cooked', 'crafted', 'forgeOps', 'maxPlus', 'myth', 'partyKills', 'deaths', 'goldEarned', 'logins', 'streakMax', 'gbKills', 'gwWins', 'trades', 'eventKills'];
+const STAT_KEYS = ['raids', 'dailyDone', 'kills', 'bosses', 'dg', 'wbJoin', 'wbKill', 'wbTop1', 'arenaW', 'duelW', 'duelL', 'fish', 'herbs', 'cooked', 'crafted', 'forgeOps', 'maxPlus', 'myth', 'partyKills', 'deaths', 'goldEarned', 'logins', 'streakMax', 'gbKills', 'gwWins', 'trades', 'eventKills'];
 function ensureStats() {
   if (!save.stats) save.stats = {};
   for (const k of STAT_KEYS) if (typeof save.stats[k] !== 'number') save.stats[k] = 0;
@@ -7968,7 +8158,11 @@ const TITLES = {
   merchant:     'Честный купец',
   skymountain:  'Меч Небесной горы',
   elements:     'Повелитель стихий',
-  hawkeye:      'Глаз ястреба'
+  hawkeye:      'Глаз ястреба',
+  eclipsebreaker: 'Сокрушитель Затмения',
+  citadel:      'Хозяин Цитадели',
+  seasonvet:    'Ветеран сезона',
+  seasonhero:   'Герой сезона'
 };
 const ACHS = [
   { id: 'k100', name: 'Первая сотня', desc: 'Победить 100 демонов', test: s => s.kills >= 100, prog: s => [s.kills, 100], title: 'shadowbane', gold: 500 },
@@ -8013,6 +8207,8 @@ const ACHS = [
   { id: 'streak30', name: 'Месяц на страже', desc: 'Заходить в игру 30 дней подряд', test: s => s.streakMax >= 30, prog: s => [s.streakMax, 30], title: 'valleyguard', gold: 15000 },
   { id: 'die50', name: 'Встань и иди', desc: 'Пасть в бою 50 раз', test: s => s.deaths >= 50, prog: s => [s.deaths, 50], title: 'stubborn', gold: 500 },
   { id: 'event100', name: 'Праздник в долине', desc: 'Победить 100 демонов во время событий', test: s => s.eventKills >= 100, prog: s => [s.eventKills, 100], title: 'festive', gold: 2000 },
+  { id: 'raid1', name: 'Затмение рассеялось', desc: 'Пройти рейд «Цитадель Затмения»', test: s => s.raids >= 1, title: 'eclipsebreaker', gold: 8000 },
+  { id: 'raid10', name: 'Хозяин Цитадели', desc: 'Пройти рейд 10 раз', test: s => s.raids >= 10, prog: s => [s.raids, 10], title: 'citadel', gold: 20000 },
   { id: 'trade10', name: 'Слово купца', desc: 'Совершить 10 обменов с игроками', test: s => s.trades >= 10, prog: s => [s.trades, 10], title: 'merchant', gold: 2000 }
 ];
 const achTitle = a => typeof a.title === 'function' ? a.title() : a.title;
@@ -8081,7 +8277,7 @@ const dailyDef = id => DAILY_POOL.find(q => q.id === id);
 function dailyProg(q) { const d = dailyDef(q.id), tr = Array.isArray(d.track) ? d.track : [d.track]; let v = 0; for (const k of tr) v += (save.stats[k] || 0) - (save.daily.base[k] || 0); return Math.min(d.need, Math.max(0, v)); }
 function dailyReward(G, q) {
   const lv = save.lv, d = dailyDef(q.id); if (q.claimed || dailyProg(q) < d.need) return;
-  q.claimed = true; save.gold += 300 + lv * 40; save.seals = (save.seals || 0) + 5; if (save.mats) { save.mats.ore += 4; save.mats.ess += 2; }
+  q.claimed = true; stat('dailyDone'); save.gold += 300 + lv * 40; save.seals = (save.seals || 0) + 5; if (save.mats) { save.mats.ore += 4; save.mats.ess += 2; }
   if (q.id === 'boss' || q.id === 'dg') G.give(scroll(1));
   log('Задание дня «' + d.name + '» выполнено: +' + (300 + lv * 40) + ' мон, +5 печатей, материалы.', 'good');
   if (save.daily.list.every(x => x.claimed) && !save.daily.chest) {
@@ -8097,7 +8293,7 @@ function loginClaim(G) {
   banner('Награда за вход · день ' + (i + 1), r.name); log('Награда за вход, день ' + (i + 1) + ': ' + r.name + '.', 'good');
   persist(); G.renderInv();
 }
-const dailyBadge = () => { if (!save.daily) return false; const L = save.login; return (L && L.claimed !== L.last) || save.daily.list.some(q => !q.claimed && dailyProg(q) >= dailyDef(q.id).need); };
+const dailyBadge = () => { if (!save.daily) return false; if (typeof seasonBadge === 'function' && seasonBadge()) return true; const L = save.login; return (L && L.claimed !== L.last) || save.daily.list.some(q => !q.claimed && dailyProg(q) >= dailyDef(q.id).need); };
 
 /* ---------- fishing, herbs and cooking ---------- */
 const LIFE = {
@@ -8195,6 +8391,7 @@ function fishTap(S) {
   if (S.now < F.bite) { stopFishing(S, 'Рано! Рыба испугалась.'); return true; }
   if (S.now <= F.bite + 1.4) {
     const t = FISH_TABLE[S.zoneId] || FISH_TABLE.village; let r = Math.random(), id = t[0][0]; for (const [k, ch] of t) { if (r < ch) { id = k; break; } r -= ch; }
+    sfx('splash');
     if (S.give(lifeItem(id, 1), true)) { stat('fish'); S.floatText(F.x, F.y, LIFE[id].name, LIFE[id].r >= 2 ? '#ffd36a' : '#bfe9ff', LIFE[id].r >= 2 ? 20 : 16); log('Поймано: ' + LIFE[id].name + '!', 'r' + LIFE[id].r); if (LIFE[id].r >= 3) banner(LIFE[id].name, 'Редкий улов'); }
     stopFishing(S); return true;
   }
@@ -8223,7 +8420,7 @@ function lifeTick(S, dt) {
       const p = iso(F.x, F.y), biting = S.now >= F.bite && S.now <= F.bite + 1.4;
       F.bob.setPosition(p.x, p.y + (biting ? Math.sin(S.now * 30) * 3 : Math.sin(S.now * 3) * 1.5)).setScale(biting ? .2 : .12);
       F.line.clear().lineStyle(1, 0xe8e4d8, .7).lineBetween(h.spr.x + (h.spr.flipX ? -10 : 10), h.spr.y - 40, F.bob.x, F.bob.y);
-      if (biting && !F.told) { F.told = true; S.floatText(F.x, F.y, 'Клюёт!', '#ffd36a', 22, true); }
+      if (biting && !F.told) { F.told = true; S.floatText(F.x, F.y, 'Клюёт!', '#ffd36a', 22, true); sfx('bite'); }
       if (S.now > F.bite + 1.4) stopFishing(S, 'Рыба сорвалась — в следующий раз нажмите быстрее.');
     }
   }
@@ -8237,6 +8434,7 @@ function lifeTick(S, dt) {
       else if (S.now >= h.gatherT) {
         h.gatherT = null; h.gather = null;
         const qty = Math.random() < .25 ? 2 : 1;
+        sfx('gather');
         if (S.give(lifeItem(n.t, qty), true)) { stat('herbs', qty); log('Собрано: ' + LIFE[n.t].name + (qty > 1 ? ' ×' + qty : '') + '.', 'r' + LIFE[n.t].r); S.floatText(n.x, n.y, LIFE[n.t].name + (qty > 1 ? ' ×2' : ''), '#d8ffb0', 15); }
         n.ready = S.now + 90; n.spr.setAlpha(.25); n.gl.setVisible(false);
       }
@@ -8425,7 +8623,7 @@ function sbTick(S, B) {
   if (st.phase === 'soon' && !B.ann[st.id]) { B.ann[st.id] = 1; log('Скоро ' + c.label.toLowerCase() + ': «' + MOBS[c.kind].name + '» появится — ' + c.where + '. Соберитесь вместе!', 'good'); }
   if (st.phase === 'live') {
     sbSubscribe(B, st.id);
-    if (!B.ann['l' + st.id]) { B.ann['l' + st.id] = 1; banner(MOBS[c.kind].name, c.label + ' пробудился'); log(c.label + ' пробудился — ' + c.where + '! Награда — по урону.', 'good'); }
+    if (!B.ann['l' + st.id]) { B.ann['l' + st.id] = 1; sfx('roar'); banner(MOBS[c.kind].name, c.label + ' пробудился'); log(c.label + ' пробудился — ' + c.where + '! Награда — по урону.', 'good'); }
     if (B.my > B.sent && Date.now() > B.pubT) { B.pubT = Date.now() + 1000; B.sent = B.my; netSend(c.topic + '/' + st.id + '/' + save.pid, { f: save.pid, d: B.my, n: save.name, c: save.cls, lv: save.lv }, true); try { sessionStorage.setItem('okl-' + c.topic, JSON.stringify({ id: st.id, my: B.my })); } catch (e) {} }
     const hp = c.max - B.total();
     if (hp <= 0) sbFinish(S, B, true);
@@ -8600,6 +8798,263 @@ function renderSaveTab(body) {
 }
 function confirmBtn(label, fn) { let armed = 0; const b = btn(label, () => { if (Date.now() - armed < 4000) { armed = 0; b.textContent = label; fn(); } else { armed = Date.now(); b.textContent = 'Точно? Нажмите ещё раз'; setTimeout(() => { if (armed && Date.now() - armed >= 4000) b.textContent = label; }, 4100); } }, 'main'); return b; }
 function copyText(t) { try { navigator.clipboard.writeText(t).then(() => log('Скопировано.', 'good'), () => log('Не удалось скопировать — выделите и скопируйте вручную.', 'bad')); } catch (e) { log('Не удалось скопировать — выделите и скопируйте вручную.', 'bad'); } }
+
+/* ---------- raid: the Eclipse Citadel, a boss with phases for a party ---------- */
+const RAID_ID = 'r_eclipse';
+function raidMates(S) { return partyMatesHere(S); }
+// telegraphed fire circles: everyone sees them, everyone checks only themselves
+function raidCircles(S, pts, delay) {
+  sfx('circle');
+  for (const [x, y, r] of pts) {
+    const p = iso(x, y), g = S.add.graphics().setDepth(p.y - 3).setPosition(p.x, p.y);
+    const rx = r * HW * 1.414, ry = r * HH * 1.414, t0 = performance.now();
+    const ev = S.time.addEvent({ delay: 50, loop: true, callback: () => {
+      const k = Math.min(1, (performance.now() - t0) / (delay * 1000));
+      g.clear(); g.fillStyle(0xff3a1a, .12 + .18 * k).fillEllipse(0, 0, rx * 2, ry * 2); g.lineStyle(2, 0xff6a3a, .9).strokeEllipse(0, 0, rx * 2, ry * 2); g.fillStyle(0xffaa3a, .35).fillEllipse(0, 0, rx * 2 * k, ry * 2 * k);
+    } });
+    setTimeout(() => {
+      ev.remove(); g.destroy(); if (!S.scene.isActive()) return;
+      S.burst(x, y, [0xff6a1a, 0xffd36a, 0xff2a1a], 22, 60 * r / 2, 20); sfx('boom');
+      const h = S.hero; if (h.alive && Math.hypot(h.x - x, h.y - y) < r) { S.hurtHero(h.maxHp * .35 * (h.def + 60) / 60); log('Вас опалил огненный круг! Выходите из красных кругов.', 'bad'); }
+    }, delay * 1000);
+  }
+}
+function raidMark(S, pid, delay) {
+  const mine = pid === save.pid, name = mine ? 'вас' : ((PARTY && PARTY.mem.find(m => m.pid === pid)) || {}).n || 'союзника';
+  banner('Метка затмения', mine ? 'Соберите отряд рядом с собой!' : 'Встаньте рядом с ' + name); sfx('roar', { vol: .5 });
+  const ring = S.add.graphics().setDepth(190001), t0 = performance.now();
+  const ev = S.time.addEvent({ delay: 50, loop: true, callback: () => {
+    const u = mine ? S.hero : S.remotes.get(pid); if (!u) return; const p = iso(u.x, u.y), k = (performance.now() - t0) / (delay * 1000);
+    ring.clear().lineStyle(3, 0xc080ff, .9).strokeEllipse(p.x, p.y, 3.5 * HW * 2.83, 3.5 * HH * 2.83).fillStyle(0xa060ff, .12 + .1 * Math.sin(k * 20)).fillEllipse(p.x, p.y, 3.5 * HW * 2.83, 3.5 * HH * 2.83);
+  } });
+  setTimeout(() => {
+    ev.remove(); ring.destroy(); if (!S.scene.isActive()) return;
+    const h = S.hero, center = mine ? { x: h.x, y: h.y } : (() => { const mv = NET_MOVES.get(pid); return mv ? { x: mv.x, y: mv.y } : null; })();
+    if (!center || !h.alive) return;
+    const near = (x, y) => Math.hypot(x - center.x, y - center.y) < 3.5;
+    let n = mine ? 1 : 1 + (near(h.x, h.y) ? 1 : 0);
+    for (const u of raidMates(S)) if (u.pid !== pid && !u.dead && near(u.x, u.y)) n++;
+    S.burst(center.x, center.y, [0xc080ff, 0xffffff], 26, 70, 20); sfx('boom');
+    if (mine || near(h.x, h.y)) { const dmg = h.maxHp * 1.1 / n * (h.def + 60) / 60; S.hurtHero(dmg); log(n > 1 ? 'Метка взорвалась, урон разделён на ' + n + '.' : 'Метка взорвалась — никого не было рядом!', n > 1 ? 'good' : 'bad'); }
+  }, delay * 1000);
+}
+function raidMech(S, d) {
+  if (d.i !== S.inst || !S.zone.raid) return;
+  if (d.k === 'circ' && Array.isArray(d.p)) raidCircles(S, d.p.slice(0, 10), Math.max(1, Math.min(4, +d.d || 2)));
+  else if (d.k === 'mark' && d.pid) raidMark(S, String(d.pid), Math.max(2, Math.min(8, +d.d || 5)));
+  else if (d.k === 'shield') { banner(d.on ? 'Щит затмения' : 'Щит разбит', d.on ? 'Разбейте четыре кристалла вокруг Императрицы' : 'Императрица уязвима!'); for (const m of S.mobs) if (m.remote && m.kind === 'eclipseqn') { m.rshield = !!d.on; m.spr.setTint(d.on ? 0x8a8aff : 0xc080ff); m.spr.baseTint = d.on ? 0x8a8aff : 0xc080ff; } sfx(d.on ? 'ice' : 'boom'); }
+  else if (d.k === 'enrage') { banner('Императрица в ярости', 'Держитесь вместе и уходите из кругов'); sfx('roar'); }
+}
+function raidTick(S) {
+  if (!S.zone.raid || !S.dgHost || !S.dg || S.dg.state !== 'boss') return;
+  const boss = S.mobs.find(m => m.alive && !m.remote && m.kind === 'eclipseqn'); if (!boss) return;
+  const R = S.raid || (S.raid = { next: performance.now() + 6000, phase: 1, markT: 0 });
+  const tell = o => { if (PARTY) netSend('g/' + PARTY.id, Object.assign({ t: 'rmech', f: save.pid, id: PARTY.id, i: S.inst }, o)); raidMech(S, Object.assign({ i: S.inst }, o)); };
+  const k = boss.hp / boss.maxHp, now = performance.now();
+  if (R.phase === 1 && k < .6) {
+    R.phase = 2; boss.shield = true; boss.spr.setTint(0x8a8aff); boss.spr.baseTint = 0x8a8aff; tell({ k: 'shield', on: true, n: boss.nid });
+    R.crys = []; for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + .4, x = boss.x + Math.cos(a) * 5, y = boss.y + Math.sin(a) * 5, c = S.spawnMob('eclcrystal', S.mobWalkable(x, y) ? x : boss.x + Math.cos(a) * 2, S.mobWalkable(x, y) ? y : boss.y + Math.sin(a) * 2, S.zone.dungeon.lv + 2, true); c.speed = 0; c.atk = 0; c.aggro = 0; c.maxHp = c.hp = Math.round(boss.maxHp * .05); S.drawBar(c); R.crys.push(c); }
+  }
+  if (R.phase === 2 && R.crys && R.crys.every(c => !c.alive)) { R.phase = 3; boss.shield = false; boss.spr.setTint(0xc080ff); boss.spr.baseTint = 0xc080ff; tell({ k: 'shield', on: false, n: boss.nid }); }
+  if (R.phase === 3 && k < .3 && !R.enraged) { R.enraged = true; boss.atk *= 1.5; tell({ k: 'enrage' }); }
+  if (now >= R.next) {
+    R.next = now + (R.enraged ? 6000 : 9000);
+    const who = [{ pid: save.pid, x: S.hero.x, y: S.hero.y }, ...raidMates(S).filter(u => !u.dead)];
+    const pts = who.map(u => [Math.round((u.x + (Math.random() - .5)) * 10) / 10, Math.round((u.y + (Math.random() - .5)) * 10) / 10, 2.2]);
+    for (let i = 0; i < (R.enraged ? 3 : 1); i++) pts.push([Math.round((boss.x + (Math.random() - .5) * 10) * 10) / 10, Math.round((boss.y + (Math.random() - .5) * 10) * 10) / 10, 2.6]);
+    tell({ k: 'circ', p: pts, d: 2.2 });
+    if (R.enraged && now >= R.markT && who.length > 1) { R.markT = now + 15000; const t = who[Math.floor(Math.random() * who.length)]; setTimeout(() => tell({ k: 'mark', pid: t.pid, d: 5 }), 2800); }
+  }
+}
+
+/* ---------- auction and mail: lots and letters wait on the game server ---------- */
+const AU = { lots: {}, claims: {}, sub: false, mail: {}, mailSub: false };
+const AU_TTL = 48 * 3600000, AU_MAX = 10;
+let MARKET_TAB = 'au', AU_FILTER = { slot: '', q: '' };
+function auSubscribe() {
+  if (!netOk()) return;
+  if (!AU.sub) { AU.sub = true; ROOM.listen(NET_NS + 'au/', (d, topic) => { const id = topic.slice((NET_NS + 'au/').length); if (!d || !d.item) delete AU.lots[id]; else if (d.id === id) AU.lots[id] = d; if (!$('marketP').hidden) renderMarket(true); }, NET_NS + 'au/+'); }
+}
+function mailSubscribe() {
+  if (!netOk() || AU.mailSub) return; AU.mailSub = true;
+  ROOM.listen(NET_NS + 'ml/' + save.pid + '/', (d, topic) => {
+    const id = topic.slice((NET_NS + 'ml/' + save.pid + '/').length);
+    if (!d || !d.id) { delete AU.mail[id]; } else if (!(save.mailDone || {})[id]) { const was = !!AU.mail[id]; AU.mail[id] = d; if (!was) { log('Новое письмо: ' + (d.kind === 'sale' ? 'продажа на аукционе' : 'от ' + cleanText(d.n)) + '. Откройте «Рынок» → «Почта».', 'good'); sfx('chime'); } }
+    mailBadge(); if (!$('marketP').hidden) renderMarket(true);
+  }, NET_NS + 'ml/' + save.pid + '/+');
+}
+const mailBadge = () => { const b = $('skMarket'); if (b) b.classList.toggle('hasnew', Object.keys(AU.mail).length > 0); };
+function auList(G, it, price) {
+  price = Math.max(1, Math.min(1e9, Math.round(+price || 0)));
+  if (!netOk() || NET_STATE !== 'online') { log('Нет связи с игровым сервером.', 'bad'); return; }
+  const mine = Object.values(AU.lots).filter(l => l.f === save.pid && Date.now() - l.t < AU_TTL).length;
+  if (mine >= AU_MAX) { log('Одновременно можно выставить не больше ' + AU_MAX + ' лотов.', 'bad'); return; }
+  const i = save.inv.indexOf(it); if (i < 0) return;
+  save.inv.splice(i, 1); persist(); G.renderInv();
+  const id = save.pid + Date.now().toString(36), lot = { id, f: save.pid, n: save.name, item: it, price, t: Date.now() };
+  AU.lots[id] = lot; netSend('au/' + id, lot, true);
+  log('«' + itemName(it) + '» выставлен на аукцион за ' + price.toLocaleString('ru-RU') + ' мон. Монеты придут письмом, даже если вы будете не в сети.', 'good');
+}
+function auBuy(G, lot) {
+  if (!lot || lot.f === save.pid) return;
+  if (save.gold < lot.price) { log('Не хватает монет.', 'bad'); return; }
+  if (save.inv.length >= BAG) { log('Сумка полна.', 'bad'); return; }
+  if (Date.now() - lot.t > AU_TTL) { log('Срок лота истёк.', 'bad'); return; }
+  const id = lot.id, ctopic = NET_NS + 'auc/' + id; let claim = null;
+  ROOM.listen(NET_NS + 'auc/' + id, d => { claim = d; }, ctopic);
+  netSend('auc/' + id, { f: save.pid, t: Date.now() }, true);
+  log('Покупаем «' + itemName(lot.item) + '»…', 'info');
+  setTimeout(() => {
+    ROOM.unlisten(ctopic);
+    if (!claim || claim.f !== save.pid || !AU.lots[id]) { log('Этот лот уже купил кто-то другой.', 'bad'); return; }
+    const it = cleanItem(lot.item); if (!it) return;
+    if (save.gold < lot.price) { log('Не хватает монет.', 'bad'); return; }
+    save.gold -= lot.price; G.give(it); stat('trades'); delete AU.lots[id];
+    netSend('au/' + id, null, true); netSend('auc/' + id, null, true);
+    mailSend(lot.f, { kind: 'sale', gold: lot.price, text: 'Продано на аукционе: «' + itemName(lot.item) + '». Покупатель: ' + save.name + '.' });
+    banner('Покупка', itemName(it)); persist(); renderMarket();
+  }, 2500);
+}
+function auCancel(G, lot) {
+  if (!lot || lot.f !== save.pid) return;
+  if (AU.claims[lot.id]) { log('Лот уже покупают.', 'bad'); return; }
+  const it = cleanItem(lot.item); if (!it) return;
+  if (save.inv.length >= BAG) { log('Сумка полна.', 'bad'); return; }
+  delete AU.lots[lot.id]; netSend('au/' + lot.id, null, true); G.give(it); persist(); renderMarket();
+}
+function mailSend(to, m) {
+  const id = save.pid + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  netSend('ml/' + to + '/' + id, Object.assign({ id, f: save.pid, n: save.name, t: Date.now() }, m), true);
+  return id;
+}
+function mailClaim(G, id) {
+  const m = AU.mail[id]; if (!m) return;
+  if (!save.mailDone) save.mailDone = {};
+  if (save.mailDone[id]) return;
+  if (m.item && save.inv.length >= BAG) { log('Сумка полна — освободите место для вложения.', 'bad'); return; }
+  save.mailDone[id] = Date.now(); const keys = Object.keys(save.mailDone); if (keys.length > 300) for (const k of keys.slice(0, keys.length - 300)) delete save.mailDone[k];
+  if (m.gold) { save.gold += Math.max(0, Math.min(1e9, Math.round(+m.gold || 0))); stat('goldEarned', Math.round(+m.gold || 0)); }
+  if (m.item) { const it = cleanItem(m.item); if (it) G.give(it); }
+  delete AU.mail[id]; netSend('ml/' + save.pid + '/' + id, null, true);
+  log('Письмо получено' + (m.gold ? ': +' + Math.round(m.gold).toLocaleString('ru-RU') + ' мон' : '') + (m.item ? ', вложение «' + itemName(m.item) + '»' : '') + '.', 'good'); sfx('coin');
+  persist(); mailBadge(); renderMarket();
+}
+function openMarket(tab) { const p = $('marketP'); if (tab) MARKET_TAB = tab; p.hidden = tab ? false : !p.hidden; if (!p.hidden) { auSubscribe(); mailSubscribe(); if (typeof bringFront === 'function') bringFront(p); renderMarket(); } }
+let MARKET_RT = 0;
+function renderMarket(soft) {
+  const p = $('marketP'); if (!p || p.hidden || !GAME) return;
+  if (soft && (Date.now() < MARKET_RT || (document.activeElement && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) && p.contains(document.activeElement)))) return;
+  MARKET_RT = Date.now() + 800;
+  for (const b of p.querySelectorAll('[data-mt]')) { b.classList.toggle('on', b.dataset.mt === MARKET_TAB); b.setAttribute('aria-selected', String(b.dataset.mt === MARKET_TAB)); }
+  const body = $('marketBody'), G = GAME; body.innerHTML = '';
+  const note = t => body.appendChild(mk('div', 'ds', t));
+  if (!netOk()) { note('Рынок работает, когда есть связь с игровым сервером.'); return; }
+  const lotRow = (l, acts) => {
+    const it = l.item, r = mk('div', 'srow skrow'), ic = mk('div', 'ski'); try { ic.style.backgroundImage = 'url(' + iconURL(it) + ')'; } catch (e) {}
+    const info = mk('div'); info.style.minWidth = '0';
+    const left = Math.max(0, AU_TTL - (Date.now() - l.t)), hrs = Math.ceil(left / 3600000);
+    info.append(mk('div', 'sn r' + Math.min(4, +it.rarity || 0), itemName(it) + (it.qty > 1 ? ' ×' + it.qty : '')), mk('div', 'ss', (describe(it).split(' — ')[1] || describe(it)).slice(0, 120) + ' · продавец ' + cleanText(l.n) + ' · ' + (left ? 'ещё ' + hrs + ' ч' : 'срок истёк')));
+    const pr = mk('div', 'auprice', Math.round(l.price).toLocaleString('ru-RU') + ' мон');
+    r.append(ic, info, pr); for (const a of acts) r.appendChild(a); return r;
+  };
+  if (MARKET_TAB === 'au') {
+    const f = mk('div', 'aufilter'), sel = mk('select'), q = mk('input');
+    for (const [v, n] of [['', 'Все вещи'], ['weapon', 'Оружие'], ['armor', 'Доспехи'], ['ring', 'Кольца'], ['earring', 'Серьги'], ['charm', 'Амулеты'], ['wings', 'Крылья'], ['mount', 'Маунты'], ['costume', 'Наряды'], ['pet', 'Питомцы'], ['use', 'Расходники']]) { const o = mk('option', '', n); o.value = v; if (v === AU_FILTER.slot) o.selected = true; sel.appendChild(o); }
+    q.type = 'search'; q.placeholder = 'Поиск по названию'; q.value = AU_FILTER.q; q.addEventListener('keydown', e => e.stopPropagation());
+    sel.addEventListener('change', () => { AU_FILTER.slot = sel.value; renderMarket(); }); q.addEventListener('input', () => { AU_FILTER.q = q.value; clearTimeout(q._t); q._t = setTimeout(() => renderMarket(), 300); });
+    f.append(sel, q); body.appendChild(f);
+    const lots = Object.values(AU.lots).filter(l => Date.now() - l.t < AU_TTL && l.f !== save.pid && (!AU_FILTER.slot || l.item.slot === AU_FILTER.slot) && (!AU_FILTER.q || itemName(l.item).toLowerCase().includes(AU_FILTER.q.toLowerCase()))).sort((a, b) => b.t - a.t);
+    note('Лотов: ' + lots.length + '. Выставить свою вещь можно из сумки: выберите вещь и нажмите «На аукцион».');
+    for (const l of lots.slice(0, 60)) body.appendChild(lotRow(l, [btn('Купить', () => auBuy(G, l), 'main', save.gold < l.price)]));
+  } else if (MARKET_TAB === 'mine') {
+    const lots = Object.values(AU.lots).filter(l => l.f === save.pid).sort((a, b) => b.t - a.t);
+    note(lots.length ? 'Ваши лоты. Снятая с продажи вещь вернётся в сумку.' : 'У вас нет выставленных лотов.');
+    for (const l of lots) body.appendChild(lotRow(l, [btn(Date.now() - l.t > AU_TTL ? 'Забрать' : 'Снять', () => auCancel(G, l), '')]));
+  } else if (MARKET_TAB === 'mail') {
+    const ms = Object.values(AU.mail).sort((a, b) => b.t - a.t);
+    note(ms.length ? 'Письма ждут на сервере, пока вы их не заберёте.' : 'Писем нет.');
+    for (const m of ms) {
+      const r = mk('div', 'srow skrow mailrow'), info = mk('div'); info.style.minWidth = '0';
+      info.append(mk('div', 'sn', m.kind === 'sale' ? 'Аукцион' : 'От ' + cleanText(m.n)), mk('div', 'ss', cleanText(m.text).slice(0, 200) + (m.gold ? ' · ' + Math.round(m.gold).toLocaleString('ru-RU') + ' мон' : '') + (m.item ? ' · вложение «' + itemName(m.item) + '»' : '') + ' · ' + new Date(m.t).toLocaleString('ru-RU')));
+      r.append(mk('div', 'ski dqi', '✉'), info, btn('Забрать', () => mailClaim(G, m.id), 'main')); body.appendChild(r);
+    }
+    body.appendChild(mk('div', 'label', 'Отправить письмо другу'));
+    if (!save.friends.length) { note('Добавьте друзей в окне «Мир», чтобы отправлять им письма — даже когда они не в сети.'); return; }
+    const fm = mk('div', 'mailform'), to = mk('select'), gold = mk('input'), itSel = mk('select'), txt = mk('input');
+    for (const fr of save.friends) { const o = mk('option', '', cleanText(fr.n)); o.value = fr.pid; to.appendChild(o); }
+    gold.type = 'number'; gold.min = '0'; gold.step = '100'; gold.value = '0'; gold.setAttribute('aria-label', 'Монеты');
+    { const o = mk('option', '', 'Без вложения'); o.value = ''; itSel.appendChild(o); }
+    save.inv.forEach((it, i) => { if (!it) return; const o = mk('option', '', itemName(it) + (it.qty > 1 ? ' ×' + it.qty : '')); o.value = it.uid || String(i); itSel.appendChild(o); });
+    txt.type = 'text'; txt.maxLength = 140; txt.placeholder = 'Текст письма';
+    for (const el of [gold, txt]) el.addEventListener('keydown', e => e.stopPropagation());
+    fm.append(to, txt, gold, itSel, btn('Отправить', () => {
+      const g = Math.max(0, Math.round(+gold.value || 0)); if (g > save.gold) { log('Не хватает монет.', 'bad'); return; }
+      let item = null; if (itSel.value) { const i = save.inv.findIndex(x => x && (x.uid || '') === itSel.value); if (i >= 0) item = save.inv.splice(i, 1)[0]; }
+      save.gold -= g; mailSend(to.value, { kind: 'gift', gold: g, item, text: cleanText(txt.value).slice(0, 140) || 'Подарок' });
+      persist(); G.renderInv(); log('Письмо отправлено.', 'good'); renderMarket();
+    }, 'main'));
+    body.appendChild(fm);
+  }
+}
+function auFormInto(det, G, it) {
+  if (!netOk()) return;
+  const row = mk('div', 'tradeform'), price = mk('input');
+  price.type = 'number'; price.min = '1'; price.step = '100'; price.value = String(Math.max(100, sellPrice(it) * 4)); price.setAttribute('aria-label', 'Цена на аукционе');
+  price.addEventListener('keydown', e => e.stopPropagation());
+  row.append(mk('span', 'label', 'Аукцион'), price, btn('На аукцион', () => { auSubscribe(); auList(G, it, price.value); }, ''));
+  det.appendChild(row);
+}
+
+/* ---------- season pass: a calendar month, 30 levels, a free and a premium track ---------- */
+const SEASON_W = { kills: 2, bosses: 40, dg: 120, raids: 300, wbJoin: 100, gbKills: 100, arenaW: 30, duelW: 40, fish: 8, herbs: 6, cooked: 15, crafted: 20, dailyDone: 150, logins: 50 };
+const SEASON_LV = 30, SEASON_STEP = 1000;
+const seasonId = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+const SEASON_NAMES = ['Сезон Цветущей сакуры', 'Сезон Летних фонарей', 'Сезон Багровых клёнов', 'Сезон Первого снега'];
+const seasonName = () => SEASON_NAMES[Math.floor(new Date().getMonth() / 3)];
+function seasonEnsure() {
+  const id = seasonId();
+  if (!save.season || save.season.id !== id) { save.season = { id, base: Object.assign({}, save.stats), free: {}, prem: {}, premium: false }; persist(); }
+}
+function seasonXp() { seasonEnsure(); const b = save.season.base; let x = 0; for (const [k, w] of Object.entries(SEASON_W)) x += Math.max(0, (save.stats[k] || 0) - (b[k] || 0)) * w; return x; }
+const seasonLv = () => Math.min(SEASON_LV, Math.floor(seasonXp() / SEASON_STEP));
+function seasonReward(lv, prem) {
+  const L = save.lv;
+  if (!prem) {
+    if (lv === SEASON_LV) return { name: 'Титул «Ветеран сезона» и сундук: 2 эпические вещи', give: G => { if (!save.titles.includes('seasonvet')) save.titles.push('seasonvet'); G.give(genItem(L + 1, 2)); G.give(genItem(L + 1, 2)); } };
+    if (lv % 5 === 0) return { name: 'Эпическая вещь', give: G => G.give(genItem(L, 2)) };
+    return [{ name: (400 + lv * 150) + ' мон', give: () => { save.gold += 400 + lv * 150; } }, { name: 'Свиток верной заточки', give: G => G.give(scroll(1)) }, { name: '10 печатей подземелья', give: () => { save.seals = (save.seals || 0) + 10; } }, { name: '10 рисовых колобков', give: G => G.give(rice(10)) }][lv % 4];
+  }
+  if (lv === 10) return { name: 'Наряд «Золотой император»', give: G => G.give(costume('goldemperor')) };
+  if (lv === 20) return { name: 'Маунт «Белый тигр»', give: G => G.give(mount('whitetiger', L)) };
+  if (lv === SEASON_LV) return { name: 'Крылья «Небесные», мифическое оружие и титул «Герой сезона»', give: G => { G.give(wings('celestial', L)); const it = mythWeapon(L + 2); G.give(it); if (!save.titles.includes('seasonhero')) save.titles.push('seasonhero'); banner('Герой сезона', 'Небесные крылья и мифическое оружие'); } };
+  if (lv % 5 === 0) return { name: '2 эпические вещи и 3 звёздных кристалла', give: G => { G.give(genItem(L + 1, 2)); G.give(genItem(L + 1, 2)); if (save.mats) save.mats.star += 3; } };
+  return [{ name: (1000 + lv * 300) + ' мон', give: () => { save.gold += 1000 + lv * 300; } }, { name: '2 свитка заточки', give: G => G.give(scroll(2)) }, { name: '25 печатей и 1 звёздный кристалл', give: () => { save.seals = (save.seals || 0) + 25; if (save.mats) save.mats.star += 1; } }, { name: 'Материалы кузницы: руда ×20, эссенция ×10', give: () => { if (save.mats) { save.mats.ore += 20; save.mats.ess += 10; } } }][lv % 4];
+}
+function seasonClaim(G, lv, prem) {
+  seasonEnsure(); const S = save.season, tr = prem ? S.prem : S.free;
+  if (tr[lv] || seasonLv() < lv || (prem && !S.premium)) return;
+  const r = seasonReward(lv, prem); tr[lv] = Date.now(); r.give(G); sfx('loot');
+  log('Награда сезона, уровень ' + lv + (prem ? ' (премиум)' : '') + ': ' + r.name + '.', 'good'); persist(); G.renderInv(); ACH_DIRTY = true;
+}
+function renderSeasonTab(body, G) {
+  seasonEnsure();
+  const S = save.season, xp = seasonXp(), lv = seasonLv(), d = new Date(), end = new Date(d.getFullYear(), d.getMonth() + 1, 1), days = Math.ceil((end - d) / 86400000);
+  const head = mk('div', 'seasonhead');
+  const bar = mk('div', 'bar xp'), fi = mk('i'); bar.appendChild(fi); setBar(fi, lv >= SEASON_LV ? 1 : (xp % SEASON_STEP) / SEASON_STEP);
+  head.append(mk('b', '', seasonName()), mk('span', '', 'Уровень ' + lv + ' из ' + SEASON_LV + ' · до конца сезона ' + days + ' дн.'), bar, mk('span', 'ss', lv >= SEASON_LV ? 'Сезон пройден полностью!' : (xp % SEASON_STEP) + ' / ' + SEASON_STEP + ' очков до следующего уровня'));
+  body.appendChild(head);
+  body.appendChild(mk('div', 'ds', 'Очки сезона: демоны (2), боссы (40), подземелья (120), рейд (300), мировой и гильдейский босс (100), задания дня (150), победы на арене и в дуэлях, рыбалка, травы, готовка и кузница. Новый сезон начинается каждый месяц.'));
+  if (!S.premium) body.appendChild(btn('Открыть премиум-дорожку (тестовый режим, без оплаты)', () => { S.premium = true; persist(); log('Премиум-дорожка сезона открыта (тестовый режим).', 'good'); renderDiary(); }, 'main'));
+  const tbl = mk('div', 'seasongrid');
+  tbl.append(mk('span', 'sgh', 'Ур.'), mk('span', 'sgh', 'Бесплатно'), mk('span', 'sgh', 'Премиум'));
+  for (let i = 1; i <= SEASON_LV; i++) {
+    const fr = seasonReward(i, false), pr = seasonReward(i, true), open = lv >= i;
+    const cell = (r, prem) => { const c = mk('div', 'sgc' + (prem ? ' prem' : '') + (open ? ' open' : '')), got = (prem ? S.prem : S.free)[i]; c.appendChild(mk('span', '', r.name)); if (got) c.appendChild(mk('span', 'sgot', '✓ получено')); else if (open && (!prem || S.premium)) c.appendChild(btn('Забрать', () => { seasonClaim(G, i, prem); renderDiary(); }, 'main mini')); return c; };
+    tbl.append(mk('span', 'sgl' + (open ? ' open' : ''), String(i)), cell(fr, false), cell(pr, true));
+  }
+  body.appendChild(tbl);
+}
+const seasonBadge = () => { seasonEnsure(); const S = save.season, lv = seasonLv(); for (let i = 1; i <= lv; i++) if (!S.free[i] || (S.premium && !S.prem[i])) return true; return false; };
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
