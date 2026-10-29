@@ -14,6 +14,10 @@ for (const url of C) {
   for (let i = 0; i < 6; i++) { B.pub(topic, i % 2 ? 'x'.repeat(3000) : 'ping'); await wait(300); }
   await wait(3000);
   out.push(`- ${url.replace(/\/\/[^@]*@/, '//')} — подключение ${Date.now() - t0 - 6300} мс, получено ${got}/6 (крупных ${big}/3)`);
+  const rt = 'oblklinok/v2/probe-ret/' + Date.now(); B.pub(rt, 'kept', true); await wait(1500);
+  const C2 = await lib.mqConnect(url, 'pc' + Date.now(), null, 12000); let kept = false;
+  if (C2) { C2.onmsg = t => { if (t === rt) kept = true; }; C2.sub(rt); await wait(3000); B.pub(rt, '', true); C2.close(); }
+  out.push(`  - отложенные (retained) сообщения: ${kept ? 'хранятся' : 'НЕ хранятся'}`);
   A.close(); B.close();
 }
 fs.writeFileSync('probe.md', out.join('\n') + '\n'); console.log(out.join('\n')); process.exit(0);

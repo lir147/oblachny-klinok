@@ -4,7 +4,7 @@ import json, os, socket, time, urllib.request
 from datetime import datetime, timezone, timedelta
 
 NS = 'oblklinok/v2/fb/'
-BROKERS = [b.split(':') for b in os.environ.get('MQTT_BROKERS', 'broker.emqx.io:1883,broker.hivemq.com:1883,test.mosquitto.org:1883').split(',') if b]
+BROKERS = [b.split(':') for b in os.environ.get('MQTT_BROKERS', 'public.cloud.shiftr.io:1883:public:public,broker.emqx.io:1883,broker.hivemq.com:1883').split(',') if b]
 KINDS = {'bug': 'Ошибка', 'idea': 'Идея', 'review': 'Отзыв'}
 CLASSES = {'warrior': 'Воин', 'mage': 'Маг', 'archer': 'Лучник'}
 TZ = timezone(timedelta(hours=5))
@@ -26,10 +26,14 @@ def packet(head, body):
     return bytes([head] + ln) + body
 
 
-def collect(host, port, secs=15):
+def collect(host, port, user=None, pw=None, secs=15):
     got = {}
     s = socket.create_connection((host, int(port)), timeout=10)
-    s.sendall(packet(0x10, s16('MQTT') + bytes([4, 2, 0, 60]) + s16('okl-collector-%d' % int(time.time() * 1000))))
+    flags = 2 | (0x80 if user else 0) | (0x40 if pw else 0)
+    body = s16('MQTT') + bytes([4, flags, 0, 60]) + s16('okl-collector-%d' % int(time.time() * 1000))
+    if user: body += s16(user)
+    if pw: body += s16(pw)
+    s.sendall(packet(0x10, body))
     buf, end, subscribed = b'', time.time() + secs, False
     s.settimeout(1)
     while time.time() < end:
@@ -124,9 +128,10 @@ def main():
     path = 'reviews.json'
     known = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else {}
     got, status = {}, []
-    for host, port in BROKERS:
+    for b in BROKERS:
+        host, port = b[0], b[1]
         try:
-            g = collect(host, port)
+            g = collect(host, port, *(b[2:4]))
             print('%s: %d messages' % (host, len(g))); status.append('%s — связь есть, сообщений %d' % (host, len(g)))
             got.update(g)
         except Exception as e:
