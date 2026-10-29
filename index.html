@@ -6656,7 +6656,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '31', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '32', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = [];
 window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
@@ -7122,7 +7122,8 @@ function mqConnect(url, cid, will, timeout) {
 async function mqttRoom() {
   if (typeof WebSocket === 'undefined') return null;
   const me = save.pid, peers = new Map(), handlers = [], moveH = [];
-  let conn = null, myPres = null, closed = false;
+  const conns = new Map(), fails = {};
+  let myPres = null, closed = false;
   const fire = (joined, left, updated) => { const ch = { peers: [...peers.values()], joined, left, updated }; for (const h of handlers) try { h(ch); } catch (e) { console.warn(e); } };
   const onmsg = (topic, body) => {
     if (topic.startsWith(NET_NS + 'p/')) {
@@ -7139,31 +7140,39 @@ async function mqttRoom() {
       if (d && d.i && d.i !== me) for (const h of moveH) h(d);
     }
   };
-  const open = async () => {
-    for (const url of NET_SERVERS) {
-      const c = await mqConnect(url, 'okl_' + me + '_' + Math.random().toString(36).slice(2, 6), [NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })]);
-      if (c) { c.onmsg = onmsg; c.sub(NET_NS + 'p/+'); c.sub(NET_NS + 'm/+'); c.sub(NET_NS + 'fb/+'); c.onclose = () => { conn = null; if (!closed) setTimeout(reopen, 2500); }; return c; }
-    }
-    return null;
+  const pubAll = (topic, str, retain) => { for (const c of conns.values()) c.pub(topic, str, retain); };
+  const host = u => u.replace(/^wss?:\/\//, '').replace(/[:/].*$/, '');
+  const diag = () => pubAll(NET_NS + 'diag/' + me, JSON.stringify({ pid: me, n: cleanText(save.name).slice(0, 20), v: GAME_VER, t: Date.now(), ok: [...conns.keys()].map(host), fail: fails, ua: navigator.userAgent.slice(0, 160) }), true);
+  const updState = () => { NET_STATE = conns.size ? 'online' : 'offline'; NET_SERVERS_OK = [...conns.keys()].map(host); };
+  // connect to every server at once: friends see each other as long as they share at least one working server
+  const openOne = async url => {
+    if (closed || conns.has(url)) return;
+    const c = await mqConnect(url, 'okl_' + me + '_' + Math.random().toString(36).slice(2, 6), [NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })], 9000);
+    if (!c) { fails[host(url)] = (fails[host(url)] || 0) + 1; updState(); setTimeout(() => openOne(url), conns.size ? 30000 : 10000); return; }
+    delete fails[host(url)];
+    c.onmsg = onmsg; c.sub(NET_NS + 'p/+'); c.sub(NET_NS + 'm/+'); c.sub(NET_NS + 'fb/+');
+    c.onclose = () => { conns.delete(url); updState(); renderWorld(true); if (!closed) setTimeout(() => openOne(url), 3000); };
+    conns.set(url, c); updState();
+    if (myPres) c.pub(NET_NS + 'p/' + me, JSON.stringify({ pr: myPres }));
+    if (save.myReviews) for (const r of save.myReviews) c.pub(NET_NS + 'fb/' + r.k, JSON.stringify(r), true);
+    diag(); renderWorld(true);
   };
-  const reopen = async () => { if (conn || closed) return; conn = await open(); if (conn) { NET_STATE = 'online'; if (myPres) conn.pub(NET_NS + 'p/' + me, JSON.stringify({ pr: myPres })); } else { NET_STATE = 'offline'; setTimeout(reopen, 8000); } renderWorld(true); };
-  conn = await open();
-  if (!conn) return null;
-  NET_STATE = 'online';
+  const first = new Promise(res => { let left = NET_SERVERS.length; for (const u of NET_SERVERS) openOne(u).then(() => { if (conns.size || --left <= 0) res(); }); });
+  await first;
+  setTimeout(diag, 15000);
   // peers that stop sending heartbeats (tab closed without a clean goodbye) drop out after a while
   setInterval(() => { const now = Date.now(), gone = []; for (const [id, pe] of peers) if (now - pe.updatedAt > 14000) { peers.delete(id); gone.push(pe); } if (gone.length) fire([], gone, []); }, 3000);
-  window.addEventListener('pagehide', () => { if (conn) { conn.pub(NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })); conn.close(); } closed = true; });
+  window.addEventListener('pagehide', () => { pubAll(NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })); for (const c of conns.values()) c.close(); closed = true; });
   return {
     net: true,
-    async presence(patch) { myPres = Object.assign({}, myPres, patch); if (conn) conn.pub(NET_NS + 'p/' + me, JSON.stringify({ pr: myPres })); },
+    async presence(patch) { myPres = Object.assign({}, myPres, patch); pubAll(NET_NS + 'p/' + me, JSON.stringify({ pr: myPres })); },
     peers() { return [...peers.values()]; },
     onPeers(h) { handlers.push(h); return () => {}; },
-    move(d) { if (conn) conn.pub(NET_NS + 'm/' + (d.z || 'x'), JSON.stringify(d)); },
-    review(r) { if (conn) conn.pub(NET_NS + 'fb/' + r.k, JSON.stringify(r), true); },
-    onMove(h) { moveH.push(h); }
+    move(d) { pubAll(NET_NS + 'm/' + (d.z || 'x'), JSON.stringify(d)); },
+    review(r) { pubAll(NET_NS + 'fb/' + r.k, JSON.stringify(r), true); }
   };
 }
-let NET_STATE = 'none';
+let NET_STATE = 'none', NET_SERVERS_OK = [];
 const NET_MOVES = new Map();
 
 /* ---------- other players drawn in the world ---------- */
@@ -7253,7 +7262,7 @@ function placeRemote(S, u, moving) {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
   if (!ROOM) { NET_STATE = 'connecting'; renderWorld(); try { ROOM = await mqttRoom(); } catch (e) { console.warn(e); ROOM = null; } if (!ROOM) NET_STATE = 'offline'; }
   if (!ROOM) { renderWorld(); return; }
-  if (save.myReviews && ROOM.review) for (const r of save.myReviews) ROOM.review(r);
+  if (ROOM.net) log(NET_STATE === 'online' ? 'Онлайн: на связи серверов ' + NET_SERVERS_OK.length + ' из ' + NET_SERVERS.length + ' (' + NET_SERVERS_OK.join(', ') + ').' : 'Нет связи с игровыми серверами — друзей не будет видно. Попробуйте другую сеть или VPN.', NET_STATE === 'online' ? 'good' : 'bad');
   if (ROOM.onMove) ROOM.onMove(d => { NET_MOVES.set(String(d.i), { z: String(d.z), x: +d.x, y: +d.y, f: d.f, m: d.m, t: Date.now() }); });
   ROOM.onPeers(ch => { ROOM_PEERS = ch.peers; for (const p of ch.joined) { const o = p.presence && p.presence.ok; if (o && save.friends.some(f => f.pid === o.pid)) log('Друг в сети: ' + cleanText(o.n), 'good'); } renderWorld(true); }, () => { ROOM = null; renderWorld(); });
   setInterval(() => pushPresence(false), 3000); setTimeout(() => pushPresence(true), 1500);
@@ -7303,7 +7312,7 @@ function renderWorld(soft) {
   WORLD_RT = Date.now() + 1500;
   for (const b of p.querySelectorAll('[data-wt]')) { b.classList.toggle('on', b.dataset.wt === WORLD_TAB); b.setAttribute('aria-selected', String(b.dataset.wt === WORLD_TAB)); }
   const on = others(), A = save.arena; arenaDaily();
-  setText($('worldSub'), ROOM ? 'в игре сейчас: ' + (on.length + 1) : NET_STATE === 'connecting' ? 'подключение…' : 'нет связи');
+  setText($('worldSub'), ROOM && NET_STATE !== 'offline' ? 'в игре сейчас: ' + (on.length + 1) + (NET_SERVERS_OK.length ? ' · серверов на связи: ' + NET_SERVERS_OK.length + ' из ' + NET_SERVERS.length : '') : NET_STATE === 'connecting' ? 'подключение…' : 'нет связи с серверами');
   const body = $('worldBody'); body.innerHTML = '';
   const note = t => body.appendChild(mk('div', 'ds', t));
   if (WORLD_TAB === 'friends') {
@@ -7311,7 +7320,7 @@ function renderWorld(soft) {
     inp.addEventListener('keydown', e => e.stopPropagation());
     me.append(mk('span', 'label', 'Ваш ник'), inp, btn('Сохранить', () => { const v = cleanText(inp.value).slice(0, 20); if (v.length >= 2) { save.name = v; persist(); pushPresence(true); log('Ник изменён: ' + v, 'good'); renderWorld(); } }, ''));
     body.appendChild(me);
-    if (!ROOM) note(NET_STATE === 'connecting' ? 'Подключаемся к игровому серверу…' : 'Нет связи с игровым сервером. Список друзей сохранён, но их статус не виден. Проверьте интернет и обновите страницу.');
+    if (!ROOM || NET_STATE === 'offline') note(NET_STATE === 'connecting' ? 'Подключаемся к игровому серверу…' : 'Нет связи ни с одним игровым сервером — игра продолжает пробовать. Чаще всего их блокирует провайдер или мобильный оператор: попробуйте Wi-Fi вместо мобильного интернета (или наоборот) либо включите VPN. Список друзей сохранён.');
     body.appendChild(mk('div', 'label', 'Друзья · ' + save.friends.length));
     if (!save.friends.length) note('Друзей пока нет. Добавьте игроков из списка «Сейчас в игре».');
     for (const f of save.friends) {
