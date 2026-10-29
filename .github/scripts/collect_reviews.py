@@ -123,14 +123,14 @@ def open_issue(r):
 def main():
     path = 'reviews.json'
     known = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else {}
-    got = {}
+    got, status = {}, []
     for host, port in BROKERS:
         try:
             g = collect(host, port)
-            print('%s: %d messages' % (host, len(g)))
+            print('%s: %d messages' % (host, len(g))); status.append('%s — связь есть, сообщений %d' % (host, len(g)))
             got.update(g)
         except Exception as e:
-            print('%s: failed (%s)' % (host, e))
+            print('%s: failed (%s)' % (host, e)); status.append('%s — нет связи (%s)' % (host, e))
     new = [norm(d) for k, d in got.items() if k not in known]
     new = [r for r in new if r['s']]
     new.sort(key=lambda r: r['t'])
@@ -153,6 +153,7 @@ def main():
             head += ' · #%s' % r['issue']
         md += [head, '', r['s'], '']
     open('reviews.md', 'w', encoding='utf-8').write('\n'.join(md))
+    open('status.md', 'w', encoding='utf-8').write('Последняя проверка: %s (Екб)\n\n' % datetime.now(TZ).strftime('%d.%m.%Y %H:%M') + '\n'.join('- ' + x for x in status) + '\n')
 
 
 if __name__ == '__main__':
