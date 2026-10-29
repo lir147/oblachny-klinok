@@ -6656,7 +6656,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '32', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '33', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = [];
 window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
@@ -7059,7 +7059,7 @@ function myPresence() {
   const f = myFighter(), a = save.eq.armor, c = save.eq.costume, w = save.eq.weapon;
   return { pid: save.pid, n: cleanText(save.name).slice(0, 20), c: f.c, lv: f.lv, bm: f.bm, a: f.a, hp: f.hp, d: f.d, cr: f.cr, pl: f.pl, r: save.arena.r,
     g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId,
-    x: Math.round(GAME.hero.x * 10) / 10, y: Math.round(GAME.hero.y * 10) / 10,
+    x: Math.round(GAME.hero.x), y: Math.round(GAME.hero.y),
     look: { ar: a ? a.base : null, r: a ? Math.min(2, a.rarity) : 0, co: c ? c.base : null, w: w ? w.base : null, wr: w ? w.rarity : 0, wg: GAME.wingLook ? GAME.wingLook() : null, mt: save.eq.mount ? save.eq.mount.base : null, b: save.body || 'anime' }, chat: MY_CHAT.slice(-6) };
 }
 let PRES_T = 0, PRES_LAST = '', PRES_HB = 0;
@@ -7090,8 +7090,8 @@ function mqPacket(head, body) {
 function mqConnect(url, cid, will, timeout) {
   return new Promise(resolve => {
     let ws, done = false, buf = new Uint8Array(0), pid = 1, ping = null;
-    const api = { url, onmsg: null, onclose: null, open: false,
-      pub(topic, str, retain) { if (!api.open) return; try { ws.send(mqPacket(0x30 | (retain ? 1 : 0), [...mqStr(topic), ...MQ_TE.encode(str)])); } catch (e) {} },
+    const api = { url, onmsg: null, onclose: null, open: false, bytes: 0,
+      pub(topic, str, retain) { if (!api.open) return; try { const pk = mqPacket(0x30 | (retain ? 1 : 0), [...mqStr(topic), ...MQ_TE.encode(str)]); api.bytes += pk.length; api.lastPub = Date.now(); ws.send(pk); } catch (e) {} },
       sub(filter) { if (!api.open) return; pid = pid % 60000 + 1; try { ws.send(mqPacket(0x82, [pid >> 8, pid & 255, ...mqStr(filter), 0])); } catch (e) {} },
       close() { try { ws.send(new Uint8Array([0xe0, 0])); ws.close(); } catch (e) {} } };
     const finish = ok => { if (done) return; done = true; clearTimeout(tm); resolve(ok ? api : null); if (!ok) try { ws.close(); } catch (e) {} };
@@ -7105,7 +7105,7 @@ function mqConnect(url, cid, will, timeout) {
       ws.send(mqPacket(0x10, body));
     };
     ws.onmessage = ev => {
-      const add = new Uint8Array(ev.data), nb = new Uint8Array(buf.length + add.length); nb.set(buf); nb.set(add, buf.length); buf = nb;
+      const add = new Uint8Array(ev.data), nb = new Uint8Array(buf.length + add.length); api.bytes += add.length; nb.set(buf); nb.set(add, buf.length); buf = nb;
       for (;;) {
         if (buf.length < 2) break;
         let mul = 1, len = 0, i = 1, b;
@@ -7125,9 +7125,9 @@ async function mqttRoom() {
   const conns = new Map(), fails = {};
   let myPres = null, closed = false;
   const fire = (joined, left, updated) => { const ch = { peers: [...peers.values()], joined, left, updated }; for (const h of handlers) try { h(ch); } catch (e) { console.warn(e); } };
-  const onmsg = (topic, body) => {
+  const onmsg = (topic, body, c) => {
     if (topic.startsWith(NET_NS + 'p/')) {
-      const id = topic.slice(NET_NS.length + 2); if (!id || id === me) return;
+      const id = topic.slice(NET_NS.length + 2); if (id === me && c) { c.echo = Date.now(); return; } if (!id) return;
       let d = null; try { d = body ? JSON.parse(body) : null; } catch (e) { return; }
       if (!d || d.gone || !d.pr) { const pe = peers.get(id); if (pe) { peers.delete(id); fire([], [pe], []); } return; }
       const was = peers.get(id), pe = { peer: id, presence: d.pr, updatedAt: Date.now(), guest: false, kind: 'user' };
@@ -7137,26 +7137,56 @@ async function mqttRoom() {
       if (d && d.k === topic.slice(NET_NS.length + 3)) addReview(d);
     } else if (topic.startsWith(NET_NS + 'm/')) {
       let d = null; try { d = JSON.parse(body); } catch (e) { return; }
-      if (d && d.i && d.i !== me) for (const h of moveH) h(d);
+      if (d && d.i === me && c) c.echo = Date.now();
+      else if (d && d.i) for (const h of moveH) h(d);
     }
   };
   const pubAll = (topic, str, retain) => { for (const c of conns.values()) c.pub(topic, str, retain); };
   const host = u => u.replace(/^wss?:\/\//, '').replace(/[:/].*$/, '');
-  const diag = () => pubAll(NET_NS + 'diag/' + me, JSON.stringify({ pid: me, n: cleanText(save.name).slice(0, 20), v: GAME_VER, t: Date.now(), ok: [...conns.keys()].map(host), fail: fails, ua: navigator.userAgent.slice(0, 160) }), true);
+  const stat = { rot: 0, stall: 0 };
+  const diag = () => pubAll(NET_NS + 'diag/' + me, JSON.stringify({ pid: me, n: cleanText(save.name).slice(0, 20), v: GAME_VER, t: Date.now(), ok: [...conns.keys()].map(host), fail: fails, rot: stat.rot, stall: stat.stall, peers: peers.size, ua: navigator.userAgent.slice(0, 160) }), true);
   const updState = () => { NET_STATE = conns.size ? 'online' : 'offline'; NET_SERVERS_OK = [...conns.keys()].map(host); };
   // connect to every server at once: friends see each other as long as they share at least one working server
+  const dial = async (url, withReviews) => {
+    const c = await mqConnect(url, 'okl_' + me + '_' + Math.random().toString(36).slice(2, 6), [NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })], 15000);
+    if (!c) return null;
+    c.born = c.echo = Date.now();
+    c.onmsg = (t, b) => onmsg(t, b, c); c.sub(NET_NS + 'p/+'); c.sub(NET_NS + 'm/+'); if (withReviews) c.sub(NET_NS + 'fb/+');
+    if (myPres) c.pub(NET_NS + 'p/' + me, JSON.stringify({ pr: myPres }));
+    return c;
+  };
+  const adopt = (url, c) => {
+    c.onclose = () => { if (conns.get(url) !== c) return; conns.delete(url); updState(); renderWorld(true); if (!closed) setTimeout(() => openOne(url), 3000); };
+    conns.set(url, c); updState();
+  };
   const openOne = async url => {
     if (closed || conns.has(url)) return;
-    const c = await mqConnect(url, 'okl_' + me + '_' + Math.random().toString(36).slice(2, 6), [NET_NS + 'p/' + me, JSON.stringify({ gone: 1 })], 15000);
+    const c = await dial(url, true);
     if (!c) { fails[host(url)] = (fails[host(url)] || 0) + 1; updState(); setTimeout(() => openOne(url), conns.size ? 30000 : 10000); return; }
     delete fails[host(url)];
-    c.onmsg = onmsg; c.sub(NET_NS + 'p/+'); c.sub(NET_NS + 'm/+'); c.sub(NET_NS + 'fb/+');
-    c.onclose = () => { conns.delete(url); updState(); renderWorld(true); if (!closed) setTimeout(() => openOne(url), 3000); };
-    conns.set(url, c); updState();
-    if (myPres) c.pub(NET_NS + 'p/' + me, JSON.stringify({ pr: myPres }));
+    adopt(url, c);
     if (save.myReviews) for (const r of save.myReviews) c.pub(NET_NS + 'fb/' + r.k, JSON.stringify(r), true);
     diag(); renderWorld(true);
   };
+  // Some networks silently freeze a connection after a few kilobytes. Every connection hears its own messages back,
+  // so a missing echo means it is frozen; we also replace connections early, before they carry too much.
+  const rotating = new Set();
+  const rotate = async (url, why) => {
+    if (rotating.has(url) || closed) return; rotating.add(url);
+    const old = conns.get(url), c = await dial(url, false);
+    rotating.delete(url);
+    if (!c) { if (why === 'stall' && old) { old.onclose = null; old.close(); conns.delete(url); updState(); setTimeout(() => openOne(url), 3000); } return; }
+    if (old) { old.onclose = null; setTimeout(() => old.close(), 1500); }
+    adopt(url, c); stat[why]++;
+    if (stat.rot + stat.stall === 1 || (stat.rot + stat.stall) % 20 === 0) diag();
+  };
+  setInterval(() => {
+    const now = Date.now();
+    for (const [url, c] of conns) {
+      if (c.lastPub && c.lastPub > c.echo + 300 && now - c.lastPub > 6000) rotate(url, 'stall');
+      else if (c.bytes > 10000) rotate(url, 'rot');
+    }
+  }, 1500);
   const first = new Promise(res => { let left = NET_SERVERS.length; for (const u of NET_SERVERS) openOne(u).then(() => { if (conns.size || --left <= 0) res(); }); });
   await first;
   setTimeout(diag, 15000);
@@ -7169,6 +7199,7 @@ async function mqttRoom() {
     peers() { return [...peers.values()]; },
     onPeers(h) { handlers.push(h); return () => {}; },
     move(d) { pubAll(NET_NS + 'm/' + (d.z || 'x'), JSON.stringify(d)); },
+    onMove(h) { moveH.push(h); },
     review(r) { pubAll(NET_NS + 'fb/' + r.k, JSON.stringify(r), true); }
   };
 }
@@ -7214,7 +7245,7 @@ function netUpdate(S, dt) {
   if (ROOM && ROOM.move && h) {
     const now = S.now, moved = !S.netLast || Math.hypot(h.x - S.netLast.x, h.y - S.netLast.y) > .04;
     if ((moved && now > (S.netT || 0)) || now > (S.netT || 0) + 2.5) {
-      S.netT = now + .15; S.netLast = { x: h.x, y: h.y };
+      S.netT = now + .25; S.netLast = { x: h.x, y: h.y };
       ROOM.move({ i: save.pid, z: S.zoneId, x: Math.round(h.x * 100) / 100, y: Math.round(h.y * 100) / 100, f: h.spr && h.spr.flipX ? 1 : 0, m: h.moving ? 1 : 0 });
     }
   }
