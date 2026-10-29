@@ -271,12 +271,23 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
 .srow.noic{grid-template-columns:minmax(0,1fr) auto}
+.topbtns{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(max(16px,env(safe-area-inset-right,0px)) + 232px);display:flex;gap:6px;pointer-events:auto}
+.topbtns .sndbtn{position:static !important;align-self:center;margin:0}
+.topbtns .skill{width:52px;height:52px}.topbtns .skill kbd{display:none}.topbtns .skill em{font-size:10px}
+@media (max-width:700px){.topbtns{right:calc(max(16px,env(safe-area-inset-right,0px)) + 160px)}}
+html.mob .topbtns{top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(max(6px,env(safe-area-inset-right,0px)) + 134px);gap:4px}
+html.mob .topbtns .skill{width:40px;height:40px}html.mob .topbtns .skill em{display:none}
+.evp{position:absolute;top:calc(env(safe-area-inset-top,0px) + 80px);right:16px;width:min(420px,calc(100vw - 32px));pointer-events:auto;z-index:5}
+.evbody{display:grid;gap:5px;max-height:60vh;overflow:auto}
+.evrow{display:grid;gap:2px;padding:6px 9px;border:1px solid #2a3350;border-radius:6px;background:#0f1528}.evrow b{font-weight:600}.evrow span{font-size:13px;color:var(--muted)}
+.evrow.live{border-color:#c9a35a;background:linear-gradient(90deg,rgba(90,60,20,.5),#0f1528)}.evrow.live span{color:#ffe08a}
+
 .chatp{position:absolute;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 150px);width:min(400px,calc(100vw - 24px));display:grid;gap:3px;padding:5px;border:1px solid #5a4424;border-radius:6px;background:rgba(10,8,14,.78);pointer-events:auto;z-index:2;font-size:13px}
 @media (min-width:1500px){.chatp{bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}}
-.chatp ~ #log,.hud:has(.chatp) #log{display:none}
+#chatP #log{position:absolute !important;left:0 !important;bottom:calc(100% + 6px) !important;width:100% !important;pointer-events:none}
 .cpbody{display:grid;grid-template-columns:1fr 18px;gap:3px}
-.cplines{height:150px;overflow-y:auto;display:grid;align-content:start;gap:1px;line-height:1.32;overscroll-behavior:contain;padding-right:2px;text-shadow:0 1px 2px #000}
-.cpl{word-break:break-word;color:#e8e2d4}.cpl .cptag{color:#9aa4bc;font-size:12px}
+.cplines{height:150px;overflow-y:auto;display:block;line-height:1.32;overscroll-behavior:contain;padding-right:2px;text-shadow:0 1px 2px #000}
+.cpl{display:block;margin:0 0 2px;word-break:break-word;color:#e8e2d4}.cpl .cptag{color:#9aa4bc;font-size:12px}
 .cpl.k-g .cptag{color:#8fe3bf}.cpl.k-p{color:#9fd8ff}.cpl.k-p .cptag{color:#5ec8ff}
 .cpl.k-sys{color:#cfc6b4}.cpl.good{color:#8fe3a0}.cpl.bad{color:#ff8a80}.cpl.xp{color:#e8cf7a}.cpl.info{color:#9fc8ff}
 .cpe{color:var(--muted);font-size:12px}
@@ -522,7 +533,6 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
     <button class="skill" id="skBook" type="button" aria-label="Навыки (K)"><kbd>K</kbd><span class="ic">技</span><em>Навыки</em></button>
     <button class="skill" id="skDiary" type="button" aria-label="Дневник (J)"><kbd>J</kbd><span class="ic">日</span><em>Дневник</em></button>
     <button class="skill" id="skMarket" type="button" aria-label="Рынок (B)"><kbd>B</kbd><span class="ic">市</span><em>Рынок</em></button>
-    <button class="skill" id="skEmote" type="button" aria-label="Эмоции (Y)"><kbd>Y</kbd><span class="ic">笑</span><em>Эмоции</em></button>
     <button class="skill" id="skBag" type="button" aria-label="Сумка (I)"><kbd>I</kbd><span class="ic">袋</span><em>Сумка</em></button>
     <button class="skill" id="skRice" type="button" aria-label="Рисовый колобок (R)"><kbd>R</kbd><span class="qty" id="riceQty">0</span><span class="ic">飯</span><em>Колобок</em><i class="cd"></i></button>
     <span class="sep" aria-hidden="true"></span>
@@ -2136,6 +2146,74 @@ const PETS = {
   moonbat:     { name: 'Кровавая летучая мышь', r: 2, paint: paintPetMoonBat, shot: 'blood', role: 'blood', col: '#ff6a80', text: 'пьёт кровь врагов и лечит хозяина', excl: 'd_moon' }
 };
 const SHOP_PETS = ['owl', 'panda', 'kitsune', 'jadeturtle', 'phoenixchick'];
+/* more pets in the style of the dawn dragonling */
+const DRAKE_PAL = {
+  frost: { w: ['#e8fbff', '#2a7ad0'], t: ['#ffffff', '#3a8ae0'], b: ['#9fe0ff', '#1a4a9a'], belly: '#e8f8ff', line: 'rgba(40,90,160,.5)', h: ['#bfeeff', '#2a6ac0'], horn: '#ffffff', eye: '#7af0ff', leg: '#1a4a9a', spike: '#e0f8ff' },
+  storm: { w: ['#e0d0ff', '#4a2aa0'], t: ['#fff4a0', '#5a3ab0'], b: ['#a080ff', '#2a1470'], belly: '#f0e8ff', line: 'rgba(80,50,160,.5)', h: ['#b8a0ff', '#3a2090'], horn: '#fff4a0', eye: '#fff060', leg: '#2a1470', spike: '#fff060' },
+  shadow: { w: ['#6a5a8a', '#0a0614'], t: ['#c050ff', '#1a0a2a'], b: ['#3a2a5a', '#0a0610'], belly: '#8a6aaa', line: 'rgba(200,120,255,.4)', h: ['#4a3a6a', '#0a0612'], horn: '#e0d0ff', eye: '#ff3a6a', leg: '#0a0610', spike: '#c050ff' }
+};
+function paintDrake(ctx, frame, P) {
+  ctx.save(); ctx.translate(26, 24); ctx.scale(.92, .92); ctx.translate(-26, -22);
+  const fa = frame ? -.3 : .15;
+  for (const s2 of [-1, 1]) { ctx.save(); ctx.translate(26, 22); ctx.rotate(fa * s2); ctx.translate(-26, -22);
+    fillPath(ctx, k => { k.moveTo(26, 22); k.quadraticCurveTo(26 + s2 * 10, 4, 26 + s2 * 22, 6); k.lineTo(26 + s2 * 18, 13); k.quadraticCurveTo(26 + s2 * 15, 12, 26 + s2 * 13, 18); k.quadraticCurveTo(26 + s2 * 9, 16, 26 + s2 * 7, 23); k.closePath(); }, lin(ctx, 26, 4, 26, 24, [[0, P.w[0]], [1, P.w[1]]]), INK, .5);
+    for (const [x1, y1] of [[22, 6], [18, 13], [13, 18]]) strokeLine(ctx, [[26 + s2 * 2, 21], [26 + s2 * x1, y1]], 'rgba(255,255,255,.45)', .4);
+    ctx.restore(); }
+  fillPath(ctx, k => { k.moveTo(20, 28); k.quadraticCurveTo(10, 34, 4, 30); k.quadraticCurveTo(8, 36, 2, 40); k.quadraticCurveTo(14, 38, 22, 31); k.closePath(); }, lin(ctx, 2, 30, 22, 34, [[0, P.t[0]], [1, P.t[1]]]), INK, .45);
+  fillPath(ctx, k => k.ellipse(26, 27, 8, 6.4, 0, 0, 6.29), lin(ctx, 0, 20, 0, 34, [[0, P.b[0]], [1, P.b[1]]]), INK, .55);
+  fillPath(ctx, k => k.ellipse(27, 30, 4.4, 3, 0, 0, 6.29), P.belly, null);
+  for (let i = 0; i < 4; i++) strokeLine(ctx, [[24, 28.4 + i * 1.1], [30, 28.4 + i * 1.1]], P.line, .3);
+  fillPath(ctx, k => { k.moveTo(30, 22); k.quadraticCurveTo(36, 12, 42, 14); k.lineTo(46, 17); k.quadraticCurveTo(44, 21, 38, 20); k.quadraticCurveTo(34, 22, 32, 25); k.closePath(); }, lin(ctx, 30, 12, 46, 24, [[0, P.h[0]], [1, P.h[1]]]), INK, .5);
+  for (const [x0, x1] of [[38, 35], [41, 40]]) fillPath(ctx, k => poly2(k, [[x0, 14.4], [x1, 8], [x0 + 2, 14]]), P.horn, INK, .35);
+  glowEyes3(ctx, [[41.6, 15.6]], P.eye, .7);
+  for (const dx of [-3, 3]) { strokeLine(ctx, [[26 + dx, 32], [26 + dx, 37]], P.leg, 1.2); fang(ctx, 26 + dx, 37, 1.4, .4, 1); }
+  for (let i = 0; i < 4; i++) fillPath(ctx, k => poly2(k, [[18 + i * 4, 21.6 - Math.sin(i) * .6], [20 + i * 4, 18], [22 + i * 4, 21.6]]), P.spike, INK, .3);
+  ctx.restore();
+}
+function paintPetLoong(ctx, f) {
+  const segs = 9, pts = [];
+  for (let i = 0; i < segs; i++) { const t = i / (segs - 1); pts.push([8 + t * 34, 26 + Math.sin(t * 6.3 + (f ? .9 : 0)) * 6 - t * 4]); }
+  for (let i = segs - 1; i >= 0; i--) { const [x, y] = pts[i], r = 3 + (i / segs) * 2.6;
+    fillPath(ctx, k => k.ellipse(x, y, r + .6, r, 0, 0, 6.29), rad(ctx, x - 1, y - 1, .5, r + 1, [[0, '#b8ffd8'], [1, '#1a8a5a']]), INK, .4);
+    if (i % 2 === 0 && i < segs - 1) fillPath(ctx, k => poly2(k, [[x - 1.5, y - r + .5], [x, y - r - 3], [x + 1.5, y - r + .5]]), '#ffd36a', INK, .3); }
+  const [hx, hy] = pts[segs - 1];
+  fillPath(ctx, k => { k.moveTo(hx - 2, hy - 4); k.quadraticCurveTo(hx + 8, hy - 7, hx + 10, hy - 1); k.quadraticCurveTo(hx + 6, hy + 3, hx - 2, hy + 3); k.closePath(); }, lin(ctx, hx, hy - 7, hx, hy + 3, [[0, '#c8ffe0'], [1, '#1a7a4a']]), INK, .5);
+  for (const s of [-1, 1]) strokeLine(ctx, [[hx + 8, hy + s * .6], [hx + 14, hy + s * 3 + (f ? 1 : -1)]], '#ffe8a0', .5);
+  fillPath(ctx, k => poly2(k, [[hx, hy - 4], [hx - 3, hy - 10], [hx + 2, hy - 5]]), '#ffe8a0', INK, .3);
+  glowEyes3(ctx, [[hx + 4.5, hy - 2.5]], '#ff5a3a', .6);
+  fillPath(ctx, k => k.arc(hx + 12, hy + 6, 2.2, 0, 6.29), rad(ctx, hx + 11.5, hy + 5.5, .3, 2.4, [[0, '#ffffff'], [1, '#ffb030']]), INK, .3);
+}
+function paintPetKoi(ctx, f) {
+  const sw = f ? 3 : -3;
+  fillPath(ctx, k => { k.moveTo(12, 26); k.quadraticCurveTo(4, 20 + sw, 2, 16 + sw); k.quadraticCurveTo(6, 26, 2, 36 - sw); k.quadraticCurveTo(6, 32 - sw, 12, 28); k.closePath(); }, lin(ctx, 2, 16, 12, 36, [[0, '#fff0c0'], [1, '#ff6a20']]), INK, .45);
+  fillPath(ctx, k => { k.moveTo(12, 27); k.quadraticCurveTo(24, 14, 40, 22); k.quadraticCurveTo(44, 27, 40, 31); k.quadraticCurveTo(24, 38, 12, 27); k.closePath(); }, lin(ctx, 12, 18, 40, 34, [[0, '#fff8e0'], [.5, '#ffb020'], [1, '#d04010']]), INK, .55);
+  for (const [x, y, r] of [[22, 24, 3], [30, 28, 2.6], [17, 28, 2]]) fillPath(ctx, k => k.ellipse(x, y, r, r * .7, 0, 0, 6.29), '#ffffff', null);
+  fillPath(ctx, k => { k.moveTo(24, 21); k.quadraticCurveTo(28, 12 + (f ? 1 : -1), 32, 21); k.closePath(); }, '#ff8a30', INK, .4);
+  fillPath(ctx, k => { k.moveTo(26, 32); k.quadraticCurveTo(28, 38, 31, 31); k.closePath(); }, '#ff8a30', INK, .4);
+  for (const s of [-1, 1]) strokeLine(ctx, [[42, 27 + s], [47, 27 + s * 4]], '#ffe8a0', .5);
+  glowEyes3(ctx, [[37, 25]], '#202020', .6);
+  for (let i = 0; i < 3; i++) fillPath(ctx, k => k.arc(44 + i * 2, 16 - i * 4 - (f ? 1 : 0), .9 + i * .3, 0, 6.29), 'rgba(200,240,255,.7)', null);
+}
+function paintPetSakura(ctx, f) {
+  for (const s of [-1, 1]) { ctx.save(); ctx.translate(26, 22); ctx.rotate(s * (f ? .35 : .1)); ctx.scale(s, 1);
+    fillPath(ctx, k => { k.moveTo(2, 0); k.bezierCurveTo(8, -18, 22, -14, 16, -2); k.quadraticCurveTo(10, 2, 2, 2); k.closePath(); }, lin(ctx, 2, -16, 16, 2, [[0, '#fff0f8'], [1, '#ff8ac0']]), INK, .4);
+    fillPath(ctx, k => { k.moveTo(2, 3); k.bezierCurveTo(8, 12, 16, 12, 12, 5); k.closePath(); }, '#ffb0d8', INK, .35); ctx.restore(); }
+  petBody(ctx, 26, 27, 5, 7, '#fff4fa', '#ffb0d0');
+  fillPath(ctx, k => k.arc(26, 17, 5.4, 0, 6.29), rad(ctx, 25, 16, 1, 6, [[0, '#ffffff'], [1, '#ffd8ea']]), INK, .45);
+  for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 1.256; fillPath(ctx, k => k.ellipse(26 + Math.cos(a) * 3.6, 11.5 + Math.sin(a) * 1.8, 1.8, 1.1, a, 0, 6.29), '#ff7ab0', INK, .25); }
+  glowEyes3(ctx, [[24, 17.4], [28, 17.4]], '#ff3a8a', .5);
+  for (let i = 0; i < 4; i++) fillPath(ctx, k => k.ellipse(14 + i * 8, 38 + ((i + (f ? 1 : 0)) % 2) * 2, 1.4, .8, i, 0, 6.29), '#ffb0d8', null);
+}
+Object.assign(PETS, {
+  frostdrake: { name: 'Ледяной дракончик', r: 3, price: 14000, paint: (c, f) => paintDrake(c, f, DRAKE_PAL.frost), shot: 'frost', role: 'frost', col: '#9fe8ff', text: 'ледяное дыхание замедляет врагов' },
+  stormdrake: { name: 'Грозовой дракончик', r: 3, price: 14000, paint: (c, f) => paintDrake(c, f, DRAKE_PAL.storm), shot: 'bolt', role: 'atk', col: '#c0a8ff', text: 'бьёт молнией с удвоенной силой' },
+  shadowdrake: { name: 'Теневой дракончик', r: 3, paint: (c, f) => paintDrake(c, f, DRAKE_PAL.shadow), shot: 'blood', role: 'blood', col: '#d070ff', text: 'пьёт силу врагов и лечит хозяина · награда 25 этажа Башни' },
+  jadeloong: { name: 'Нефритовый лун', r: 3, paint: paintPetLoong, shot: 'holy', role: 'heal', col: '#8fffc0', text: 'священный змей: лечит хозяина · добыча стража гильдии' },
+  goldkoi: { name: 'Золотой карп-дракон', r: 2, price: 9000, paint: paintPetKoi, shot: 'holy', role: 'atk', col: '#ffc060', text: 'приносит удачу: священные брызги' },
+  sakurasprite: { name: 'Сакура-дух', r: 2, price: 8000, paint: paintPetSakura, shot: 'heal', role: 'heal', col: '#ffa0d0', text: 'лепестки сакуры лечат хозяина' }
+});
+SHOP_PETS.push('goldkoi', 'sakurasprite', 'frostdrake', 'stormdrake');
+
 function petStats(it) {
   const p = PETS[it.base], lv = Math.max(1, it.grow ? save.lv : it.lv || 1), k = RAR[it.rarity].k, g = it.grow ? 1 + (it.gl - 1) * .045 : 1, guard = p.role === 'guard';
   it.st = { atk: Math.round((2 + lv * .7) * k * g * (guard ? .6 : 1)), hp: Math.round((12 + lv * 4) * k * g * (guard ? 1.6 : 1)), def: Math.round((1 + lv * .3) * k * g * (guard ? 2 : 1)), crit: 1 + it.rarity };
@@ -5336,7 +5414,7 @@ class World extends Phaser.Scene {
       if ($('heroP').hidden || GAME !== this || !this.hero || !this.hero.spr || !this.hero.spr.active) { this.heroRAF = null; return; }
       this.heroRAF = requestAnimationFrame(frame);
       const dt = Math.min(.05, (ts - last) / 1000); last = ts;
-      try { this.drawHeroCanvas(ctx, cv, ts / 1000, dt); } catch (e) {}
+      try { this.drawHeroCanvas(ctx, cv, ts / 1000, dt); heroPetDraw(ctx, cv, ts / 1000); } catch (e) {}
     };
     this.heroRAF = requestAnimationFrame(frame);
   }
@@ -6434,7 +6512,7 @@ class World extends Phaser.Scene {
     const P = this.pet, h = this.hero, it = save.eq.pet; if (!it || !h) return;
     const def = PETS[P.id], gl = it.grow ? it.gl : 1;
     const tg = h.target && h.target.alive ? h.target : null;
-    const goal = { x: h.x - (h.spr.flipX ? -1.1 : 1.1), y: h.y - 1.1 }, d = dist(P, goal);
+    const sd = h.spr.flipX ? 1 : -1, goal = { x: h.x + sd * .85, y: h.y - sd * .85 }, d = dist(P, goal);
     if (d > 9) { P.x = goal.x; P.y = goal.y; }
     else if (d > .15) { const k = Math.min(1, (d > 3 ? 6 : 3.8) * dt / d); P.x += (goal.x - P.x) * k; P.y += (goal.y - P.y) * k; }
     const healer = def.role === 'heal' || def.role === 'guard';
@@ -6449,7 +6527,7 @@ class World extends Phaser.Scene {
         if (def.role === 'poison') for (let i = 1; i <= 3; i++) this.time.delayedCall(i * 800, () => { if (tg.alive) this.hurtMob(tg, Math.round(dmg * .2), false); });
       });
     }
-    const p = iso(P.x, P.y), bob = 26 + Math.sin(this.now * 3 + P.off) * 4;
+    const p = iso(P.x, P.y), bob = 16 + Math.sin(this.now * 3 + P.off) * 4;
     P.spr.setTexture('pet_' + P.id + (Math.floor(this.now * 6) % 2)).setPosition(p.x, p.y - bob).setDepth(p.y + 1).setFlipX(tg ? tg.x - tg.y < P.x - P.y : h.spr.flipX);
     P.shadow.setPosition(p.x, p.y).setDepth(p.y - 1);
     P.label.setText(def.name.split(' ')[0] + (it.grow ? ' · ' + gl : '')).setPosition(p.x, p.y - bob - 18);
@@ -7152,7 +7230,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '46', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '47', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -7170,7 +7248,7 @@ function setFbKind(k) { FB_KIND = k; for (const b of document.querySelectorAll('
 for (const b of document.querySelectorAll('#fbKinds .tab')) b.addEventListener('click', () => setFbKind(b.dataset.fk));
 { const hp = document.querySelector('.help'); if (hp) hp.append(' · версия ' + GAME_VER); }
 /* ---------- phone layout: compact HUD, menu buttons folded behind one button ---------- */
-const MENU_IDS = ['skHero', 'skBag', 'skDiary', 'skMarket', 'skEmote', 'skBook', 'skWorld', 'skForge', 'skWheel', 'skTop', 'skFb'];
+const MENU_IDS = ['skHero', 'skBag', 'skDiary', 'skMarket', 'skBook', 'skWorld', 'skGuild', 'skTower', 'skArena', 'skForge'];
 function isMobileLayout() { return (window.matchMedia && matchMedia('(pointer: coarse)').matches) || innerWidth < 700 || innerHeight < 480; }
 function applyLayout() {
   const mob = isMobileLayout(), root = document.documentElement, menu = $('mobMenu'), bar = document.querySelector('.skills'), mb = $('skMenu');
@@ -7179,7 +7257,7 @@ function applyLayout() {
   mb.hidden = !mob;
   const sep = bar.querySelector('.sep');
   if (mob) { for (const id of MENU_IDS) { const b = $(id); if (b && b.parentNode !== menu) menu.appendChild(b); } }
-  else for (const id of ['skHero', 'skWheel', 'skTop', 'skFb', 'skWorld', 'skForge', 'skBook', 'skDiary', 'skMarket', 'skEmote', 'skBag']) { const b = $(id); if (b && b.parentNode !== bar) bar.insertBefore(b, $('skRice')); }
+  else for (const id of ['skHero', 'skWorld', 'skGuild', 'skTower', 'skArena', 'skForge', 'skBook', 'skDiary', 'skMarket', 'skBag']) { const b = $(id); if (b && b.parentNode !== bar) bar.insertBefore(b, $('skRice')); }
   if (!mob) { menu.hidden = true; mb.setAttribute('aria-expanded', 'false'); }
 }
 $('skMenu').addEventListener('click', e => { e.stopPropagation(); const m = $('mobMenu'); m.hidden = !m.hidden; $('skMenu').setAttribute('aria-expanded', String(!m.hidden)); });
@@ -7325,7 +7403,7 @@ document.addEventListener('pointerdown', e => { const p = $('sndP'); if (p && !p
 for (const b of document.querySelectorAll('#marketP [data-mt]')) b.addEventListener('click', () => { MARKET_TAB = b.dataset.mt; renderMarket(); });
 $('marketX').addEventListener('click', () => { $('marketP').hidden = true; });
 $('skMarket').addEventListener('click', () => openMarket());
-$('skEmote').addEventListener('click', () => emotePicker());
+
 { const pc = mk('button', 'photox', '✕ Выйти из фоторежима'); pc.type = 'button'; pc.addEventListener('click', () => photoMode(false)); document.body.appendChild(pc); }
 
 /* ---------- the Diary: daily tasks, login calendar, achievements, titles, cooking, events ---------- */
@@ -7843,7 +7921,7 @@ function myPresence() {
   if (!GAME || !GAME.hero || GAME.hero.atk == null) return null;
   const f = myFighter(), a = save.eq.armor, c = save.eq.costume, w = save.eq.weapon;
   return { pid: save.pid, n: cleanText(save.name).slice(0, 20), c: f.c, lv: f.lv, bm: f.bm, a: f.a, hp: f.hp, d: f.d, cr: f.cr, pl: f.pl, r: save.arena.r,
-    g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId, in: GAME.inst || GAME.zoneId, ti: titleName(save.title), tid: save.title || null, rb: save.reb || 0,
+    g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId, in: GAME.inst || GAME.zoneId, ti: titleName(save.title), tid: save.title || null, pt: save.eq.pet && PETS[save.eq.pet.base] ? save.eq.pet.base : null, rb: save.reb || 0,
     x: Math.round(GAME.hero.x), y: Math.round(GAME.hero.y),
     look: { ar: a ? a.base : null, r: a ? Math.min(2, a.rarity) : 0, co: c ? c.base : null, w: w ? w.base : null, wr: w ? w.rarity : 0, wg: GAME.wingLook ? GAME.wingLook() : null, mt: save.eq.mount ? save.eq.mount.base : null, b: save.body || 'anime' }, chat: MY_CHAT.slice(-6) };
 }
@@ -8019,15 +8097,15 @@ function makeRemote(S, p, mv) {
   u.wspr = S.add.image(0, 0, S.weaponTexKey(wb, Math.min(3, +L.wr || 0))).setOrigin(GRIP[0] / HERO_W, GRIP[1] / HERO_H).setScale(HERO_K / 4);
   const name = cleanText(p.n).slice(0, 20) || 'Игрок', tag = p.g && p.g.t ? ' [' + cleanText(p.g.t).slice(0, 4) + ']' : '';
   const fr = save.friends && save.friends.some(f => f.pid === p.pid);
- u.badge = remoteBadge(S, u, p);
+ u.badge = remoteBadge(S, u, p); u.pet = remotePet(S, u, p);
   u.label = S.add.text(0, 0, (p.ti && !u.badge ? '«' + cleanText(p.ti).slice(0, 30) + '»\n' : '') + (p.rb ? rebStars(+p.rb) + ' ' : '') + name + tag + ' · ' + (+p.lv || 1), { fontFamily: FONT, fontSize: '12px', color: fr ? '#8fe3bf' : '#ffe08a', stroke: '#000', strokeThickness: 3 }).setOrigin(.5, 1).setDepth(190000);
   u.mark = { setPosition() { return this; } };
   u.sig = remoteSig(p, fr);
-  u.parts = [u.shadow, u.spr, u.wspr, u.label, u.badge, u.wingR, u.wingL, u.mountB, u.mountF].filter(Boolean);
+  u.parts = [u.shadow, u.spr, u.wspr, u.label, u.badge, u.pet && u.pet.spr, u.pet && u.pet.shadow, u.wingR, u.wingL, u.mountB, u.mountF].filter(Boolean);
   for (const o of u.parts) if (o.setInteractive && o === u.spr) o.setInteractive({ useHandCursor: true }).on('pointerdown', (pt, lx, ly, ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); openPeerCard(p.pid); });
   return u;
 }
-const remoteSig = (p, fr) => JSON.stringify([p.look, p.n, p.g && p.g.t, p.lv, p.c, !!fr, p.ti, p.rb, p.tid]);
+const remoteSig = (p, fr) => JSON.stringify([p.look, p.n, p.g && p.g.t, p.lv, p.c, !!fr, p.ti, p.rb, p.tid, p.pt]);
 function dropRemote(u) { for (const o of u.parts) try { o.destroy(); } catch (e) {} }
 function openPeerCard(pid) {
   WORLD_TAB = 'friends'; toggleWorld(true);
@@ -8084,7 +8162,8 @@ function placeRemote(S, u, moving) {
     const flap = Math.sin(t * 3) * 10 + (moving ? Math.sin(t * 10) * 7 : 0), sy = u.spr.y + (SHOULDER_Y - HERO_FY) * HERO_K, d2 = u.spr.depth - .3;
     u.wingR.setPosition(u.spr.x + 1.5, sy).setAngle(-flap).setDepth(d2); u.wingL.setPosition(u.spr.x - 1.5, sy).setAngle(flap).setDepth(d2);
   }
-  if (u.badge) u.badge.setPosition(u.label.x, u.label.y - u.label.height - 1).setVisible(u.label.visible);
+  if (u.badge) u.badge.setPosition(u.label.x, u.label.y - u.label.height - 4).setVisible(u.label.visible);
+  if (u.pet) remotePetTick(S, u);
 }
 
 /* ---------- mythic weapons: the strongest tier, only from bosses ---------- */
@@ -9888,6 +9967,7 @@ function towerReward(S, f) {
     save.tower.best = f; msg += ' Новый рекорд!';
     if (f % 5 === 0) gemDrop(S, Math.min(5, 1 + Math.floor(f / 10)), 1);
     if (f % 10 === 0) { S.give(scroll(2)); save.mats.star = (save.mats.star || 0) + 2; msg += ' Свитки и звёздные кристаллы за рубеж.'; }
+    if (f === 25 && !save.gotShadowDrake) { save.gotShadowDrake = true; const pt = petItem('shadowdrake', save.lv); if (S.give(pt)) banner(pt.name, 'Награда 25 этажа Башни'); }
     for (const [need, id] of [[20, 'towerclimb'], [50, 'towermaster']]) if (f >= need && !save.titles.includes(id)) { save.titles.push(id); banner('Титул «' + TITLES[id] + '»', 'Башня испытаний'); }
     LB.pubT = 0;
   }
@@ -10307,7 +10387,7 @@ const CP_EMO = ['😀', '😂', '😎', '😍', '😢', '😡', '👍', '👎', 
   emo.onclick = () => { pick.hidden = !pick.hidden; };
   form.append(chb, inp, send, emo);
   P.append(body, tabs, form, pick); hud.appendChild(P);
-  const lg = $('log'); if (lg) lg.style.display = 'none';
+  const lg = $('log'); if (lg) P.appendChild(lg);
   if (save.chatMin == null) save.chatMin = document.documentElement.classList.contains('mob');
   cpState();
 })();
@@ -10323,7 +10403,7 @@ function cpCollect() {
   const out = [], tab = CP.tab;
   if (tab === 'all' || tab === 'w') for (const l of chatLines('w')) out.push({ t: l.t, k: 'w', who: l.who, s: l.s, me: l.me, c: l.c });
   if ((tab === 'all' || tab === 'g') && save.guild) for (const l of chatLines('g:' + save.guild.n)) out.push({ t: l.t, k: 'g', who: l.who, s: l.s, me: l.me, c: l.c });
-  for (const l of SYS_LOG) { if (l.k === 'p' ? (tab === 'all' || tab === 'p') : (tab === 'all' || tab === 'sys')) out.push(l); }
+  for (const l of SYS_LOG) { if (l.k === 'p' ? (tab === 'all' || tab === 'p') : tab === 'sys') out.push(l); }
   return out.sort((a, b) => a.t - b.t).slice(-60);
 }
 const CP_TAG = { w: '[Мир]', g: '[Гильд]', p: '[Отряд]' }, CP_NAMECOL = { warrior: '#ffb38a', mage: '#c3b2ff', archer: '#a6eaa7' };
@@ -10520,7 +10600,7 @@ function heroTagTick(S) {
   }
   const y = h.spr.y - h.spr.displayHeight * (HERO_FY / HERO_H) - 6, vis = h.spr.visible !== false && !PHOTO;
   S.heroTag.setPosition(h.spr.x, y).setVisible(vis);
-  if (S.heroBadge) S.heroBadge.setPosition(h.spr.x, y - S.heroTag.height - 1).setVisible(vis);
+  if (S.heroBadge) S.heroBadge.setPosition(h.spr.x, y - S.heroTag.height - 4).setVisible(vis);
 }
 function remoteBadge(S, u, p) {
   if (!p.tid || !TITLES[p.tid]) return null;
@@ -10589,6 +10669,7 @@ function ghSubscribe() {
 function ghGuardReward(evId) {
   const S = GAME; if (!S || S.zoneId !== GH_ID || GH.done === evId) return; GH.done = evId;
   const x = Math.round(xpNeed(save.lv) * .18); S.gainXp(x); guildXp(25); save.gold += 300 + save.lv * 20;
+  if (Math.random() < .1 && !save.inv.some(i => i && i.base === 'jadeloong') && !(save.eq.pet && save.eq.pet.base === 'jadeloong')) { const pt = petItem('jadeloong', save.lv); if (S.give(pt)) banner(pt.name, 'Добыча стража гильдии'); }
   banner('Страж повержен', '+' + x + ' опыта всем в зале'); log('Страж гильдии повержен! +' + x + ' опыта, монеты и 25 очков гильдии.', 'good'); persist();
 }
 function ghTick(S) {
@@ -10640,6 +10721,72 @@ function ghSection(body) {
   body.appendChild(mk('div', 'ds', 'Общий зал только для вашей гильдии. Каждые 15 минут — событие на 6 минут: ' + GH_ORDER.map(k => '«' + GH_EV[k].n + '»').join(', ') + '. За события дают опыт героя и очки гильдии.'));
   body.appendChild(mk('div', 'ss', st.live ? 'Сейчас идёт «' + GH_EV[st.type].n + '» — ещё ' + left + ' мин. ' + GH_EV[st.type].d : 'Следующее: «' + GH_EV[st.nextType].n + '» через ' + left + ' мин.'));
   body.appendChild(btn(GAME && GAME.zoneId === GH_ID ? 'Вы в зале' : 'Войти в зал гильдии', () => ghEnter(), 'main', !save.guild || (GAME && GAME.zoneId === GH_ID)));
+}
+
+/* ---------- top bar next to the minimap: luck, top-up, events, feedback ---------- */
+(() => {
+  const hud = document.querySelector('.hud'); if (!hud) return;
+  const bar = mk('div', 'topbtns'); bar.id = 'topBtns';
+  const ev = mk('button', 'skill', ''); ev.id = 'skEvents'; ev.type = 'button'; ev.setAttribute('aria-label', 'События');
+  ev.innerHTML = '<span class="ic">祭</span><em>События</em>';
+  for (const id of ['skWheel', 'skTop']) { const b = $(id); if (b) bar.appendChild(b); }
+  bar.appendChild(ev);
+  const fb = $('skFb'); if (fb) bar.appendChild(fb);
+  const snd = $('sndBtn'); if (snd) bar.appendChild(snd);
+  hud.appendChild(bar);
+  ev.addEventListener('click', () => eventsPanel());
+  const emo = $('skEmote'); if (emo) emo.remove();
+})();
+/* new menu buttons: guild, tower, arena */
+(() => {
+  const bar = document.querySelector('.skills'), world = $('skWorld'); if (!bar || !world) return;
+  const mkb = (id, ic, n, fn) => { const b = mk('button', 'skill', ''); b.id = id; b.type = 'button'; b.setAttribute('aria-label', n); b.innerHTML = '<span class="ic">' + ic + '</span><em>' + n + '</em>'; b.addEventListener('click', fn); return b; };
+  const g = mkb('skGuild', '盟', 'Гильдия', () => { WORLD_TAB = 'guild'; toggleWorld(true); renderWorld(); });
+  const t = mkb('skTower', '塔', 'Башня', () => openDiary('tower'));
+  const a = mkb('skArena', '闘', 'Арена', () => { WORLD_TAB = 'arena'; toggleWorld(true); renderWorld(); });
+  world.after(g, t, a);
+  try { applyLayout(); } catch (e) {}
+})();
+/* events panel: everything that happens on a schedule */
+function eventsList() {
+  const out = [], now = Date.now(), mm = ms => mmssLong(Math.max(0, ms));
+  try { for (const B of SHARED) { const st = B.cfg.state(); out.push([B.cfg.label + ': ' + MOBS[B.cfg.kind].name, st.phase === 'live' ? 'идёт сейчас · ' + B.cfg.where : st.phase === 'soon' ? 'скоро · ' + B.cfg.where : st.starts ? 'через ' + mm(st.starts - now) : '—', st.phase === 'live']); } } catch (e) {}
+  { const st = invState(); out.push(['Вторжение на деревню Кумо', st.phase === 'live' ? 'идёт · осталось ' + mm(st.ends - now) : 'через ' + mm(st.start - now), st.phase === 'live']); }
+  { const st = ghState(); out.push(['Зал гильдии: ' + (st.live ? GH_EV[st.type].n : GH_EV[st.nextType].n), save.guild ? (st.live ? 'идёт · осталось ' + mm(st.ends - now) : 'через ' + mm(st.next - now)) : 'только для гильдий', st.live && !!save.guild]); }
+  { const H = HOLIDAYS[holidayNow()]; out.push(['Праздник', H ? H.name + ' — вкладка «Праздник» в Дневнике' : 'сейчас нет', !!H]); }
+  try { for (const e of eventsNow()) out.push([e.name || 'Событие', 'идёт сейчас' + (e.short ? ' · ' + e.short : ''), true]); } catch (e) {}
+  return out;
+}
+function eventsPanel() {
+  let p = $('evP'); if (p) { p.remove(); return; }
+  p = mk('div', 'panel evp'); p.id = 'evP';
+  const head = mk('div', 'phead'); head.append(mk('b', '', 'События'), mk('span', '', 'расписание и то, что идёт сейчас'));
+  const x = mk('button', 'x', '×'); x.type = 'button'; x.onclick = () => p.remove(); head.appendChild(x);
+  const body = mk('div', 'evbody'); p.append(head, body); document.querySelector('.hud').appendChild(p);
+  const draw = () => { if (!p.isConnected) return; body.innerHTML = ''; for (const [n, s, live] of eventsList()) { const r = mk('div', 'evrow' + (live ? ' live' : '')); r.append(mk('b', '', n), mk('span', '', s)); body.appendChild(r); } setTimeout(draw, 1000); };
+  draw(); if (typeof bringFront === 'function') bringFront(p);
+}
+/* pets of other players */
+function remotePet(S, u, p) {
+  if (!p.pt || !PETS[p.pt]) return null; const id = p.pt;
+  for (const f of [0, 1]) if (!S.textures.exists('pet_' + id + f)) S.canvasTex('pet_' + id + f, 52, 44, c => PETS[id].paint(c, f), 'rgba(10,6,20,.7)', 3);
+  return { id, x: u.x - 1, y: u.y - 1, off: Math.random() * 6, spr: S.add.image(0, 0, 'pet_' + id + '0').setOrigin(.5, .8).setScale(WK / 3), shadow: S.add.image(0, 0, 'shadow').setScale(.6).setAlpha(.45) };
+}
+function remotePetTick(S, u) {
+  const P = u.pet; if (!P || !P.spr.scene) return;
+  const sd = u.flip ? 1 : -1, gx = u.x + sd * .85, gy = u.y - sd * .85, d = Math.hypot(gx - P.x, gy - P.y);
+  if (d > 9) { P.x = gx; P.y = gy; } else if (d > .15) { const k = Math.min(1, .12 * (d > 3 ? 2 : 1)); P.x += (gx - P.x) * k; P.y += (gy - P.y) * k; }
+  const p = iso(P.x, P.y), bob = 16 + Math.sin(S.now * 3 + P.off) * 4;
+  P.spr.setTexture('pet_' + P.id + (Math.floor(S.now * 6) % 2)).setPosition(p.x, p.y - bob).setDepth(p.y + 1).setFlipX(!!u.flip);
+  P.shadow.setPosition(p.x, p.y).setDepth(p.y - 1);
+}
+/* the pet also floats in the hero window */
+function heroPetDraw(ctx, cv, t) {
+  const it = save.eq.pet; if (!it || !PETS[it.base]) return;
+  const img = petCanvas(it.base, Math.floor(t * 6) % 2), w = 104, h = 88, x = cv.width - w - 18, y = 70 + Math.sin(t * 2.4) * 8;
+  ctx.save(); ctx.shadowColor = PETS[it.base].col; ctx.shadowBlur = 14; ctx.drawImage(img, x, y, w, h); ctx.restore();
+  ctx.save(); ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.fillStyle = PETS[it.base].col;
+  const n = PETS[it.base].name.split(' ')[0] + ' · ' + (it.plv || 1); ctx.strokeText(n, x + w / 2, y - 2); ctx.fillText(n, x + w / 2, y - 2); ctx.restore();
 }
 
 (async () => {
