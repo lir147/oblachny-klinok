@@ -6656,7 +6656,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '36', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '37', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = [];
 window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
@@ -7126,7 +7126,7 @@ async function mqttRoom() {
   if (typeof WebSocket === 'undefined') return null;
   const me = save.pid, peers = new Map(), handlers = [], moveH = [];
   const conns = new Map(), fails = {};
-  let myPres = null, closed = false;
+  let myPres = null, closed = false, everOnline = false;
   const fire = (joined, left, updated) => { const ch = { peers: [...peers.values()], joined, left, updated }; for (const h of handlers) try { h(ch); } catch (e) { console.warn(e); } };
   const onmsg = (topic, body, c) => {
     if (topic.startsWith(NET_NS + 'p/')) {
@@ -7165,9 +7165,10 @@ async function mqttRoom() {
   const openOne = async url => {
     if (closed || conns.has(url)) return;
     const c = await dial(url, true);
-    if (!c) { fails[host(url)] = (fails[host(url)] || 0) + 1; updState(); setTimeout(() => openOne(url), conns.size ? 30000 : 10000); return; }
+    if (!c) { const n = fails[host(url)] = (fails[host(url)] || 0) + 1; updState(); if (n === 3 && !everOnline) { log('Нет связи с игровым сервером — друзей пока не видно. Игра продолжает пробовать; если не поможет, попробуйте другую сеть или VPN.', 'bad'); renderWorld(true); } setTimeout(() => openOne(url), conns.size ? 30000 : Math.min(15000, 2000 * n)); return; }
     delete fails[host(url)];
     adopt(url, c);
+    if (!everOnline) { everOnline = true; log('Онлайн: подключено к игровому серверу (' + host(url) + ').', 'good'); }
     if (save.myReviews) for (const r of save.myReviews) c.pub(NET_NS + 'fb/' + r.k, JSON.stringify(r), true);
     diag(); renderWorld(true);
   };
@@ -7294,9 +7295,8 @@ function placeRemote(S, u, moving) {
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
-  if (!ROOM) { NET_STATE = 'connecting'; renderWorld(); try { ROOM = await mqttRoom(); } catch (e) { console.warn(e); ROOM = null; } if (!ROOM) NET_STATE = 'offline'; }
+  if (!ROOM) { NET_STATE = 'connecting'; renderWorld(); while (!(GAME && GAME.hero && GAME.hero.atk != null)) await new Promise(r => setTimeout(r, 300)); await new Promise(r => setTimeout(r, 1200)); try { ROOM = await mqttRoom(); } catch (e) { console.warn(e); ROOM = null; } if (!ROOM) NET_STATE = 'offline'; }
   if (!ROOM) { renderWorld(); return; }
-  if (ROOM.net) log(NET_STATE === 'online' ? 'Онлайн: на связи серверов ' + NET_SERVERS_OK.length + ' из ' + NET_SERVERS.length + ' (' + NET_SERVERS_OK.join(', ') + ').' : 'Нет связи с игровыми серверами — друзей не будет видно. Попробуйте другую сеть или VPN.', NET_STATE === 'online' ? 'good' : 'bad');
   if (ROOM.onMove) ROOM.onMove(d => { NET_MOVES.set(String(d.i), { z: String(d.z), x: +d.x, y: +d.y, f: d.f, m: d.m, t: Date.now() }); });
   ROOM.onPeers(ch => { ROOM_PEERS = ch.peers; for (const p of ch.joined) { const o = p.presence && p.presence.ok; if (o && save.friends.some(f => f.pid === o.pid)) log('Друг в сети: ' + cleanText(o.n), 'good'); } renderWorld(true); }, () => { ROOM = null; renderWorld(); });
   setInterval(() => pushPresence(false), 3000); setTimeout(() => pushPresence(true), 1500);
