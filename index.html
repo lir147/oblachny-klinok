@@ -271,6 +271,13 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
 .srow.noic{grid-template-columns:minmax(0,1fr) auto}
+.cell .lk{position:absolute;left:2px;bottom:1px;font-size:11px;line-height:1;filter:drop-shadow(0 0 2px #000)}
+.devre{margin-top:6px;padding:6px 8px;border-left:3px solid var(--gold);background:rgba(201,163,90,.1);border-radius:4px;font-size:13px;color:#f3e1b0}
+.admin-in{width:100%;box-sizing:border-box;font:14px var(--body);padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:#0b1020;color:var(--paper);resize:vertical}
+.admin-num{width:90px;font:14px var(--body);padding:5px 6px;border-radius:6px;border:1px solid var(--line);background:#0b1020;color:var(--paper)}
+.admlab{display:grid;gap:2px;font-size:12px;color:var(--muted)}
+.annbar{border-color:var(--gold)}
+
 .srow.noic > .btn{white-space:nowrap}
 .srow .sn{font-size:15px;line-height:1.2}
 .srow .ss{font-size:12px;color:var(--muted)}
@@ -467,7 +474,7 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
 
   <div id="diaryP" class="panel diaryp" hidden>
     <div class="phead"><b>Дневник</b><span>задания, награды, достижения</span><button class="x" id="diaryX" type="button" aria-label="Закрыть дневник">×</button></div>
-    <div class="tabs" role="tablist"><button class="tab on" data-dt="daily" type="button" role="tab">Задания дня</button><button class="tab" data-dt="login" type="button" role="tab">Вход</button><button class="tab" data-dt="ach" type="button" role="tab">Достижения</button><button class="tab" data-dt="titles" type="button" role="tab">Титулы</button><button class="tab" data-dt="cook" type="button" role="tab">Готовка</button><button class="tab" data-dt="season" type="button" role="tab">Сезон</button><button class="tab" data-dt="path" type="button" role="tab">Путь</button><button class="tab" data-dt="home" type="button" role="tab">Дом</button><button class="tab" data-dt="holiday" type="button" role="tab">Праздник</button><button class="tab" data-dt="events" type="button" role="tab">События</button></div>
+    <div class="tabs" role="tablist"><button class="tab on" data-dt="daily" type="button" role="tab">Задания дня</button><button class="tab" data-dt="login" type="button" role="tab">Вход</button><button class="tab" data-dt="ach" type="button" role="tab">Достижения</button><button class="tab" data-dt="titles" type="button" role="tab">Титулы</button><button class="tab" data-dt="cook" type="button" role="tab">Готовка</button><button class="tab" data-dt="season" type="button" role="tab">Сезон</button><button class="tab" data-dt="path" type="button" role="tab">Путь</button><button class="tab" data-dt="tower" type="button" role="tab">Башня</button><button class="tab" data-dt="home" type="button" role="tab">Дом</button><button class="tab" data-dt="holiday" type="button" role="tab">Праздник</button><button class="tab" data-dt="events" type="button" role="tab">События</button></div>
     <div id="diaryBody" class="shop"></div>
   </div>
 
@@ -500,7 +507,7 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
   </div>
   <div id="worldP" class="panel worldp" hidden>
     <div class="phead"><b>Мир</b><span id="worldSub"></span><button class="x" id="worldX" type="button" aria-label="Закрыть окно мира">×</button></div>
-    <div class="tabs" role="tablist"><button class="tab on" data-wt="friends" type="button" role="tab">Друзья</button><button class="tab" data-wt="chat" type="button" role="tab">Чат</button><button class="tab" data-wt="guild" type="button" role="tab">Гильдия</button><button class="tab" data-wt="arena" type="button" role="tab">Арена</button><button class="tab" data-wt="save" type="button" role="tab">Сохранение</button><button class="tab" data-wt="lb" type="button" role="tab">Рекорды</button><button class="tab" data-wt="top" type="button" role="tab">Рейтинг</button></div>
+    <div class="tabs" role="tablist"><button class="tab on" data-wt="friends" type="button" role="tab">Друзья</button><button class="tab" data-wt="chat" type="button" role="tab">Чат</button><button class="tab" data-wt="guild" type="button" role="tab">Гильдия</button><button class="tab" data-wt="arena" type="button" role="tab">Арена</button><button class="tab" data-wt="save" type="button" role="tab">Сохранение</button><button class="tab" data-wt="lb" type="button" role="tab">Рекорды</button><button class="tab" data-wt="adm" type="button" role="tab" id="admTab" hidden>Админ</button><button class="tab" data-wt="top" type="button" role="tab">Рейтинг</button></div>
     <div id="worldBody" class="shop"></div>
   </div>
   <div id="duelO" class="panel duelp" hidden>
@@ -4064,6 +4071,7 @@ const WORLD_QUESTS = [
 ];
 ZONES.bg_field = { name: 'Поле битвы', seed: 177, tiles: 't', bg: '#0d1220', deco: 'sky', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 // zones were laid out on a 28x28 map; stretch each onto its own size (open worlds 150x150, dungeons 44x44)
+ZONES.tower = { name: 'Башня испытаний', seed: 233, tiles: 'v', bg: '#0a0814', deco: 'spirit', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 for (const z of Object.values(ZONES)) z.size = z.dungeon || z.arena ? 44 : 150;
 { for (const z of Object.values(ZONES)) {
     const S = z.size, ZF = S / 28, Cz = S / 2, rk = 1.25 * Math.sqrt(ZF / (44 / 28)), edge = v => v > 25 ? S - 1 : v < 3 ? 1 : Cz + .5 + (v - 14.5) * ZF;
@@ -4263,6 +4271,7 @@ function cellFor(it, extra) {
     const img = mk('img'); img.src = iconURL(it); img.alt = ''; c.appendChild(img);
     c.title = itemName(it);
     if (it.plus) c.appendChild(mk('span', 'pl', '+' + it.plus));
+    if (it.lock) c.appendChild(mk('span', 'lk', '🔒'));
     if (it.qty) c.appendChild(mk('span', 'q', String(it.qty)));
     const t = it.plus ? glowTier(it.plus) : null;
     if (t) {
@@ -4291,7 +4300,8 @@ class World extends Phaser.Scene {
     { const zd = ZONES[this.zoneId] && ZONES[this.zoneId].dungeon, gi = data && data.dgInst;
       this.dgHost = !!(zd && gi && PARTY && PARTY.lead === save.pid && gi === 'dg:' + PARTY.id + ':' + this.zoneId);
       this.dgRemote = !!(zd && gi && !this.dgHost);
-      this.inst = zd ? (gi || 'solo:' + save.pid + ':' + this.zoneId) : gi && gi.startsWith('bg:') ? gi : this.zoneId; }
+      this.inst = zd ? (gi || 'solo:' + save.pid + ':' + this.zoneId) : gi && gi.startsWith('bg:') ? gi : this.zoneId === 'tower' ? 'tower:' + save.pid : this.zoneId; }
+    this.tw = this.zoneId === 'tower' ? { f: Math.max(1, +(data && data.towF) || 1), state: 'wait', t: performance.now() + 2500 } : null;
     this.zone = ZONES[this.zoneId];
     N = this.zone.size || 44; C = N / 2;
     save.zone = this.zoneId; persist();
@@ -4399,7 +4409,7 @@ class World extends Phaser.Scene {
     });
 
     this.allies = []; this.remotes = new Map(); this.fishing = null; this.pvpProxy = null;
-    makeHerbs(this); dailyCheck(this); titleHud(); buffHud(); holidayDecor(this); this.weather = null; weatherApply(this); tutInit();
+    makeHerbs(this); dailyCheck(this); titleHud(); buffHud(); holidayDecor(this); this.weather = null; weatherApply(this); tutInit(); gfxApply(this); towerHud(this);
     for (const it of [...save.inv, ...Object.values(save.eq)]) wardrobeNote(it);
     if (BG && this.zoneId !== BG_ID && Date.now() - BG.t0 > 15000) { BG = null; bgHud(); }
     if (BG && this.zoneId === BG_ID) { const base = BG.me === 0 ? [C - 20, C] : [C + 20, C]; this.hero.x = base[0]; this.hero.y = base[1]; }
@@ -4409,7 +4419,7 @@ class World extends Phaser.Scene {
       if (this.dgHost) { netSend('g/' + PARTY.id, { t: 'dgcall', f: save.pid, id: PARTY.id, z: this.zoneId, i: this.inst, df: this.dgDiff }); log('Отряд собирается: волны начнутся через 9 секунд. Друзьям пришло приглашение.', 'good'); }
       if (this.dgRemote) log('Вы в подземелье вместе с отрядом. Волны ведёт лидер.', 'good');
     }
-    else for (let k = 0; k < 30; k++) this.trySpawn(true);
+    else if (this.zone.mobs.length) for (let k = 0; k < 30; k++) this.trySpawn(true);
     this.updatePartyHud(true);
     this.buildMini();
     if (!this.pet) this.makePet();
@@ -4523,7 +4533,7 @@ class World extends Phaser.Scene {
     }
     // ambience (big worlds spawn it per ground chunk)
     if (N > 60) { /* see chunkAmbient */ }
-    else if (z.ambient === 'fireflies') {
+    else if (z.ambient === 'fireflies' && !LOWFX()) {
       for (let k = 0; k < (z.village ? 34 : 24); k++) {
         const p0 = iso(rand(-2, N), rand(-2, N * .4));
         const pt = this.add.image(p0.x, p0.y - 200, z.deco === 'bamboo' ? 'leaf' : 'petal').setDepth(178000).setAlpha(rand(.6, .95)).setScale(rand(.7, 1.2)).setRotation(rand(0, 6));
@@ -4578,6 +4588,7 @@ class World extends Phaser.Scene {
     return out;
   }
   chunkAmbient(X0, Y0, rec) {
+    if (LOWFX()) return;
     const z = this.zone, R = mulberry32(z.seed * 977 + X0 * 3 + Y0 * 7), gx = this.gg.ox, gy = this.gg.oy;
     const inIsland = (wx, wy) => { const u = unIso(wx, wy); return u.x > 1 && u.y > 1 && u.x < N - 1 && u.y < N - 1; };
     const n = z.ambient === 'snow' ? 6 : 4;
@@ -5421,7 +5432,8 @@ class World extends Phaser.Scene {
         if (cur && it.slot !== 'costume') det.appendChild(mk('div', 'ds', 'Сейчас надето: ' + itemName(cur) + ' — ' + describe(cur).split(' — ')[1]));
         acts.appendChild(btn(it.slot === 'costume' ? 'Примерить' : 'Надеть', () => this.equip(this.selItem.i), 'main'));
       }
-      acts.appendChild(btn('Продать за ' + sellPrice(it) + ' мон', () => this.sell(this.selItem.i), '', !village));
+      acts.appendChild(btn('Продать за ' + sellPrice(it) + ' мон', () => this.sell(this.selItem.i), '', !village || isLocked(it)));
+      if (!it.kind && it.slot !== 'use' && !GEM_REF(it) && !LIFE_REF(it)) acts.appendChild(btn(it.lock ? '🔓 Снять замок' : '🔒 Замок', () => toggleLock(this, it), it.lock ? 'main' : ''));
       if (!it.kind && it.slot !== 'use') { socketUI(det, this, it); tradeFormInto(det, this, it); }
       if (!it.grow) auFormInto(det, this, it);
       if (!village) det.appendChild(mk('div', 'ds', 'Продать можно, вернувшись в деревню Кумо.'));
@@ -5452,6 +5464,7 @@ class World extends Phaser.Scene {
   sell(i) {
     const it = save.inv[i]; if (!it || !(this.zone.village && this.safeAt(this.hero.x, this.hero.y))) return;
     if (it.grow) { log('Легендарные вещи нельзя продать.', 'bad'); return; }
+    if (isLocked(it)) { log('Вещь под замком — сначала снимите замок.', 'bad'); return; }
     let price;
     if (it.kind) { price = sellPrice(it); it.qty--; if (it.qty <= 0) save.inv.splice(i, 1); }
     else { price = sellPrice(it); save.inv.splice(i, 1); }
@@ -5865,7 +5878,7 @@ class World extends Phaser.Scene {
     }
     // sparkles for high tiers
     const wi = tierIdx(h.wTier), ai = tierIdx(h.aTier), tier = Math.max(wi, ai);
-    if (tier >= 2 && h.alive && t > this.sparkT) {
+    if (tier >= 2 && h.alive && t > this.sparkT && !LOWFX()) {
       this.sparkT = t + Math.max(.025, .16 - tier * .016);
       let px, py, col;
       const wl = this.weaponLook();
@@ -6047,6 +6060,7 @@ class World extends Phaser.Scene {
   die() {
     stat('deaths'); sfx('death');
     if (BG && this.zoneId === BG_ID) { BG.deadUntil = Date.now() + 5000; setTimeout(() => { $('death').hidden = true; }, 0); log('Вы пали. Возрождение у своего знамени через 5 секунд.', 'bad'); }
+    if (this.tw) towerDie(this);
     const h = this.hero; h.alive = false; h.hp = 0; h.target = null; h.dest = null; h.talk = null;
     h.spr.setTint(0x666677).setAlpha(.6).setAngle(80);
     for (const m of this.mobs) m.angry = false;
@@ -6057,12 +6071,13 @@ class World extends Phaser.Scene {
 
   respawn() {
     const h = this.hero;
-    const lost = Math.floor(save.gold * .1); save.gold -= lost; persist();
+    const lost = this.tw ? 0 : Math.floor(save.gold * .1); save.gold -= lost; persist();
     const at = this.zone.village ? { x: C + .5, y: C + .5 } : portalInward(this.zone.portals[0]);
     Object.assign(h, { x: at.x, y: at.y, alive: true, hp: h.maxHp, mp: h.maxMp, lastHit: -99 });
     h.spr.clearTint().setAlpha(1).setAngle(0);
     $('death').hidden = true;
     for (const a of this.allies) { if (!a.alive) this.reviveAlly(a); a.x = h.x + rand(-1, 1); a.y = h.y + rand(-1, 1); }
+    if (this.tw) { this.travel({ to: 'village' }); return; }
     log('Вы очнулись ' + (this.zone.dungeon ? 'у входа в подземелье' : 'в лагере') + (lost ? ' и потеряли ' + lost + ' мон.' : '.'), 'info');
   }
 
@@ -6661,7 +6676,7 @@ class World extends Phaser.Scene {
     if (this.allies.length) this.updateAllies(dt);
     if (this.pet) this.updatePet(dt);
     netUpdate(this, dt);
-    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); bgTick(this);
+    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); bgTick(this); towerTick(this);
     if (performance.now() > (this.achT || 0)) { this.achT = performance.now() + 2000; checkAch(this); evHud(); }
     if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); dgTimerHud(this); pathTick(this); }
     if (this.zone.dungeon) this.updateDungeon();
@@ -7035,7 +7050,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '42', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '43', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = [];
 window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
@@ -7263,6 +7278,8 @@ function renderDiary() {
       body.appendChild(r);
     }
     const b = buffsActive(); if (Object.keys(b).length) note('Действует: ' + ($('buffTxt') ? $('buffTxt').textContent : ''));
+  } else if (DIARY_TAB === 'tower') {
+    renderTowerTab(body, G);
   } else if (DIARY_TAB === 'path') {
     renderPathTab(body, G);
   } else if (DIARY_TAB === 'home') {
@@ -7309,7 +7326,7 @@ function renderReviews() {
   for (const r of list) {
     const el = mk('div', 'fbrev'), hd = mk('div', 'fh'), d = new Date(r.t);
     hd.append(mk('span', 'fk fk-' + r.kind, FB_KINDS[r.kind]), mk('b', '', r.n + (r.me ? ' (вы)' : '')), mk('span', 'st', r.st ? '★'.repeat(r.st) + '☆'.repeat(5 - r.st) : ''), mk('span', '', (r.c ? CLASSES[r.c].name + ' · ' : '') + 'ур. ' + r.lv + ' · ' + d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })));
-    el.append(hd, mk('div', 'tx', r.s)); box.appendChild(el);
+    el.append(hd, mk('div', 'tx', r.s)); { const re = ADM.re.get(r.k); if (re && re.text) el.appendChild(mk('div', 'devre', 'Ответ разработчика: ' + cleanText(re.text).slice(0, 500))); } box.appendChild(el);
   }
 }
 function openFeedback(open) { const p = $('fbP'); p.hidden = open === true ? false : open === false ? true : !p.hidden; if (!p.hidden) { if (typeof bringFront === 'function') bringFront(p); renderStars(); setFbKind(FB_KIND); renderReviews(); } }
@@ -7341,7 +7358,7 @@ $('skWheel').addEventListener('click', openWheel);
    collectibles, legendary/mythic, items with gems and consumables stay */
 const SELL_SLOTS = ['weapon', 'armor', 'ring', 'ring2', 'earring', 'charm'];
 let SELL_MAX = 2;
-const sellAllList = max => save.inv.filter(it => it && !it.kind && !it.grow && !it.excl && SELL_SLOTS.includes(it.slot) && it.rarity <= max && !(it.gems && it.gems.some(Boolean)));
+const sellAllList = max => save.inv.filter(it => it && !it.kind && !it.grow && !it.lock && !it.excl && SELL_SLOTS.includes(it.slot) && it.rarity <= max && !(it.gems && it.gems.some(Boolean)));
 function sellAllPopup() {
   const G = GAME; if (!G) return;
   if (!(G.zone.village && G.safeAt(G.hero.x, G.hero.y))) { log('Продать можно, вернувшись в деревню Кумо.', 'bad'); return; }
@@ -7355,7 +7372,7 @@ function sellAllPopup() {
     [[0, 'Обычные'], [1, 'До редких'], [2, 'До эпических'], [3, 'До легендарных']].forEach(([k, n]) => r.appendChild(btn(n, () => { SELL_MAX = k; draw(); }, k === SELL_MAX ? 'main' : '')));
     box.appendChild(r);
     box.appendChild(mk('div', 'ss', list.length ? 'Будет продано вещей: ' + list.length + ' на ' + sum.toLocaleString('ru-RU') + ' мон.' : 'Подходящих вещей нет.'));
-    box.appendChild(mk('div', 'ss', 'Не продаются: надетое, мифическое и растущее легендарное, вещи со вставленными камнями, наряды, крылья, маунты, питомцы, колобки, свитки, камни и материалы.'));
+    box.appendChild(mk('div', 'ss', 'Не продаются: надетое, вещи под замком 🔒, мифическое и растущее легендарное, вещи со вставленными камнями, наряды, крылья, маунты, питомцы, колобки, свитки, камни и материалы.'));
     const a = mk('div', 'acts');
     a.append(btn('Отмена', () => box.remove(), ''), btn(list.length ? 'Продать за ' + sum.toLocaleString('ru-RU') + ' мон' : 'Продать', () => {
       const L = sellAllList(SELL_MAX); let got = 0;
@@ -7731,7 +7748,7 @@ function pushPresence(force) {
 }
 function others() {
   const out = [];
-  for (const pe of ROOM_PEERS) { const p = pe.presence && pe.presence.ok; if (!p || typeof p !== 'object' || pe.isMe || p.pid === save.pid) continue; if (!CLASSES[p.c]) continue; out.push(Object.assign({ peer: pe.peer, guest: pe.guest }, p)); }
+  for (const pe of ROOM_PEERS) { const p = pe.presence && pe.presence.ok; if (!p || typeof p !== 'object' || pe.isMe || p.pid === save.pid) continue; if (!CLASSES[p.c] || isBanned(p.pid)) continue; out.push(Object.assign({ peer: pe.peer, guest: pe.guest }, p)); }
   const seen = new Set(); return out.filter(p => !seen.has(p.pid) && seen.add(p.pid));
 }
 const fighterOf = p => ({ n: cleanText(p.n).slice(0, 20) || 'Игрок', c: p.c, lv: +p.lv || 1, a: +p.a || 10, hp: +p.hp || 100, d: +p.d || 0, cr: Math.min(75, +p.cr || 15), bm: +p.bm || 0, pl: +p.pl || 1, r: +p.r || 1000, look: p.look || {}, pid: p.pid });
@@ -7994,6 +8011,7 @@ function partyInit() {
   setInterval(partyTick, 3000);
 }
 function onDirect(d) {
+  if (d && isBanned(d.f)) return;
   if (!d || d.f === save.pid) return;
   if (d.t === 'inv') { if (inParty()) { netSend('d/' + d.f, { t: 'busy', f: save.pid, n: save.name }); return; } askPopup(cleanText(d.n) + ' (' + (CLASSES[d.c] ? CLASSES[d.c].name : '') + ', ур. ' + (+d.lv || 1) + ') зовёт вас в отряд.', 'Вступить', () => partyJoin(d), () => netSend('d/' + d.f, { t: 'decl', f: save.pid, n: save.name })); }
   else if (d.t === 'join' && PARTY && PARTY.lead === save.pid && PARTY.id === d.id) {
@@ -8655,7 +8673,7 @@ function pvpHit(S, m, d, crit) {
 /* ---------- trading items for coins ---------- */
 const TRADES = {};
 function tradeOffer(o, it, price) {
-  if (!netOk()) return; price = Math.max(0, Math.min(1e8, Math.round(+price || 0)));
+  if (!netOk()) return; if (isLocked(it)) { log('Вещь под замком — сначала снимите замок.', 'bad'); return; } price = Math.max(0, Math.min(1e8, Math.round(+price || 0)));
   const id = save.pid + Date.now().toString(36);
   TRADES[id] = { to: o.pid, uid: it.uid, price, n: cleanText(o.n) };
   netSend('d/' + o.pid, { t: 'trade', f: save.pid, n: save.name, id, item: it, price });
@@ -9042,6 +9060,7 @@ function mailSubscribe() {
 }
 const mailBadge = () => { const b = $('skMarket'); if (b) b.classList.toggle('hasnew', Object.keys(AU.mail).length > 0); };
 function auList(G, it, price) {
+  if (isLocked(it)) { log('Вещь под замком — сначала снимите замок.', 'bad'); return; }
   price = Math.max(1, Math.min(1e9, Math.round(+price || 0)));
   if (!netOk() || NET_STATE !== 'online') { log('Нет связи с игровым сервером.', 'bad'); return; }
   const mine = Object.values(AU.lots).filter(l => l.f === save.pid && Date.now() - l.t < AU_TTL).length;
@@ -9366,7 +9385,7 @@ function holidayDecor(S) {
     if (!S.textures.exists(key)) S.canvasTex(key, 32, 32, c => { const g = c.createRadialGradient(14, 14, 2, 16, 18, 14); g.addColorStop(0, '#ffc060'); g.addColorStop(1, '#c0500a'); c.fillStyle = g; c.beginPath(); c.ellipse(16, 19, 12, 10, 0, 0, 6.29); c.fill(); c.fillStyle = '#3a6a1a'; c.fillRect(15, 6, 3, 5); c.fillStyle = '#ffee80'; c.beginPath(); c.moveTo(10, 16); c.lineTo(13, 13); c.lineTo(14, 17); c.fill(); c.beginPath(); c.moveTo(22, 16); c.lineTo(19, 13); c.lineTo(18, 17); c.fill(); c.beginPath(); c.moveTo(9, 21); c.quadraticCurveTo(16, 27, 23, 21); c.lineTo(20, 23); c.lineTo(16, 22); c.lineTo(12, 23); c.closePath(); c.fill(); }, 'rgba(10,6,20,.7)', 2);
     const R = mulberry32(S.zone.seed * 31 + 7);
     for (let k = 0; k < 70; k++) { const x = C + (R() - .5) * 46, y = C + (R() - .5) * 46; if (!S.walkable(x, y)) continue; const p = iso(x, y); S.add.image(p.x, p.y, key).setOrigin(.5, .9).setScale(WK * .8).setDepth(p.y); S.add.image(p.x, p.y - 10, 'glow').setTint(0xff9a3a).setBlendMode(Phaser.BlendModes.ADD).setScale(.5).setAlpha(.55).setDepth(185000); }
-  } else if (S.zone.village) {
+  } else if (S.zone.village && !LOWFX()) {
     for (let i = 0; i < 160; i++) { const sx = Math.random() * S.scale.width, sy = Math.random() * S.scale.height, f = S.add.image(sx, sy, 'glow').setTint(0xffffff).setScale(rand(.04, .09)).setAlpha(rand(.5, .9)).setScrollFactor(0).setDepth(179000); S.tweens.add({ targets: f, y: sy + S.scale.height, x: sx + rand(-40, 40), duration: rand(6000, 12000), repeat: -1, onRepeat: () => { f.y = -10; } }); }
   }
 }
@@ -9449,16 +9468,16 @@ function lbTick() {
   if (!LB.sub) { LB.sub = true; ROOM.listen(NET_NS + 'lb/', d => { if (d && d.f) LB.data[String(d.f)] = d; }, NET_NS + 'lb/+'); }
   if (Date.now() < LB.pubT) return; LB.pubT = Date.now() + 120000;
   const R = save.records || {};
-  netSend('lb/' + save.pid, { f: save.pid, n: save.name, c: save.cls, lv: save.lv, reb: save.reb || 0, gold: save.gold, fish: save.stats.fish, kills: save.stats.kills, raid: R.r_eclipse_2 || R.r_eclipse_1 || R.r_eclipse_0 || 0, t: Date.now() }, true);
+  netSend('lb/' + save.pid, { f: save.pid, n: save.name, c: save.cls, lv: save.lv, reb: save.reb || 0, gold: save.gold, fish: save.stats.fish, kills: save.stats.kills, raid: R.r_eclipse_2 || R.r_eclipse_1 || R.r_eclipse_0 || 0, tower: (save.tower && save.tower.best) || 0, t: Date.now() }, true);
 }
 setInterval(lbTick, 15000);
-const LB_KINDS = [['lv', 'Уровень и перерождения', d => (d.reb || 0) * 100 + (d.lv || 0), d => (d.reb ? rebStars(d.reb) + ' ' : '') + d.lv + ' ур.'], ['gold', 'Богатейшие', d => d.gold || 0, d => Math.round(d.gold || 0).toLocaleString('ru-RU') + ' мон'], ['kills', 'Истребители демонов', d => d.kills || 0, d => (d.kills || 0).toLocaleString('ru-RU')], ['fish', 'Лучшие рыбаки', d => d.fish || 0, d => (d.fish || 0) + ' рыб'], ['raid', 'Быстрейший рейд', d => d.raid ? -d.raid : -1e12, d => d.raid ? mmssLong(d.raid) : '—']];
+const LB_KINDS = [['lv', 'Уровень и перерождения', d => (d.reb || 0) * 100 + (d.lv || 0), d => (d.reb ? rebStars(d.reb) + ' ' : '') + d.lv + ' ур.'], ['gold', 'Богатейшие', d => d.gold || 0, d => Math.round(d.gold || 0).toLocaleString('ru-RU') + ' мон'], ['kills', 'Истребители демонов', d => d.kills || 0, d => (d.kills || 0).toLocaleString('ru-RU')], ['tower', 'Башня испытаний', d => d.tower || 0, d => (d.tower || 0) + ' эт.'], ['fish', 'Лучшие рыбаки', d => d.fish || 0, d => (d.fish || 0) + ' рыб'], ['raid', 'Быстрейший рейд', d => d.raid ? -d.raid : -1e12, d => d.raid ? mmssLong(d.raid) : '—']];
 const mmssLong = ms => { const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 let LB_KIND = 'lv';
 function renderLeaderboard(body) {
   const tabs = mk('div', 'acts'); for (const [k, n] of LB_KINDS) tabs.appendChild(btn(n, () => { LB_KIND = k; renderWorld(); }, k === LB_KIND ? 'main' : ''));
   body.appendChild(tabs);
-  const K = LB_KINDS.find(x => x[0] === LB_KIND), me = { f: save.pid, n: save.name, c: save.cls, lv: save.lv, reb: save.reb || 0, gold: save.gold, fish: save.stats.fish, kills: save.stats.kills, raid: (save.records || {}).r_eclipse_0 || 0 };
+  const K = LB_KINDS.find(x => x[0] === LB_KIND), me = { f: save.pid, n: save.name, c: save.cls, lv: save.lv, reb: save.reb || 0, gold: save.gold, fish: save.stats.fish, kills: save.stats.kills, raid: (save.records || {}).r_eclipse_0 || 0, tower: (save.tower && save.tower.best) || 0 };
   const all = Object.values(Object.assign({}, LB.data, { [save.pid]: me })).filter(d => LB_KIND !== 'raid' || d.raid).sort((a, b) => K[2](b) - K[2](a));
   body.appendChild(mk('div', 'ds', 'Таблица собирается из всех игроков, кто заходил в игру. Обновляется раз в пару минут.'));
   const tb = mk('div', 'rank');
@@ -9639,7 +9658,7 @@ function emotePicker() {
 /* weather: each land changes every 10 minutes, the same for everyone */
 const WEATHER = { clear: { n: 'Ясно' }, rain: { n: 'Дождь', xp: 1.1 }, fog: { n: 'Туман', aggro: .6 }, storm: { n: 'Гроза', xp: 1.25, mob: 'stormoni' }, blizzard: { n: 'Метель', xp: 1.15 } };
 function weatherNow(z, zid) {
-  if (!z || z.dungeon) return 'clear';
+  if (!z || z.dungeon || z.arena) return 'clear';
   const p = Math.floor(Date.now() / 600000); let h = p * 2654435761 ^ (z.seed || 1) * 40503; h = (h ^ (h >>> 13)) >>> 0;
   const r = (h % 1000) / 1000, snow = z.tiles === 's';
   if (r < .5) return 'clear'; if (r < .68) return snow ? 'blizzard' : 'rain'; if (r < .84) return 'fog'; return snow ? 'blizzard' : 'storm';
@@ -9648,7 +9667,7 @@ function weatherApply(S) {
   const w = weatherNow(S.zone, S.zoneId); if (S.weather === w) return; S.weather = w;
   if (S.wfx) { for (const o of S.wfx) o.destroy(); } S.wfx = [];
   const W = S.scale.width, H = S.scale.height;
-  if (w === 'rain' || w === 'storm' || w === 'blizzard') {
+  if ((w === 'rain' || w === 'storm' || w === 'blizzard') && !LOWFX()) {
     for (let i = 0; i < (w === 'blizzard' ? 140 : 110); i++) {
       const o = w === 'blizzard' ? S.add.image(0, 0, 'glow').setTint(0xffffff).setScale(rand(.04, .08)).setAlpha(.8) : S.add.rectangle(0, 0, 1.2, rand(10, 18), 0xaad0ff, .45).setAngle(12);
       o.setScrollFactor(0).setDepth(179500).setPosition(Math.random() * W, Math.random() * H); S.wfx.push(o);
@@ -9671,7 +9690,7 @@ function terrTick() {
   if (sig !== TERR.sent && Date.now() > TERR.pubT) { TERR.pubT = Date.now() + 30000; TERR.sent = sig; netSend('tw/' + wk + '/' + save.pid, { f: save.pid, g: gtag(save.guild), gn: save.guild.n, gt: save.guild.t, z: save.terr.z }, true); }
 }
 setInterval(terrTick, 10000);
-function terrKill(zid) { if (!save.guild || ZONES[zid].dungeon) return; const wk = weekNo(Date.now()); if (!save.terr || save.terr.week !== wk) save.terr = { week: wk, z: {} }; save.terr.z[zid] = (save.terr.z[zid] || 0) + 1; }
+function terrKill(zid) { if (!save.guild || ZONES[zid].dungeon || ZONES[zid].arena) return; const wk = weekNo(Date.now()); if (!save.terr || save.terr.week !== wk) save.terr = { week: wk, z: {} }; save.terr.z[zid] = (save.terr.z[zid] || 0) + 1; }
 function terrOwner(zid) {
   const by = {};
   const all = Object.assign({}, TERR.data); if (save.guild && save.terr) all[save.pid] = { g: gtag(save.guild), gn: save.guild.n, gt: save.guild.t, z: save.terr.z };
@@ -9682,7 +9701,7 @@ const terrMine = zid => { const o = terrOwner(zid); return !!(o && save.guild &&
 function terrSection(body) {
   body.appendChild(mk('div', 'label', 'Земли гильдий на этой неделе'));
   body.appendChild(mk('div', 'ds', 'Каждая победа участника гильдии в открытой земле приносит ей очко. Гильдия, набравшая больше всех (от 30 очков), владеет землёй до понедельника: её участники находят там на 15% больше добычи и монет.'));
-  for (const zid of Object.keys(ZONES)) { if (ZONES[zid].dungeon) continue; const o = terrOwner(zid); body.appendChild(mk('div', 'ss', '· ' + ZONES[zid].name + ': ' + (o ? (o.t ? '[' + o.t + '] ' : '') + o.n + ' (' + o.p + ' очк.)' + (save.guild && o.g === gtag(save.guild) ? ' — ваша!' : '') : 'ничья'))); }
+  for (const zid of Object.keys(ZONES)) { if (ZONES[zid].dungeon || ZONES[zid].arena) continue; const o = terrOwner(zid); body.appendChild(mk('div', 'ss', '· ' + ZONES[zid].name + ': ' + (o ? (o.t ? '[' + o.t + '] ' : '') + o.n + ' (' + o.p + ' очк.)' + (save.guild && o.g === gtag(save.guild) ? ' — ваша!' : '') : 'ничья'))); }
 }
 
 
@@ -9698,6 +9717,221 @@ function holidayTick(S) {
     for (let k = 0; k < 30; k++) { const x = C - 14 + rand(-3, 3), y = C - 10 + rand(-3, 3); if (S.mobWalkable(x, y)) { const m = S.spawnMob(H.boss, x, y, save.lv + 2); m.maxHp = m.hp = Math.round(m.maxHp * 1.5); S.drawBar(m); banner(MOBS[H.boss].name, H.name); break; } }
   }
 }
+
+/* ---------- graphics: «weak phone» mode ---------- */
+const LOWFX = () => save.gfx === 'low';
+function gfxApply(S) {
+  S = S || GAME; if (!S || !S.game) return;
+  const L = S.game.loop; L.fpsLimit = LOWFX() ? 30 : 0; L.hasFpsLimit = L.fpsLimit > 0; L._limitRate = L.hasFpsLimit ? 1000 / L.fpsLimit : 0;
+}
+function gfxSet(mode) {
+  save.gfx = mode; persist(); gfxApply();
+  if (GAME) { GAME.weather = null; weatherApply(GAME); }
+  log(mode === 'low' ? 'Графика: режим «Слабый телефон» — 30 кадров, без частиц погоды, снега и искр. Полностью применится при переходе в другую землю.' : 'Графика: обычная.', 'good');
+  renderWorld();
+}
+// suggest the light mode once if the game runs slowly
+let GFX_SLOW = 0;
+setInterval(() => {
+  if (save.gfx || !GAME || document.hidden) return;
+  const f = GAME.game.loop.actualFps; GFX_SLOW = f < 24 ? GFX_SLOW + 1 : 0;
+  if (GFX_SLOW >= 4) { save.gfx = 'auto'; persist(); askPopup('Игра идёт медленно на этом устройстве (' + Math.round(f) + ' кадров). Включить режим «Слабый телефон»? Его можно выключить в «Мир» → «Сохранение».', 'Включить', () => gfxSet('low')); }
+}, 5000);
+function gfxSection(body) {
+  body.appendChild(mk('div', 'label', 'Графика'));
+  const r = mk('div', 'acts');
+  r.append(btn('Обычная', () => gfxSet('high'), LOWFX() ? '' : 'main'), btn('Слабый телефон', () => gfxSet('low'), LOWFX() ? 'main' : ''));
+  body.appendChild(r);
+  body.appendChild(mk('div', 'ds', '«Слабый телефон» ограничивает игру 30 кадрами и убирает дождь, снег, падающие листья и искры — меньше нагрев и лаги.'));
+}
+
+/* ---------- item lock ---------- */
+const isLocked = it => !!(it && it.lock);
+function toggleLock(G, it) { if (!it || it.kind) return; it.lock = !it.lock; persist(); log(it.lock ? '«' + it.name + '» под замком: её нельзя продать, выставить на аукцион или отдать.' : 'Замок снят: ' + it.name + '.', ''); G.renderInv(); if (G.renderHero) G.renderHero(); }
+
+/* ---------- Tower of Trials: endless floors, solo ---------- */
+const TOWER_ID = 'tower';
+const TOWER_POOL = (() => { const out = []; for (const z of Object.values(ZONES)) if (!z.dungeon && !z.arena && z.mobs) for (const m of z.mobs) if (MOBS[m[0]] && !MOBS[m[0]].boss && !out.includes(m[0])) out.push(m[0]); return out; })();
+const TOWER_BOSSES = (() => { const out = []; for (const z of Object.values(ZONES)) if (z.dungeon && !z.dungeon.raid && MOBS[z.dungeon.boss]) out.push(z.dungeon.boss); return out; })();
+if (!save.tower) save.tower = { best: 0, runs: 0 };
+Object.assign(TITLES, { towerclimb: 'Покоритель башни', towermaster: 'Владыка башни' });
+const towerStartFloor = () => save.tower.best >= 5 ? Math.floor(save.tower.best / 5) * 5 + 1 : 1;
+function towerEnter(f) {
+  const G = GAME; if (!G) return;
+  if (!G.zone.village) { log('Вход в Башню испытаний — из деревни Кумо.', 'bad'); return; }
+  if (!G.hero.alive) return;
+  save.tower.runs++; persist();
+  G.travel({ to: TOWER_ID, extra: { towF: Math.max(1, Math.min(f || 1, towerStartFloor())) } });
+}
+function towerSpawn(S) {
+  const T = S.tw, f = T.f, boss = f % 5 === 0, lv = save.lv + Math.floor(f / 2), hpK = 1 + f * .1, atkK = 1 + f * .045;
+  const put = (kind, k) => { for (let t = 0; t < 40; t++) { const a = rand(0, 6.28), r = rand(2.5, 7.5), x = C + Math.cos(a) * r, y = C + Math.sin(a) * r; if (S.mobWalkable(x, y)) { const m = S.spawnMob(kind, x, y, lv); m.maxHp = m.hp = Math.round(m.maxHp * hpK * k); m.atk *= atkK; m.angry = true; m.tower = true; S.drawBar(m); return m; } } return null; };
+  const pool = TOWER_POOL.length ? TOWER_POOL : ['oni'];
+  if (boss) { put(TOWER_BOSSES[(f / 5 - 1) % TOWER_BOSSES.length] || pool[0], 2.2); for (let i = 0; i < 2; i++) put(pool[(f + i) % pool.length], 1); banner('Этаж ' + f, 'Страж этажа'); }
+  else { const n = 3 + Math.min(5, Math.floor(f / 4)), off = Math.floor(f / 3); for (let i = 0; i < n; i++) put(pool[(off + i % 3) % pool.length], 1); banner('Этаж ' + f, 'Башня испытаний'); }
+  T.state = 'fight';
+}
+function towerReward(S, f) {
+  const gold = Math.round((60 + f * 25) * (1 + save.lv / 20)); save.gold += gold;
+  let msg = 'Этаж ' + f + ' пройден: +' + gold + ' мон.';
+  if (f > save.tower.best) {
+    save.tower.best = f; msg += ' Новый рекорд!';
+    if (f % 5 === 0) gemDrop(S, Math.min(5, 1 + Math.floor(f / 10)), 1);
+    if (f % 10 === 0) { S.give(scroll(2)); save.mats.star = (save.mats.star || 0) + 2; msg += ' Свитки и звёздные кристаллы за рубеж.'; }
+    for (const [need, id] of [[20, 'towerclimb'], [50, 'towermaster']]) if (f >= need && !save.titles.includes(id)) { save.titles.push(id); banner('Титул «' + TITLES[id] + '»', 'Башня испытаний'); }
+    LB.pubT = 0;
+  }
+  log(msg, 'good'); persist(); S.renderInv();
+}
+function towerTick(S) {
+  const T = S.tw; if (!T || S.zoneId !== TOWER_ID) return;
+  if (performance.now() > (T.hudT || 0)) { T.hudT = performance.now() + 500; towerHud(S); }
+  if (!S.hero.alive || T.state === 'over') return;
+  if (T.state === 'wait' && performance.now() > T.t) towerSpawn(S);
+  else if (T.state === 'fight' && !S.mobs.some(m => m.alive && m.tower)) { towerReward(S, T.f); T.f++; T.state = 'wait'; T.t = performance.now() + 3000; S.hero.hp = Math.min(S.hero.maxHp, S.hero.hp + S.hero.maxHp * .25); }
+}
+function towerHud(S) {
+  let el = $('towHud'); const on = S && S.tw && S.zoneId === TOWER_ID;
+  if (!on) { if (el) el.remove(); return; }
+  if (!el) { el = mk('div', 'dgtimer'); el.id = 'towHud'; document.querySelector('.hud').appendChild(el); }
+  setText(el, 'Башня · этаж ' + S.tw.f + ' · рекорд ' + save.tower.best + (S.tw.state === 'wait' ? ' · следующий через ' + Math.max(0, Math.ceil((S.tw.t - performance.now()) / 1000)) + ' с' : ''));
+}
+function towerDie(S) {
+  if (!S.tw) return; S.tw.state = 'over';
+  banner('Испытание окончено', 'Этаж ' + S.tw.f + ' · рекорд ' + save.tower.best);
+  log('Вы пали на ' + S.tw.f + ' этаже Башни. Монеты не теряются. Рекорд: ' + save.tower.best + '.', 'info');
+}
+function renderTowerTab(body, G) {
+  const head = mk('div', 'seasonhead');
+  head.append(mk('b', '', 'Башня испытаний'), mk('span', '', 'Бесконечные этажи демонов. Каждый этаж сильнее предыдущего, на каждом пятом — страж. Между этажами восстанавливается четверть здоровья. Смерть в башне не отнимает монет.'), mk('span', 'ss', 'Ваш рекорд: ' + save.tower.best + ' этаж · попыток: ' + save.tower.runs));
+  body.appendChild(head);
+  body.appendChild(mk('div', 'ds', 'Награды: монеты за каждый этаж; за новый рекорд на каждом 5-м этаже — камень, на каждом 10-м — свитки и звёздные кристаллы. Титулы «' + TITLES.towerclimb + '» (20 этаж) и «' + TITLES.towermaster + '» (50 этаж).'));
+  const r = mk('div', 'acts'), sf = towerStartFloor(), inV = G && G.zone.village;
+  r.appendChild(btn('Войти с 1 этажа', () => towerEnter(1), 'main', !inV));
+  if (sf > 1) r.appendChild(btn('Продолжить с ' + sf + ' этажа', () => towerEnter(sf), 'main', !inV));
+  body.appendChild(r);
+  if (!inV) body.appendChild(mk('div', 'ds', 'Войти можно из деревни Кумо.'));
+  body.appendChild(mk('div', 'label', 'Лучшие покорители'));
+  const all = Object.values(Object.assign({}, LB.data, { [save.pid]: { f: save.pid, n: save.name, c: save.cls, tower: save.tower.best } })).filter(d => d.tower).sort((a, b) => b.tower - a.tower).slice(0, 15);
+  const tb = mk('div', 'rank');
+  all.forEach((d, i) => { const row = mk('div', 'rrow' + (d.f === save.pid ? ' me' : '')); row.append(mk('span', 'rp', String(i + 1)), mk('span', 'rn', cleanText(d.n)), mk('span', 'rc', CLASSES[d.c] ? CLASSES[d.c].name : ''), mk('span', 'rv', d.tower + ' эт.'), mk('span', '', '')); tb.appendChild(row); });
+  if (!all.length) tb.appendChild(mk('div', 'ds', 'Пока никто не поднимался.'));
+  body.appendChild(tb);
+}
+
+/* ---------- admin: messages signed with the author's key (ECDSA P-256) ---------- */
+const ADM_PUB = { kty: 'EC', crv: 'P-256', x: 'Dno1y-H6PTE4XluDepMopuyw0eXMk-TzX5hLC_04k-M', y: 'l2wm0FpLNkyH-eOujh3vWjtLbG1gOWXPTTiHmzQHj1M', ext: true };
+const ADM = { key: null, priv: null, sub: false, ann: null, ban: new Set(), banN: {}, banAt: 0, re: new Map(), gifts: new Map() };
+const admOk = () => !!(window.crypto && crypto.subtle);
+async function admPubKey() { if (!ADM.key) ADM.key = await crypto.subtle.importKey('jwk', ADM_PUB, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']); return ADM.key; }
+async function admVerify(d) {
+  if (!d || typeof d.p !== 'string' || typeof d.s !== 'string' || !admOk()) return null;
+  try { const ok = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, await admPubKey(), unb64u(d.s), new TextEncoder().encode(d.p)); return ok ? JSON.parse(d.p) : null; } catch (e) { return null; }
+}
+// the author opens the game with #admin=<secret> once; the secret stays in this browser only
+(() => {
+  try {
+    const m = location.hash.match(/admin=([\w-]{20,})/);
+    if (m) { localStorage.setItem('okl_admin', m[1]); history.replaceState(null, '', location.pathname + location.search); }
+  } catch (e) {}
+})();
+const admSecret = () => { try { return localStorage.getItem('okl_admin') || ''; } catch (e) { return ''; } };
+const isAdmin = () => !!admSecret();
+async function admPriv() {
+  if (!ADM.priv) ADM.priv = await crypto.subtle.importKey('jwk', Object.assign({}, ADM_PUB, { d: admSecret() }), { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  return ADM.priv;
+}
+async function admPublish(topic, obj, retain) {
+  if (!netOk() || NET_STATE !== 'online') { log('Нет связи с игровым сервером.', 'bad'); return false; }
+  try {
+    const p = JSON.stringify(Object.assign({ at: Date.now() }, obj)), s = b64u(new Uint8Array(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, await admPriv(), new TextEncoder().encode(p))));
+    ROOM.send(NET_NS + 'adm/' + topic, JSON.stringify({ p, s }), retain !== false); return true;
+  } catch (e) { log('Не удалось подписать: ключ администратора неверный.', 'bad'); return false; }
+}
+function admSubscribe() {
+  if (ADM.sub || !netOk() || NET_STATE !== 'online') return; ADM.sub = true;
+  ROOM.listen(NET_NS + 'adm/', async (d, topic) => { const v = await admVerify(d); if (v) admHandle(v, topic.slice(NET_NS.length + 4)); }, NET_NS + 'adm/#');
+}
+setInterval(admSubscribe, 3000);
+function admHandle(v, sub) {
+  if (v.t === 'ann' && sub === 'ann') { ADM.ann = v; annShow(); }
+  else if (v.t === 'ban' && sub === 'ban' && v.at >= ADM.banAt) {
+    ADM.banAt = v.at; ADM.ban = new Set((v.list || []).map(String)); ADM.banN = v.names && typeof v.names === 'object' ? v.names : {};
+    if (ADM.ban.has(save.pid)) { log('Автор игры заблокировал вам сетевую игру. Одиночная игра доступна.', 'bad'); }
+    renderWorld();
+  }
+  else if (v.t === 're' && sub.startsWith('re/')) {
+    ADM.re.set(String(v.k), v); if (!$('fbP').hidden) renderReviews();
+    const mine = (save.myReviews || []).some(r => r.k === v.k); if (!save.reSeen) save.reSeen = [];
+    if (mine && !save.reSeen.includes(v.k + v.at)) { save.reSeen.push(v.k + v.at); save.reSeen = save.reSeen.slice(-50); persist(); banner('Ответ разработчика', 'на ваш отзыв'); log('Ответ разработчика на ваш отзыв: ' + cleanText(v.text).slice(0, 400), 'good'); }
+  }
+  else if (v.t === 'gift' && sub.startsWith('gift/')) {
+    ADM.gifts.set(String(v.id), v);
+    if (!save.admGot) save.admGot = [];
+    if ((v.to === 'all' || v.to === save.pid) && !save.admGot.includes(v.id) && (!v.exp || Date.now() < v.exp)) {
+      const G = GAME; if (!G || !G.hero) return;
+      save.admGot.push(v.id); save.admGot = save.admGot.slice(-200);
+      const g = Math.max(0, Math.min(1e7, +v.gold || 0)); save.gold += g;
+      const sc = Math.max(0, Math.min(50, +v.scroll || 0)); if (sc) G.give(scroll(sc));
+      const st = Math.max(0, Math.min(100, +v.star || 0)); if (st) save.mats.star = (save.mats.star || 0) + st;
+      const gm = Math.max(0, Math.min(10, +v.gems || 0)); if (gm) gemDrop(G, 3, gm);
+      persist(); G.renderInv();
+      banner('Подарок от автора игры', [g ? g + ' мон' : '', sc ? 'свитки ×' + sc : '', st ? 'кристаллы ×' + st : '', gm ? 'камни ×' + gm : ''].filter(Boolean).join(', '));
+      log('Подарок от автора игры' + (v.text ? ': «' + cleanText(v.text).slice(0, 200) + '»' : '') + '.', 'good');
+    }
+  }
+}
+const isBanned = pid => ADM.ban.has(String(pid));
+function annShow() {
+  const a = ADM.ann; if (!a || !a.text || (a.exp && Date.now() > a.exp) || save.annSeen === a.at) return;
+  let bar = $('annBar'); if (bar) bar.remove();
+  bar = mk('div', 'updbar annbar'); bar.id = 'annBar';
+  bar.append(mk('span', '', '📢 ' + cleanText(a.text).slice(0, 300)), btn('Понятно', () => { save.annSeen = a.at; persist(); bar.remove(); }, 'main'));
+  document.body.appendChild(bar); log('Объявление автора: ' + cleanText(a.text).slice(0, 300), 'info');
+}
+const ADMF = {};
+const admKeep = (el, k) => { if (ADMF[k] != null) el.value = ADMF[k]; el.addEventListener('input', () => { ADMF[k] = el.value; }); return el; };
+function renderAdmin(body) {
+  if (!isAdmin()) return;
+  const sect = n => body.appendChild(mk('div', 'label', n));
+  body.appendChild(mk('div', 'ds', 'Эта вкладка видна только в вашем браузере. Все команды подписываются вашим ключом — подделать их игроки не могут.'));
+  sect('Объявление всем игрокам');
+  const ta = mk('textarea'); ta.rows = 2; ta.maxLength = 300; ta.placeholder = 'Например: сегодня в 20:00 по Москве — двойной опыт!'; ta.className = 'admin-in'; admKeep(ta, 'ann'); body.appendChild(ta);
+  { const r = mk('div', 'acts'); r.append(btn('Отправить объявление', async () => { const t = ta.value.trim(); if (t.length < 2) return; if (await admPublish('ann', { t: 'ann', text: t, exp: Date.now() + 3 * 864e5 })) { log('Объявление отправлено.', 'good'); ta.value = ''; ADMF.ann = ''; } }, 'main'), btn('Убрать объявление', async () => { if (await admPublish('ann', { t: 'ann', text: '' })) log('Объявление убрано.', 'good'); }, '')); body.appendChild(r); }
+  if (ADM.ann && ADM.ann.text) body.appendChild(mk('div', 'ss', 'Сейчас: «' + cleanText(ADM.ann.text) + '»'));
+  sect('Подарок');
+  const gr = mk('div', 'acts admgift'); gr.style.flexWrap = 'wrap';
+  const num = (ph, v) => { const i = mk('input'); i.type = 'number'; i.min = '0'; i.value = v; i.placeholder = ph; i.title = ph; i.className = 'admin-num'; admKeep(i, ph); return i; };
+  const gGold = num('монеты', 5000), gSc = num('свитки', 0), gSt = num('кристаллы', 0), gGm = num('камни', 0);
+  const lab = (t, el) => { const w = mk('label', 'admlab'); w.append(mk('span', '', t), el); return w; };
+  gr.append(lab('Монеты', gGold), lab('Свитки', gSc), lab('Кристаллы', gSt), lab('Камни', gGm)); body.appendChild(gr);
+  const gt = mk('input'); gt.placeholder = 'Подпись к подарку (необязательно)'; gt.maxLength = 120; gt.className = 'admin-in'; admKeep(gt, 'gtext'); body.appendChild(gt);
+  const gift = async to => { const id = 'g' + Date.now().toString(36); if (await admPublish('gift/' + id, { t: 'gift', id, to, gold: +gGold.value || 0, scroll: +gSc.value || 0, star: +gSt.value || 0, gems: +gGm.value || 0, text: gt.value.trim(), exp: Date.now() + 7 * 864e5 })) log(to === 'all' ? 'Подарок отправлен всем: его получит каждый, кто зайдёт в игру в течение 7 дней.' : 'Подарок отправлен игроку.', 'good'); };
+  body.appendChild(btn('Подарить всем игрокам', () => gift('all'), 'main'));
+  sect('Игроки онлайн');
+  const on = others();
+  if (!on.length) body.appendChild(mk('div', 'ss', 'Сейчас никого нет.'));
+  for (const o of on) { const r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0'; info.append(mk('div', 'sn', cleanText(o.n) + ' · ' + (CLASSES[o.c] ? CLASSES[o.c].name : '') + ' · ур. ' + o.lv), mk('div', 'ss', 'id: ' + o.pid)); const a = mk('div', 'acts'); a.append(btn('Подарок', () => gift(o.pid), ''), btn('Заблокировать', () => admBan(o.pid, true, cleanText(o.n)), '')); r.append(info, a); body.appendChild(r); }
+  sect('Заблокированные');
+  if (!ADM.ban.size) body.appendChild(mk('div', 'ss', 'Никого.'));
+  for (const pid of ADM.ban) { const r = mk('div', 'srow noic'); r.append(mk('div', 'sn', (ADM.banN[pid] ? cleanText(ADM.banN[pid]) + ' · ' : '') + pid), btn('Разблокировать', () => admBan(pid, false), '')); body.appendChild(r); }
+  { const r = mk('div', 'acts'), inp = mk('input'); inp.placeholder = 'id игрока'; inp.className = 'admin-in'; admKeep(inp, 'banid'); r.append(inp, btn('Заблокировать по id', () => { const v = inp.value.trim(); if (v) admBan(v, true); }, '')); body.appendChild(r); }
+  sect('Отзывы — ответить');
+  const list = [...REVIEWS.values()].sort((a, b) => b.t - a.t).slice(0, 40);
+  for (const rv of list) {
+    const box = mk('div', 'fbrev'); box.append(mk('div', 'fh', (FB_KINDS[rv.kind] || '') + ' · ' + rv.n + ' · ур. ' + rv.lv), mk('div', 'tx', rv.s));
+    const re = ADM.re.get(rv.k); if (re && re.text) box.appendChild(mk('div', 'devre', 'Ваш ответ: ' + cleanText(re.text)));
+    const t = mk('textarea'); t.rows = 2; t.maxLength = 500; t.placeholder = 'Ответ игроку…'; t.className = 'admin-in'; t.value = re && re.text || ''; admKeep(t, 're_' + rv.k);
+    box.append(t, btn(re ? 'Изменить ответ' : 'Ответить', async () => { const v = t.value.trim(); if (v.length < 2) return; if (await admPublish('re/' + rv.k, { t: 're', k: rv.k, text: v })) log('Ответ опубликован — игрок увидит его в игре.', 'good'); }, 'main'));
+    body.appendChild(box);
+  }
+  if (!list.length) body.appendChild(mk('div', 'ss', 'Отзывов пока нет.'));
+  sect('Выход');
+  body.appendChild(confirmBtn('Забыть ключ администратора в этом браузере', () => { try { localStorage.removeItem('okl_admin'); } catch (e) {} ADM.priv = null; renderWorld(); }));
+}
+async function admBan(pid, on, name) { const s = new Set(ADM.ban), nm = Object.assign({}, ADM.banN); pid = String(pid); if (on) { s.add(pid); if (name) nm[pid] = name; } else { s.delete(pid); delete nm[pid]; } if (await admPublish('ban', { t: 'ban', list: [...s], names: nm })) { ADM.ban = s; ADM.banN = nm; log(on ? 'Игрок заблокирован.' : 'Игрок разблокирован.', 'good'); renderWorld(); } }
+
+if (isAdmin()) { const t = $('admTab'); if (t) t.hidden = false; }
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
@@ -9755,7 +9989,7 @@ function personRow(p, actions) {
 }
 function renderWorld(soft) {
   const p = $('worldP'); if (!p || p.hidden || !GAME || !GAME.hero || GAME.hero.atk == null) return;
-  if (soft && (Date.now() < WORLD_RT || (document.activeElement && document.activeElement.tagName === 'INPUT' && p.contains(document.activeElement)))) return;
+  if (soft && (Date.now() < WORLD_RT || (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') && p.contains(document.activeElement)))) return;
   WORLD_RT = Date.now() + 1500;
   for (const b of p.querySelectorAll('[data-wt]')) { b.classList.toggle('on', b.dataset.wt === WORLD_TAB); b.setAttribute('aria-selected', String(b.dataset.wt === WORLD_TAB)); }
   const on = others(), A = save.arena; arenaDaily();
@@ -9792,10 +10026,13 @@ function renderWorld(soft) {
         btn(isMuted(o.pid) ? 'Слышать' : 'Заглушить', () => toggleMute(o), '')
       ]));
     }
+  } else if (WORLD_TAB === 'adm') {
+    renderAdmin(body);
   } else if (WORLD_TAB === 'lb') {
     renderLeaderboard(body);
   } else if (WORLD_TAB === 'save') {
     renderSaveTab(body);
+    gfxSection(body);
     body.appendChild(mk('div', 'label', 'Приложение и напоминания'));
     { const r = mk('div', 'acts'); r.append(btn('Установить как приложение', () => pwaInstall(), 'main'), btn(save.remind ? 'Напоминания о боссах: вкл' : 'Напоминать о боссах', () => remindToggle(), save.remind ? 'main' : '')); body.appendChild(r); }
   } else if (WORLD_TAB === 'chat') {
