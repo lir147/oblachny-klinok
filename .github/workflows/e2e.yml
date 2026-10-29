@@ -1,0 +1,27 @@
+name: Проверка двумя браузерами
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save playwright-core@1.48.2
+      - name: Два игрока на настоящих серверах
+        run: node .github/scripts/e2e.mjs
+      - name: Сохранить
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p diag && mv e2e*.png diag/ 2>/dev/null; mv e2e.md diag/ 2>/dev/null
+          git add diag
+          git diff --cached --quiet || (git commit -m "Проверка двумя браузерами" && (git push || (git pull --rebase && git push)))
