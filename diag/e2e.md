@@ -1,6 +1,6 @@
 # Проверка двумя браузерами
 
-Время: 29.10.2026, 21:59:35
+Время: 29.10.2026, 22:37:19
 
 ## Браузер 1
 
@@ -8,13 +8,15 @@
 
 ```
 ВАШ НИК
-Сохранить
+Странник3772
+У вас стандартный ник — выберите свой бесплатно (один раз).
+Выбрать
 ДРУЗЬЯ · 0
 Друзей пока нет. Добавьте игроков из списка «Сейчас в игре».
 СЕЙЧАС В ИГРЕ · 1
-弓
-Странник2991
-Лучник · ур. 1 · БМ 548 · Бронза I · Окрестности деревни Кумо
+剣
+Странник8765
+Воин · ур. 1 · БМ 427 · Бронза I · Окрестности деревни Кумо
 Добавить
 Дуэль
 Бой
@@ -25,19 +27,18 @@
 
 **Журнал игры:**
 ```
+Новый день в долине! Награда за вход (день 1 из 7) и свежие задания ждут в «Дневнике».
 Демон Багровой луны пробудился на юго-востоке.
 Онлайн: подключено к игровому серверу (public.cloud.shiftr.io).
 Нажмите на «Воин» ещё раз, чтобы выбрать навсегда.
-Ваш путь: Воин.
-Мировой босс пробудился — Окрестности деревни Кумо! Награда — по урону.
 ```
 
 **Консоль и сеть:**
 ```
-warning: [.WebGL-0x171c02c90200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x171c02c90200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x171c02c90200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x171c02c90200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+warning: [.WebGL-0x179402e38c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x179402e38c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x179402e38c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x179402e38c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
 ws open wss://public.cloud.shiftr.io/
 ws sent 1 frames to wss://public.cloud.shiftr.io/
 ws sent 5 frames to wss://public.cloud.shiftr.io/
@@ -50,12 +51,14 @@ ws sent 20 frames to wss://public.cloud.shiftr.io/
 
 ```
 ВАШ НИК
-Сохранить
+Странник8765
+У вас стандартный ник — выберите свой бесплатно (один раз).
+Выбрать
 ДРУЗЬЯ · 0
 Друзей пока нет. Добавьте игроков из списка «Сейчас в игре».
 СЕЙЧАС В ИГРЕ · 1
 剣
-Странник5882
+Странник3772
 Воин · ур. 1 · БМ 427 · Бронза I · Окрестности деревни Кумо
 Добавить
 Дуэль
@@ -67,11 +70,10 @@ ws sent 20 frames to wss://public.cloud.shiftr.io/
 
 **Журнал игры:**
 ```
+Новый день в долине! Награда за вход (день 1 из 7) и свежие задания ждут в «Дневнике».
 Демон Багровой луны пробудился на юго-востоке.
 Онлайн: подключено к игровому серверу (public.cloud.shiftr.io).
-Мировой босс пробудился — Окрестности деревни Кумо! Награда — по урону.
 Нажмите на «Лучник» ещё раз, чтобы выбрать навсегда.
-Ваш путь: Лучник.
 ```
 
 **Консоль и сеть:**
