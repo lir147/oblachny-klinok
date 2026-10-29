@@ -6,6 +6,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d1220">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <title>Облачный клинок</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kurale&family=PT+Sans+Narrow:wght@400;700&display=swap">
 <style>
@@ -102,6 +105,23 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var
 .fbp{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);width:min(460px,calc(100vw - 32px))}
 .fbp p{margin:0;font-size:14px;line-height:1.45;color:var(--paper)}
 .fbp{max-height:calc(100% - 24px)}
+.tutbox{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 150px);width:min(420px,calc(100vw - 32px));display:grid;gap:5px;padding:10px 14px;border:1px solid var(--gold);border-radius:10px;background:linear-gradient(160deg,rgba(40,30,14,.96),rgba(16,14,24,.96));pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:3}
+.tutbox b{font-family:var(--display);font-weight:400;color:var(--gold);font-size:17px}.tutn{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.tuts{font-size:14px;line-height:1.4;color:var(--paper)}
+.tutbox .acts{display:flex;gap:6px;justify-content:flex-end}
+html.mob .tutbox{bottom:calc(env(safe-area-inset-bottom,0px) + 128px)}
+.dgtimer{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);padding:5px 12px;border:1px solid #5a4424;border-radius:16px;background:rgba(14,12,24,.9);font-variant-numeric:tabular-nums;font-size:14px;color:var(--paper)}
+.dgtimer.late{border-color:#c8433a;color:#ff8a80}
+.bghud{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);width:min(360px,calc(100vw - 32px));padding:8px 12px;display:grid;gap:4px;text-align:center}
+.bghud .bgsc{font-family:var(--display);font-size:22px;color:var(--paper)}
+.sockets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+.sock{width:30px;height:30px;border-radius:6px;border:1px dashed #5a5070;background:#0b1020;display:inline-block}.sock.on{border-style:solid;border-color:#8a6a2a}
+.sockets select{font:13px var(--body);padding:4px 6px;border-radius:6px;border:1px solid var(--line);background:#0b1020;color:var(--paper)}
+.emotep{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 90px);display:grid;grid-template-columns:repeat(2,auto);gap:6px;padding:8px;border:1px solid #5a4424;border-radius:10px;background:rgba(14,12,24,.96);pointer-events:auto;z-index:6}
+.ss.rec{color:#ffcf8a}
+html.photo .hud > *:not(#game){visibility:hidden !important}
+.photox{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;z-index:99999;padding:8px 12px;border-radius:8px;border:1px solid var(--gold);background:rgba(14,12,24,.85);color:var(--paper);font:14px var(--body);cursor:pointer}
+html.photo .photox{display:block}
+
 .auprice{font-family:var(--display);color:var(--gold);white-space:nowrap;font-size:15px}
 .aufilter,.mailform{display:flex;flex-wrap:wrap;gap:6px}
 .aufilter select,.aufilter input,.mailform select,.mailform input{font:14px var(--body);padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:#0b1020;color:var(--paper);min-width:0;flex:1 1 140px}
@@ -249,6 +269,8 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .shop .label{margin-top:4px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
+.srow.noic{grid-template-columns:minmax(0,1fr) auto}
+.srow.noic > .btn{white-space:nowrap}
 .srow .sn{font-size:15px;line-height:1.2}
 .srow .ss{font-size:12px;color:var(--muted)}
 .overlay{position:fixed;inset:0;display:grid;place-items:center;background:rgba(5,8,16,.6);pointer-events:auto;padding-inline:16px;overflow:auto}
@@ -309,7 +331,8 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .herop{left:max(16px,calc(50% - 440px));top:calc(env(safe-area-inset-top,0px) + 12px);width:min(620px,calc(100vw - 32px));max-height:calc(100% - 100px);border-color:#7a5a24;background:linear-gradient(#e0b04f,#e0b04f) left 6px top 6px / 22px 2px no-repeat,linear-gradient(#e0b04f,#e0b04f) left 6px top 6px / 2px 22px no-repeat,linear-gradient(#e0b04f,#e0b04f) right 6px top 6px / 22px 2px no-repeat,linear-gradient(#e0b04f,#e0b04f) right 6px top 6px / 2px 22px no-repeat,linear-gradient(#e0b04f,#e0b04f) left 6px bottom 6px / 22px 2px no-repeat,linear-gradient(#e0b04f,#e0b04f) left 6px bottom 6px / 2px 22px no-repeat,linear-gradient(#e0b04f,#e0b04f) right 6px bottom 6px / 22px 2px no-repeat,linear-gradient(#e0b04f,#e0b04f) right 6px bottom 6px / 2px 22px no-repeat,linear-gradient(160deg,rgba(30,22,40,.97),rgba(12,14,26,.97));box-shadow:inset 0 0 0 1px rgba(224,176,79,.18),0 12px 34px rgba(0,0,0,.6)}
 .herop .phead b{color:#f2d58a;text-shadow:0 0 12px rgba(224,176,79,.35)}
 @media (max-width:960px){.herop{left:50%;transform:translateX(-50%)}}
-.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;min-width:0;scrollbar-width:thin}
+.tabs .tab{flex:0 0 auto}
 .tab{font:700 14px var(--body);color:var(--muted);background:none;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;padding:6px 12px;cursor:pointer;margin-bottom:-1px}
 .tab.on{color:var(--gold);background:#141c31;border-color:var(--line)}
 .tab:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
@@ -416,6 +439,7 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
     <button class="skill" id="skBook" type="button" aria-label="Навыки (K)"><kbd>K</kbd><span class="ic">技</span><em>Навыки</em></button>
     <button class="skill" id="skDiary" type="button" aria-label="Дневник (J)"><kbd>J</kbd><span class="ic">日</span><em>Дневник</em></button>
     <button class="skill" id="skMarket" type="button" aria-label="Рынок (B)"><kbd>B</kbd><span class="ic">市</span><em>Рынок</em></button>
+    <button class="skill" id="skEmote" type="button" aria-label="Эмоции (Y)"><kbd>Y</kbd><span class="ic">笑</span><em>Эмоции</em></button>
     <button class="skill" id="skBag" type="button" aria-label="Сумка (I)"><kbd>I</kbd><span class="ic">袋</span><em>Сумка</em></button>
     <button class="skill" id="skRice" type="button" aria-label="Рисовый колобок (R)"><kbd>R</kbd><span class="qty" id="riceQty">0</span><span class="ic">飯</span><em>Колобок</em><i class="cd"></i></button>
     <span class="sep" aria-hidden="true"></span>
@@ -442,7 +466,7 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
 
   <div id="diaryP" class="panel diaryp" hidden>
     <div class="phead"><b>Дневник</b><span>задания, награды, достижения</span><button class="x" id="diaryX" type="button" aria-label="Закрыть дневник">×</button></div>
-    <div class="tabs" role="tablist"><button class="tab on" data-dt="daily" type="button" role="tab">Задания дня</button><button class="tab" data-dt="login" type="button" role="tab">Вход</button><button class="tab" data-dt="ach" type="button" role="tab">Достижения</button><button class="tab" data-dt="titles" type="button" role="tab">Титулы</button><button class="tab" data-dt="cook" type="button" role="tab">Готовка</button><button class="tab" data-dt="season" type="button" role="tab">Сезон</button><button class="tab" data-dt="events" type="button" role="tab">События</button></div>
+    <div class="tabs" role="tablist"><button class="tab on" data-dt="daily" type="button" role="tab">Задания дня</button><button class="tab" data-dt="login" type="button" role="tab">Вход</button><button class="tab" data-dt="ach" type="button" role="tab">Достижения</button><button class="tab" data-dt="titles" type="button" role="tab">Титулы</button><button class="tab" data-dt="cook" type="button" role="tab">Готовка</button><button class="tab" data-dt="season" type="button" role="tab">Сезон</button><button class="tab" data-dt="path" type="button" role="tab">Путь</button><button class="tab" data-dt="home" type="button" role="tab">Дом</button><button class="tab" data-dt="holiday" type="button" role="tab">Праздник</button><button class="tab" data-dt="events" type="button" role="tab">События</button></div>
     <div id="diaryBody" class="shop"></div>
   </div>
 
@@ -475,7 +499,7 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
   </div>
   <div id="worldP" class="panel worldp" hidden>
     <div class="phead"><b>Мир</b><span id="worldSub"></span><button class="x" id="worldX" type="button" aria-label="Закрыть окно мира">×</button></div>
-    <div class="tabs" role="tablist"><button class="tab on" data-wt="friends" type="button" role="tab">Друзья</button><button class="tab" data-wt="chat" type="button" role="tab">Чат</button><button class="tab" data-wt="guild" type="button" role="tab">Гильдия</button><button class="tab" data-wt="arena" type="button" role="tab">Арена</button><button class="tab" data-wt="save" type="button" role="tab">Сохранение</button><button class="tab" data-wt="top" type="button" role="tab">Рейтинг</button></div>
+    <div class="tabs" role="tablist"><button class="tab on" data-wt="friends" type="button" role="tab">Друзья</button><button class="tab" data-wt="chat" type="button" role="tab">Чат</button><button class="tab" data-wt="guild" type="button" role="tab">Гильдия</button><button class="tab" data-wt="arena" type="button" role="tab">Арена</button><button class="tab" data-wt="save" type="button" role="tab">Сохранение</button><button class="tab" data-wt="lb" type="button" role="tab">Рекорды</button><button class="tab" data-wt="top" type="button" role="tab">Рейтинг</button></div>
     <div id="worldBody" class="shop"></div>
   </div>
   <div id="duelO" class="panel duelp" hidden>
@@ -713,8 +737,10 @@ const starText = n => '★'.repeat(n) + '☆'.repeat(5 - n);
 const STAR_COST = [2000, 5000, 10000, 20000, 40000];
 const itemName = it => it.name + (it.plus ? ' +' + it.plus : '');
 const LIFE_REF = it => it && typeof LIFE !== 'undefined' && LIFE[it.base] && it.slot === 'use' ? LIFE[it.base] : null;
-const sellPrice = it => LIFE_REF(it) ? Math.round(LIFE_REF(it).price * .5) : it.slot === 'use' ? (it.kind === 'scroll' ? 50 : 3) : (it.slot === 'costume' || it.slot === 'wings' || it.slot === 'mount' || COSMETICS[it.slot]) ? Math.round(it.value * .3 * (1 + it.plus * .2)) : Math.round(it.value * .4 * (1 + it.plus * .3));
+const sellPrice = it => GEM_REF(it) ? Math.round(it.value * .3) : LIFE_REF(it) ? Math.round(LIFE_REF(it).price * .5) : it.slot === 'use' ? (it.kind === 'scroll' ? 50 : 3) : (it.slot === 'costume' || it.slot === 'wings' || it.slot === 'mount' || COSMETICS[it.slot]) ? Math.round(it.value * .3 * (1 + it.plus * .2)) : Math.round(it.value * .4 * (1 + it.plus * .3));
 function describe(it) {
+  if (GEM_REF(it)) { const R = GEM_REF(it); return 'Камень · ' + RAR[it.rarity].n + ' — ' + GEMS[R.g].label + ' +' + Math.round(gemVal(R.g, R.t) * 10) / 10 + ' в гнезде. Три одинаковых сливаются в следующую ступень («Дневник» → «Путь»). В стопке: ' + it.qty; }
+  if (LIFE_REF(it) && LIFE_REF(it).type === 'event') return 'Праздничная награда · обменивается в лавке праздника («Дневник» → «Праздник»)' + (it.base === 'ev_gift' ? ', а подарок можно открыть' : '') + '. В стопке: ' + it.qty;
   if (LIFE_REF(it)) { const L = LIFE_REF(it); return (L.type === 'fish' ? 'Рыба' : L.type === 'herb' ? 'Трава' : 'Блюдо') + ' · ' + RAR[it.rarity].n + ' — ' + (L.type === 'food' ? L.desc : 'ингредиент для готовки (вкладка «Готовка» в Дневнике)') + '. В стопке: ' + it.qty; }
   if (it.kind === 'scroll') return 'Заточка у кузнеца Тэцу удаётся наверняка и без монет. В стопке: ' + it.qty;
   if (it.slot === 'use') return 'Восстанавливает 35% здоровья. В стопке: ' + it.qty;
@@ -2044,7 +2070,8 @@ Object.assign(OUTFITS, {
 WINGS.triumph = { name: 'Крылья Триумфа', r: 2, price: 0, pal: [0xd0a040, 0xfff0c0, 0xffffff, 0x8a5a10], fx: 'moon', frame: 0xe0b04f, gem: 0xff3b5e, aura: 0x3a2a00 };
 
 function paintPetDragon(ctx, frame) {
-  const fa = frame ? -.5 : .15, R = mulberry32(3);
+  ctx.save(); ctx.translate(26, 24); ctx.scale(.92, .92); ctx.translate(-26, -22);
+  const fa = frame ? -.3 : .15, R = mulberry32(3);
   for (const s2 of [-1, 1]) { ctx.save(); ctx.translate(26, 22); ctx.rotate(fa * s2); ctx.translate(-26, -22);
     fillPath(ctx, k => { k.moveTo(26, 22); k.quadraticCurveTo(26 + s2 * 10, 4, 26 + s2 * 22, 6); k.lineTo(26 + s2 * 18, 13); k.quadraticCurveTo(26 + s2 * 15, 12, 26 + s2 * 13, 18); k.quadraticCurveTo(26 + s2 * 9, 16, 26 + s2 * 7, 23); k.closePath(); }, lin(ctx, 26, 4, 26, 24, [[0, '#ffb03a'], [1, '#a01808']]), INK, .5);
     for (const [x1, y1] of [[22, 6], [18, 13], [13, 18]]) strokeLine(ctx, [[26 + s2 * 2, 21], [26 + s2 * x1, y1]], 'rgba(255,240,180,.5)', .4);
@@ -2058,6 +2085,7 @@ function paintPetDragon(ctx, frame) {
   glowEyes3(ctx, [[41.6, 15.6]], '#ffe066', .7);
   for (const dx of [-3, 3]) { strokeLine(ctx, [[26 + dx, 32], [26 + dx, 37]], '#8a1008', 1.2); fang(ctx, 26 + dx, 37, 1.4, .4, 1); }
   for (let i = 0; i < 4; i++) fillPath(ctx, k => poly2(k, [[18 + i * 4, 21.6 - Math.sin(i) * .6], [20 + i * 4, 18], [22 + i * 4, 21.6]]), '#ffd36a', INK, .3);
+  ctx.restore();
 }
 
 // mount box: ground mounts are 64x48 with feet at y=46; flyers are 96x72 hovering, seat/feet point given in box units
@@ -2765,6 +2793,8 @@ const GROUND_PAL = {
 };
 GROUND_PAL.a = { grass: [0x4a3e36, 0x433830, 0x52463c], blade: [0x6a5a48, 0x2a221c, 0x8a7a60], flower: ['#ff8a3a', '#ffcf6a', '#d0c0b0'], stone: 0x5a5048, stoneHi: 0x786a5e, water: [0x7a1a08, 0xff6a1a], cliff: [0x3a2418, 0x140a06], lip: 0x6a5040 };
 GROUND_PAL.k = { grass: [0xa8aec2, 0xa0a6ba, 0xb0b6ca], blade: [0xe0e6f4, 0x7a8098, 0xffffff], flower: ['#ffe08a', '#c9d6ff', '#ffffff'], stone: 0x8a8a9a, stoneHi: 0xb4b4c4, water: [0x2a5aa8, 0x8ac0ff], cliff: [0x5a5a6a, 0x22222e], lip: 0xd8dcec };
+GROUND_PAL.w = { grass: [0x3a6a7a, 0x346272, 0x407282], blade: [0x6ac8c0, 0x1a4a5a, 0x9ae8e0], flower: ['#ff9ab0', '#ffe0a0', '#ffffff'], stone: 0x6a8a9a, stoneHi: 0x8ab0c0, water: [0x0a3a6a, 0x3a9ad8], cliff: [0x2a4a5a, 0x0a1a24], lip: 0x5aa0a8 };
+GROUND_PAL.v = { grass: [0x3a2e4a, 0x342a44, 0x403452], blade: [0x7a6aa0, 0x221a34, 0xa89ad0], flower: ['#ffd36a', '#ff9ac0', '#ffffff'], stone: 0x5a5068, stoneHi: 0x7a7090, water: [0x2a1a4a, 0x6a4ab0], cliff: [0x2a2034, 0x0e0a16], lip: 0x5a4a7a };
 const GROUND_PAD = 24, CLIFF_D = 120;
 const GCH = 512;
 const groundGeom = () => ({ W: N * HW * 2 + GROUND_PAD * 2, H: N * HH * 2 + CLIFF_D + GROUND_PAD * 2, ox: N * HW + GROUND_PAD, oy: GROUND_PAD });
@@ -3842,6 +3872,7 @@ const RBG = [['#2b303c', '#12151c'], ['#1d3566', '#0b1430'], ['#4a2a78', '#160b2
 function iconURL(it) {
   if (it.slot === 'pet' && PETS[it.base]) return petIconURL(it);
   if (typeof LIFE !== 'undefined' && LIFE[it.base]) return lifeIconURL(it);
+  if (typeof GEM_REF === 'function' && GEM_REF(it)) return gemIconURL(it);
   const key = it.base + '_' + it.rarity;
   if (ICONS[key]) return ICONS[key];
   const cv = document.createElement('canvas'); cv.width = cv.height = 64;
@@ -3979,7 +4010,7 @@ Object.assign(ZONES, {
     ponds: [[21, 21, 3, 2.4], [7, 7, 2.6, 2.2]], mobs: [['skytengu', 34, 37, 0], ['stormfox', 35, 38, 0], ['jadeguard', 37, 40, 1], ['skywraith', 38, 42, 1]],
     boss: { kind: 'thunderking', lv: 45, x: 4, y: 24, dir: 'юго-западе' }, portals: [{ to: 'ash', x: 14.5, y: 1 }] }
 });
-const LV_CAP = 50;
+const LV_CAP = 55;
 
 Object.assign(MOBS, {
   eclipseqn: { name: 'Императрица Затмения', key: 'spiderqueen', tint: 0xc080ff, boss: true, drops: [['wings', 'void', .2], ['costume', 'seraphknight', .2], ['mount', 'skydragon', .08]] },
@@ -3988,8 +4019,51 @@ Object.assign(MOBS, {
 ZONES.r_eclipse = { name: 'Цитадель Затмения', seed: 111, tiles: 'a', bg: '#0c0612', deco: 'ash', ambient: 'none', ponds: [], mobs: [['lavaoni', 34, 36, 0], ['ashronin', 34, 36, 1]], portals: [{ to: 'village', x: 14.5, y: 27 }], raid: true,
   dungeon: { minLv: 30, lv: 36, raid: true, waves: [[['ashronin', 5], ['lavaoni', 4]], [['skywraith', 5], ['jadeguard', 3]]], boss: 'eclipseqn', gold: 15000,
     looks: [['wings', 'celestial', .25], ['costume', 'seraphknight', .2], ['mount', 'skydragon', .08], ['wings', 'void', .2]] } };
+/* ---------- three more lands: the sea palace, the spirit city, the fire mountain ---------- */
+Object.assign(MOBS, {
+  kappaking: { name: 'Морской каппа', key: 'kappa', tint: 0x6ad8ff },
+  coralgolem: { name: 'Коралловый голем', key: 'golem', tint: 0xff9ab0 },
+  deepshade: { name: 'Тень глубин', key: 'shade', tint: 0x4ab0ff, hover: true },
+  ryujin: { name: 'Рюдзин, Царь драконов', key: 'boss', tint: 0x4ae0ff, boss: true, drops: [['wings', 'azure', .25], ['mount', 'skydragon', .06], ['costume', 'lotus', .2]] },
+  lanternghost: { name: 'Фонарный дух', key: 'shade', tint: 0xffd36a, hover: true },
+  spiritfox: { name: 'Девятихвостая лиса', key: 'firefox', tint: 0xf0e8ff },
+  oniguard: { name: 'Страж-они', key: 'horned', tint: 0xa080ff },
+  nurarihyon: { name: 'Нурарихён, Владыка духов', key: 'general', tint: 0xd0b0ff, boss: true, drops: [['costume', 'shadowassassin', .2], ['wings', 'violet', .2], ['mount', 'shadowlion', .08]] },
+  magmagolem: { name: 'Магмовый голем', key: 'golem', tint: 0xff5a1a },
+  firetengu: { name: 'Огненный тэнгу', key: 'tengu', tint: 0xff7a3a },
+  ashwolf: { name: 'Пепельный волк', key: 'wolf', tint: 0x8a6a5a, speed: 2.8 },
+  kagutsuchi: { name: 'Кагуцути, Бог огня', key: 'spiderqueen', tint: 0xff6a2a, boss: true, drops: [['wings', 'flame', .3], ['mount', 'phoenix', .08], ['costume', 'crimsondragon', .2]] },
+  stormoni: { name: 'Грозовой они', key: 'horned', tint: 0x9ad0ff }
+});
+ZONES.sky.portals.push({ to: 'ryugu', x: 27, y: 14.5, minLv: 42 });
+Object.assign(ZONES, {
+  ryugu: { name: 'Дворец Рюгу', seed: 131, tiles: 'w', bg: '#06142a', deco: 'sea', ambient: 'fireflies', ponds: [[21, 7, 3, 2.4], [7, 21, 2.6, 3], [20, 21, 2.2, 2]],
+    mobs: [['kappaking', 42, 44, 0], ['coralgolem', 43, 45, 0], ['deepshade', 44, 46, 1]], boss: { kind: 'ryujin', lv: 48, x: 24, y: 24, dir: 'юго-востоке' }, portals: [{ to: 'sky', x: 1, y: 14.5 }, { to: 'spirit', x: 14.5, y: 27, minLv: 44 }] },
+  spirit: { name: 'Город духов', seed: 149, tiles: 'v', bg: '#120a20', deco: 'spirit', ambient: 'fireflies', ponds: [[22, 8, 2.6, 2.2], [6, 20, 2.4, 2.8]],
+    mobs: [['lanternghost', 44, 46, 0], ['spiritfox', 45, 47, 0], ['oniguard', 46, 48, 1]], boss: { kind: 'nurarihyon', lv: 50, x: 4, y: 24, dir: 'юго-западе' }, portals: [{ to: 'ryugu', x: 14.5, y: 1 }, { to: 'volcano', x: 27, y: 14.5, minLv: 46 }] },
+  volcano: { name: 'Вулкан Кагуцути', seed: 163, tiles: 'a', bg: '#1a0604', deco: 'ash', ambient: 'none', ponds: [[20, 8, 3.2, 2.4], [7, 19, 2.8, 3.2]],
+    mobs: [['magmagolem', 46, 48, 0], ['firetengu', 47, 49, 0], ['ashwolf', 47, 50, 1]], boss: { kind: 'kagutsuchi', lv: 52, x: 24, y: 24, dir: 'юго-востоке' }, portals: [{ to: 'spirit', x: 1, y: 14.5 }] }
+});
+const WORLD_QUESTS = [
+  { title: 'Дорога под волнами', kind: 'kappaking', need: 10, minLv: 42, what: 'Морские каппы',
+    text: 'Из небесного храма путь ведёт вниз, во дворец Рюгу на дне моря. Морские каппы не пускают гостей. Покажи им, кто здесь гость.',
+    done: 'Ты дышишь водой, как рыба. Возьми этот доспех — его ковали из драконьей чешуи.', reward: { gold: 18000, xp: 70000, item: ['armor', 2] } },
+  { title: 'Царь драконов', kind: 'ryujin', need: 1, minLv: 45, what: 'Рюдзин',
+    text: 'Рюдзин, Царь драконов, закрыл ворота дворца и не выпускает души утонувших. Убеди его — мечом.',
+    done: 'Души вернулись домой. За это море дарит тебе жемчуг, а я — это кольцо.', reward: { gold: 24000, xp: 85000, item: ['ring', 2] } },
+  { title: 'Город, где горят фонари', kind: 'lanternghost', need: 10, minLv: 45, what: 'Фонарные духи',
+    text: 'За дворцом лежит Город духов. Там фонари горят сами, а духи забыли, что умерли. Успокой десятерых.',
+    done: 'Город стал тише. Духи шепчут твоё имя — это хорошо.', reward: { gold: 26000, xp: 95000, item: ['earring', 2] } },
+  { title: 'Владыка ночного шествия', kind: 'nurarihyon', need: 1, minLv: 48, what: 'Нурарихён',
+    text: 'Нурарихён ведёт ночное шествие сотни демонов. Если шествие дойдёт до деревни — нам не выжить.',
+    done: 'Шествие рассеялось. Ты стал легендой даже среди духов.', reward: { gold: 32000, xp: 110000, item: ['charm', 2] } },
+  { title: 'Сердце огненной горы', kind: 'kagutsuchi', need: 1, minLv: 50, what: 'Кагуцути',
+    text: 'Последнее: в кратере вулкана пробудился Кагуцути, Бог огня. Его пламя может сжечь всю долину. Иди — и вернись.',
+    done: 'Огонь уснул. Мне больше нечему тебя учить. Остаётся только идти дальше — переродиться и начать путь заново, сильнее, чем прежде.', reward: { gold: 50000, xp: 150000, myth: true } }
+];
+ZONES.bg_field = { name: 'Поле битвы', seed: 177, tiles: 't', bg: '#0d1220', deco: 'sky', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 // zones were laid out on a 28x28 map; stretch each onto its own size (open worlds 150x150, dungeons 44x44)
-for (const z of Object.values(ZONES)) z.size = z.dungeon ? 44 : 150;
+for (const z of Object.values(ZONES)) z.size = z.dungeon || z.arena ? 44 : 150;
 { for (const z of Object.values(ZONES)) {
     const S = z.size, ZF = S / 28, Cz = S / 2, rk = 1.25 * Math.sqrt(ZF / (44 / 28)), edge = v => v > 25 ? S - 1 : v < 3 ? 1 : Cz + .5 + (v - 14.5) * ZF;
     z.ponds = z.ponds.map(([x, y, rx, ry]) => [x * ZF, y * ZF, rx * rk, ry * rk]);
@@ -4086,6 +4160,7 @@ QUESTS.splice(QUESTS.length - 1, 0,
     done: 'Ты прошёл путь, который я не прошёл бы и за три жизни. Это оружие ждало тебя с самого начала.', reward: { gold: 15000, xp: 60000, myth: true } }
 );
 
+QUESTS.splice(QUESTS.length - 1, 0, ...WORLD_QUESTS);
 function questReward(q) {
   const r = Object.assign({}, q.reward);
   if (r.scale) { r.gold = 40 + save.lv * 12; r.xp = 60 + Math.round(xpNeed(save.lv) * .25); }
@@ -4210,11 +4285,12 @@ class World extends Phaser.Scene {
     this.zoneId = (data && data.zone) || save.zone || 'village';
     if (!(data && data.zone) && ZONES[this.zoneId] && ZONES[this.zoneId].dungeon) this.zoneId = 'village';
     // network instance: open zones are shared, a dungeon run belongs to one party (or to you alone)
+    this.dgDiff = Math.max(0, Math.min(2, +(data && data.diff) || 0)); this.dgT0 = Date.now();
     this.netMobSeq = 0; this.rmobs = new Map(); this.hitQ = new Map(); this.puMap = new Map(); this.partyUnits = [];
     { const zd = ZONES[this.zoneId] && ZONES[this.zoneId].dungeon, gi = data && data.dgInst;
       this.dgHost = !!(zd && gi && PARTY && PARTY.lead === save.pid && gi === 'dg:' + PARTY.id + ':' + this.zoneId);
       this.dgRemote = !!(zd && gi && !this.dgHost);
-      this.inst = zd ? (gi || 'solo:' + save.pid + ':' + this.zoneId) : this.zoneId; }
+      this.inst = zd ? (gi || 'solo:' + save.pid + ':' + this.zoneId) : gi && gi.startsWith('bg:') ? gi : this.zoneId; }
     this.zone = ZONES[this.zoneId];
     N = this.zone.size || 44; C = N / 2;
     save.zone = this.zoneId; persist();
@@ -4314,17 +4390,22 @@ class World extends Phaser.Scene {
       else if (k === 'o' || k === 'щ') toggleWorld();
       else if (k === 'j' || k === 'о') openDiary();
       else if (k === 'b' || k === 'и') openMarket();
+      else if (k === 'p' || k === 'з') photoMode();
+      else if (k === 'y' || k === 'н') emotePicker();
       else if (k === 'f' || k === 'а') toggleForge();
       else if (k === 'escape') { this.closeDlg(); $('inv').hidden = true; $('heroP').hidden = true; $('wheelP').hidden = true; $('catP').hidden = true; $('skillP').hidden = true; $('topP').hidden = true; $('fbP').hidden = true; $('forgeP').hidden = true; $('worldP').hidden = true; $('duelO').hidden = true; }
       else if (k === ' ') { e.preventDefault(); this.targetNearest(); }
     });
 
     this.allies = []; this.remotes = new Map(); this.fishing = null; this.pvpProxy = null;
-    makeHerbs(this); dailyCheck(this); titleHud(); buffHud();
+    makeHerbs(this); dailyCheck(this); titleHud(); buffHud(); holidayDecor(this); this.weather = null; weatherApply(this); tutInit();
+    for (const it of [...save.inv, ...Object.values(save.eq)]) wardrobeNote(it);
+    if (BG && this.zoneId !== BG_ID && Date.now() - BG.t0 > 15000) { BG = null; bgHud(); }
+    if (BG && this.zoneId === BG_ID) { const base = BG.me === 0 ? [C - 20, C] : [C + 20, C]; this.hero.x = base[0]; this.hero.y = base[1]; }
     if (this.zone.dungeon) {
       this.dg = { wave: 0, state: this.dgRemote ? 'remote' : 'wait', t: this.dgHost ? 9 : 3 };
       if (!this.dgHost && !this.dgRemote) this.makeAllies();
-      if (this.dgHost) { netSend('g/' + PARTY.id, { t: 'dgcall', f: save.pid, id: PARTY.id, z: this.zoneId, i: this.inst }); log('Отряд собирается: волны начнутся через 9 секунд. Друзьям пришло приглашение.', 'good'); }
+      if (this.dgHost) { netSend('g/' + PARTY.id, { t: 'dgcall', f: save.pid, id: PARTY.id, z: this.zoneId, i: this.inst, df: this.dgDiff }); log('Отряд собирается: волны начнутся через 9 секунд. Друзьям пришло приглашение.', 'good'); }
       if (this.dgRemote) log('Вы в подземелье вместе с отрядом. Волны ведёт лидер.', 'good');
     }
     else for (let k = 0; k < 30; k++) this.trySpawn(true);
@@ -4337,6 +4418,7 @@ class World extends Phaser.Scene {
     this.updateQuestHud();
     setupSkillButtons();
     setText($('zoneTxt'), this.zone.name);
+    this.time.addEvent({ delay: 5000, loop: true, callback: () => { if (!this.scene.isActive()) return; weatherApply(this); const o = this.zone.dungeon ? null : terrOwner(this.zoneId), w = this.weather && this.weather !== 'clear' ? ' · ' + WEATHER[this.weather].n.toLowerCase() : ''; setText($('zoneTxt'), this.zone.name + w + (o ? ' · земли [' + (o.t || o.n) + ']' : '')); holidayTick(this); } });
     banner(this.zone.name, this.zone.village ? 'Деревня Кумо и окрестности' : this.zone.dungeon ? 'Подземелье · три волны и хозяин логова' : 'Уровни ' + Math.min(...this.zone.mobs.map(e => e[1])) + '–' + Math.max(...this.zone.mobs.map(e => e[2])));
     if (!save.cls) openClassPick(false);
   }
@@ -4389,6 +4471,8 @@ class World extends Phaser.Scene {
       if (z.deco === 'forest') { if (r < .045) put('pine', .95); else if (r < .062) put('wist', .95); else if (r < .074) put('maple', .95); else if (r < .084) put('sakura', .95); else if (r < .105) put('bush', .82); else if (r < .122) put('rock', .82); else if (r < .13) put('stump', .82); }
       else if (z.deco === 'bamboo') { if (r < .15) put('bamboo', .96); else if (r < .17) put('bush', .82); else if (r < .19) put('rock', .82); else if (r < .197) put('shrine', .94); else if (r < .205) put('sakura', .95); else if (r < .212) put('stump', .82); }
       else if (z.deco === 'ash') { if (r < .05) put('dead', .95); else if (r < .085) put('rock', .82); else if (r < .095) put('stump', .82); else if (r < .1) put('shrine', .94); }
+      else if (z.deco === 'sea') { if (r < .04) put('rock', .82); else if (r < .06) put('crystal', .92); else if (r < .085) put('bush', .82); else if (r < .09) put('shrine', .94); }
+      else if (z.deco === 'spirit') { if (r < .02) put('shrine', .94); else if (r < .04) put('wist', .95); else if (r < .06) put('sakura', .95); else if (r < .075) put('dead', .95); else if (r < .09) put('rock', .82); }
       else if (z.deco === 'sky') { if (r < .03) put('sakura', .95); else if (r < .042) put('shrine', .94); else if (r < .062) put('rock', .82); else if (r < .076) put('crystal', .92); else if (r < .088) put('wist', .95); else if (r < .1) put('bush', .82); }
       else { if (r < .07) put('snowpine', .95); else if (r < .082) put('dead', .95); else if (r < .108) put('snowrock', .82); else if (r < .122) put('crystal', .92); }
     }
@@ -4614,7 +4698,7 @@ class World extends Phaser.Scene {
     const w = unIso(wx, wy);
     if (inWater(this, w.x, w.y) && startFishing(this, w.x, w.y)) return;
     const tx = Phaser.Math.Clamp(w.x, .4, N - .4), ty = Phaser.Math.Clamp(w.y, .4, N - .4);
-    h.target = null; h.talk = null; h.dest = { x: tx, y: ty }; h.autoDest = false;
+    h.target = null; h.talk = null; h.dest = { x: tx, y: ty }; h.autoDest = false; TUT_EV.moved = true;
     const mp = iso(tx, ty);
     this.marker.setPosition(mp.x, mp.y).setAlpha(1).setScale(1.3);
     this.tweens.killTweensOf(this.marker);
@@ -4919,8 +5003,8 @@ class World extends Phaser.Scene {
     return key;
   }
   lookOn(slot) { const it = save.eq[slot]; return it && !save.lookDefault && !save.hide[slot] ? it : null; }
-  weaponLook() { const sk = this.lookOn('wskin'), w = save.eq.weapon; return sk ? { base: sk.base, r: 2 } : w ? { base: w.base, r: w.rarity } : null; }
-  wingLook() { const sk = this.lookOn('wingskin'); return sk ? sk.base : save.eq.wings ? save.eq.wings.base : null; }
+  weaponLook() { const sk = this.lookOn('wskin'), w = save.eq.weapon, tf = save.tf && save.tf.w && WGEO[save.tf.w] && WEAPON_CLASS[save.tf.w] === save.cls ? save.tf.w : null; return sk ? { base: sk.base, r: 2 } : tf && w ? { base: tf, r: Math.max(2, Math.min(3, w.rarity)) } : w ? { base: w.base, r: w.rarity } : null; }
+  wingLook() { const sk = this.lookOn('wingskin'); return sk ? sk.base : save.eq.wings ? (save.tf && save.tf.g && WINGS[save.tf.g] ? save.tf.g : save.eq.wings.base) : null; }
   currentLook() {
     const a = save.eq.armor, c = this.lookOn('costume'), hd = this.lookOn('head');
     return { ...classLook(save.cls), armor: a ? a.base : null, r: a ? a.rarity : 0, costume: c ? c.base : null, head: hd ? hd.base : null, body: save.body || 'anime' };
@@ -4966,8 +5050,10 @@ class World extends Phaser.Scene {
     const sb = setBonus(), gb = guildBonus(); atk *= 1 + sb.atk + gb; hp = Math.round(hp * (1 + sb.hp + gb)); def += sb.def; crit += sb.crit;
     crit = Math.min(crit, 75);
     const lb = lookBonus(); atk *= 1 + lb; hp = Math.round(hp * (1 + lb)); def += (save.ward.lv - 1) * 2;
+    { const rb = rebBonus(), sp = specDef() || {}, hb = homeBonus(); atk *= (1 + rb) * (1 + (sp.atk || 0)) * (1 + hb.atk); hp = Math.round(hp * (1 + rb) * (1 + (sp.hp || 0)) * (1 + hb.hp)); def += sp.def || 0; crit += sp.crit || 0; mp = Math.round(mp * (1 + (sp.mp || 0)));
+      for (const s2 of STAT_SLOTS) { const it2 = save.eq[s2]; if (!it2) continue; const g = gemStats(it2); atk += g.atk || 0; hp += Math.round(g.hp || 0); def += g.def || 0; crit += g.crit || 0; mp += Math.round(g.ki || 0); if (s2 === 'pet') { const k = petMul(it2) - 1; atk += statVal(it2, 'atk') * k; hp += Math.round(statVal(it2, 'hp') * k); def += Math.round(statVal(it2, 'def') * k); } } }
     { const fb = typeof buffsActive === 'function' ? buffsActive() : {}; atk *= 1 + (fb.atk || 0); hp = Math.round(hp * (1 + (fb.hp || 0))); crit = Math.min(75, crit + (fb.crit || 0)); def += fb.def || 0; }
-    Object.assign(h, { atk, maxHp: hp, maxMp: mp, def, crit, aspd: cl.aspd });
+    Object.assign(h, { atk, maxHp: hp, maxMp: mp, def, crit: Math.min(85, crit), aspd: cl.aspd * (1 - ((specDef() || {}).aspd || 0)) });
     if (fill || h.hp == null) { h.hp = hp; h.mp = mp; }
     h.hp = Math.min(h.hp, hp); h.mp = Math.min(h.mp, mp);
     const old = h.bm;
@@ -4995,6 +5081,7 @@ class World extends Phaser.Scene {
     }
     if (!quiet) log('Получено: ' + itemName(it) + (it.qty > 1 ? ' ×' + it.qty : ''), 'r' + it.rarity);
     if (it.crafted && !it.counted) { it.counted = true; stat('crafted'); }
+    wardrobeNote(it);
     if (it.rarity === 4 && !it.counted4) { it.counted4 = true; stat('myth'); sfx('myth'); } else if (it.rarity >= 2 && !quiet) sfx('loot');
     if (addColl(it)) { log('Новый облик в справочнике: ' + it.name + '. Бонус коллекции вырос.', 'good'); this.recalc(); }
     persist(); this.renderInv();
@@ -5002,7 +5089,7 @@ class World extends Phaser.Scene {
   }
 
   toggleInv() {
-    const p = $('inv'); p.hidden = !p.hidden;
+    const p = $('inv'); p.hidden = !p.hidden; if (!p.hidden) TUT_EV.bag = true;
     if (!p.hidden) { this.selItem = null; this.renderInv(); }
   }
   toggleHero() {
@@ -5071,7 +5158,7 @@ class World extends Phaser.Scene {
       det.appendChild(mk('div', 'ds', list.length ? 'Наряды и облики из сумки превращаются в опыт одежды. Облик остаётся в справочнике, но надеть поглощённую вещь уже нельзя.' : 'В сумке нет нарядов и обликов. Надетые вещи не поглощаются.'));
       const shop = mk('div', 'shop');
       for (const x of list) {
-        const r = mk('div', 'srow'), info = mk('div'); info.style.minWidth = '0';
+        const r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0';
         info.append(mk('div', 'sn r' + x.rarity, x.name), mk('div', 'ss', '+' + absorbXp(x) + ' опыта одежды'));
         r.append(cellFor(x), info, btn('Поглотить', () => this.absorb([x]), '', save.ward.lv >= WARD_MAX));
         shop.appendChild(r);
@@ -5087,6 +5174,7 @@ class World extends Phaser.Scene {
       det.appendChild(mk('div', 'ds', describe(it)));
       const t = it.plus ? glowTier(it.plus) : null;
       if (t) { const gl = mk('div', 'glowline', 'Свечение: ' + t[2]); gl.style.color = tierCss(t); det.appendChild(gl); }
+      socketUI(det, this, it);
       const acts = mk('div', 'acts');
       const slot = this.heroSel;
       if (slot === 'mount') {
@@ -5322,7 +5410,9 @@ class World extends Phaser.Scene {
     const acts = mk('div', 'acts');
     const village = this.zone.village && this.safeAt(h.x, h.y);
     if (this.selItem.from === 'bag') {
-      if (LIFE_REF(it)) { if (LIFE_REF(it).type === 'food') acts.appendChild(btn('Съесть', () => eatFood(this, it), 'main')); else det.appendChild(mk('div', 'ds', 'Используется в готовке — вкладка «Готовка» в Дневнике.')); }
+      if (GEM_REF(it)) det.appendChild(mk('div', 'ds', 'Вставляется в гнездо вещи: выберите оружие, доспех или украшение.'));
+      else if (it.base === 'ev_gift') acts.appendChild(btn('Открыть подарок', () => openGift(this), 'main'));
+      else if (LIFE_REF(it)) { if (LIFE_REF(it).type === 'food') acts.appendChild(btn('Съесть', () => eatFood(this, it), 'main')); else det.appendChild(mk('div', 'ds', 'Используется в готовке — вкладка «Готовка» в Дневнике.')); }
       else if (it.kind === 'rice') acts.appendChild(btn('Съесть', () => this.eatRice(), 'main'));
       else if (it.kind === 'scroll') det.appendChild(mk('div', 'ds', 'Используется в разговоре с кузнецом.'));
       else {
@@ -5331,7 +5421,7 @@ class World extends Phaser.Scene {
         acts.appendChild(btn(it.slot === 'costume' ? 'Примерить' : 'Надеть', () => this.equip(this.selItem.i), 'main'));
       }
       acts.appendChild(btn('Продать за ' + sellPrice(it) + ' мон', () => this.sell(this.selItem.i), '', !village));
-      if (!it.kind && it.slot !== 'use') tradeFormInto(det, this, it);
+      if (!it.kind && it.slot !== 'use') { socketUI(det, this, it); tradeFormInto(det, this, it); }
       if (!it.grow) auFormInto(det, this, it);
       if (!village) det.appendChild(mk('div', 'ds', 'Продать можно, вернувшись в деревню Кумо.'));
     } else {
@@ -5595,7 +5685,7 @@ class World extends Phaser.Scene {
       const far = Math.hypot(x - C, y - C) > 9.5 * N / 28, pool = z.mobs.filter(e => !!e[3] === far);
       const [kind, a, b] = (pool.length ? pool : z.mobs)[ri(0, (pool.length ? pool : z.mobs).length - 1)];
       const fr = Math.min(1, Math.hypot(x - C, y - C) / (N * .5)), lvl = N > 60 ? Phaser.Math.Clamp(Math.round(a + (b - a) * fr + rand(-.7, .7)), a, b) : ri(a, b);
-      this.spawnMob(kind, x, y, lvl);
+      this.spawnMob(holidaySpawnKind(z) || (this.weather === 'storm' && Math.random() < .15 ? 'stormoni' : null) || kind, x, y, lvl);
       return;
     }
   }
@@ -5832,7 +5922,7 @@ class World extends Phaser.Scene {
   heroAttack(m) {
     const h = this.hero;
     h.nextAtk = this.now + h.aspd * (this.now < h.hasteUntil ? .6 : 1);
-    let dmg = h.atk * rand(.85, 1.15); const crit = Math.random() * 100 < h.crit; if (crit) dmg *= 1.8;
+    let dmg = h.atk * rand(.85, 1.15); const crit = Math.random() * 100 < h.crit; if (crit) dmg *= 1.8 + ((specDef() || {}).critDmg || 0);
     sfx(save.cls === 'mage' ? 'zap' : save.cls === 'archer' ? 'bow' : 'swing');
     if (save.cls === 'mage' || save.cls === 'archer') {
       h.pose = { type: 'raise', t0: this.now, dur: .28, dir: 1 }; h.poseUntil = this.now + .3;
@@ -5883,7 +5973,8 @@ class World extends Phaser.Scene {
     if (!m.remote && !m.netDeath) netMobDied(this, m);
     if (m.pvp) return;
     sfx(m.boss ? 'boom' : 'kill'); sfx('coin');
-    m.gold = Math.round(m.gold * evMul('gold'));
+    m.gold = Math.round(m.gold * evMul('gold') * (terrMine(this.zoneId) ? 1.15 : 1) * (save.eq.pet && (save.eq.pet.plv || 1) >= 20 ? 1.1 : 1));
+    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); if (m.kind === 'stormoni') { stat('storm'); }
     stat('kills'); stat('goldEarned', m.gold); if (inParty()) stat('partyKills'); if (eventsNow().length) stat('eventKills');
     if (m.boss) { stat('bosses'); save.stats.bossKinds[m.kind] = (save.stats.bossKinds[m.kind] || 0) + 1; }
     save.gold += m.gold;
@@ -5893,13 +5984,14 @@ class World extends Phaser.Scene {
     if (m.boss) {
       this.give(genItem(m.lv, 2)); this.give(genItem(m.lv, 1)); this.give(rice(3));
       if (Math.random() < .015) { const it = mythWeapon(m.lv + 1); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); }
+      if (Math.random() < .3) gemDrop(this, 2, 1);
       for (const [kind, id, ch] of def.drops || []) if (Math.random() < ch) {
         const it = kind === 'costume' ? costume(id) : kind === 'wings' ? wings(id, m.lv) : kind === 'mount' ? mount(id, m.lv) : cosmetic(kind, id);
         if (this.give(it) && it.rarity >= 2) banner(it.name, 'Редкая добыча');
       }
       this.bossAt = this.now + 90; log('Босс повержен. Он вернётся через полторы минуты.', 'good');
     }
-    else if (roll < (m.lv >= 4 ? .22 : .14) * evMul('drop')) { const r = Math.random(); this.give(genItem(m.lv, r < .06 ? 2 : r < .3 ? 1 : 0)); }
+    else if (roll < (m.lv >= 4 ? .22 : .14) * evMul('drop') * (terrMine(this.zoneId) ? 1.15 : 1)) { const r = Math.random(); this.give(genItem(m.lv, r < .06 ? 2 : r < .3 ? 1 : 0)); }
     else if (roll < .4) this.give(rice(1));
     this.questKill(m);
     this.dropMats(m);
@@ -5909,7 +6001,7 @@ class World extends Phaser.Scene {
   }
 
   gainXp(x) {
-    x = Math.round(x * evMul('xp') * (1 + (buffsActive().xp || 0)));
+    x = Math.round(x * evMul('xp') * (1 + (buffsActive().xp || 0)) * ((WEATHER[this.weather] || {}).xp || 1));
     if (save.lv >= LV_CAP) { save.xp = Math.min(save.xp + x, xpNeed(save.lv) - 1); persist(); return; }
     save.xp += x;
     while (save.lv < LV_CAP && save.xp >= xpNeed(save.lv)) { save.xp -= xpNeed(save.lv); save.lv++; this.levelUp(); }
@@ -5953,6 +6045,7 @@ class World extends Phaser.Scene {
 
   die() {
     stat('deaths'); sfx('death');
+    if (BG && this.zoneId === BG_ID) { BG.deadUntil = Date.now() + 5000; setTimeout(() => { $('death').hidden = true; }, 0); log('Вы пали. Возрождение у своего знамени через 5 секунд.', 'bad'); }
     const h = this.hero; h.alive = false; h.hp = 0; h.target = null; h.dest = null; h.talk = null;
     h.spr.setTint(0x666677).setAlpha(.6).setAngle(80);
     for (const m of this.mobs) m.angry = false;
@@ -5989,10 +6082,11 @@ class World extends Phaser.Scene {
     if (!skLv(id)) { log('Техника «' + sk.name + '» ещё не изучена. Откройте «Навыки» (K).', 'info'); openSkills(true); return; }
     if (this.now < (h.cds[id] || 0)) return;
     if (h.mp < sk.cost) { log('Не хватает ки для «' + sk.name + '».', 'info'); return; }
-    const a0 = h.atk; h.atk = a0 * (1 + (skLv(id) - 1) * .15);
+    const a0 = h.atk; h.atk = a0 * (1 + (skLv(id) - 1) * .15) * (1 + ((specDef() || {}).skill || 0));
     const ok = this['sk_' + id](h);
     h.atk = a0;
     if (ok === false) return;
+    TUT_EV.cast = true;
     sfx(/fire|meteor|phoenix/.test(id) ? 'fire' : /frost|blizzard/.test(id) ? 'ice' : /heal|tea|shield|stance/.test(id) ? 'heal' : 'whoosh');
     const ptype = SKILL_POSE[id] || 'slash';
     h.pose = { type: ptype, t0: this.now, dur: ptype === 'spin' ? .45 : .36, dir: 1 }; h.poseUntil = this.now + (ptype === 'spin' ? .5 : .42);
@@ -6234,7 +6328,7 @@ class World extends Phaser.Scene {
     if (healer && this.now > P.nextHeal) { P.nextHeal = this.now + (def.role === 'heal' ? 4 : 5); if (h.hp < h.maxHp) this.petHeal(def.role === 'heal' ? .04 : .03); }
     if (P.id === 'phoenixchick' && this.now > P.nextHeal) { P.nextHeal = this.now + 10; this.petHeal(.03); }
     if (!healer && tg && h.alive && dist(P, tg) < 6 && this.now > P.nextAtk) {
-      P.nextAtk = this.now + 1.8; const dmg = Math.round(h.atk * ((it.rarity >= 3 ? .45 : .2 + it.rarity * .07) + gl * .006));
+      P.nextAtk = this.now + 1.8; const dmg = Math.round(h.atk * ((it.rarity >= 3 ? .45 : .2 + it.rarity * .07) + gl * .006) * ((it.plv || 1) >= 10 ? 1.25 : 1));
       this.shoot(P, tg, def.shot, () => {
         if (!tg.alive) return; this.hurtMob(tg, dmg, false);
         if (def.role === 'frost') tg.stunUntil = Math.max(tg.stunUntil || 0, this.now + .6);
@@ -6279,15 +6373,21 @@ class World extends Phaser.Scene {
     $('dlgName').textContent = 'Врата подземелий'; $('dlgRole').textContent = 'испытания для отряда';
     const body = $('dlgBody'), acts = $('dlgActs'); body.innerHTML = ''; acts.innerHTML = '';
     $('dlgText').textContent = 'За вратами ждут подземелья. С вами пойдёт отряд: Страж Ивао держит врагов на себе, жрица Юки лечит, лучница Кага стреляет издалека. Отбейте три волны и одолейте хозяина логова.';
+    const dsel = mk('div', 'acts'); dsel.appendChild(mk('span', 'label', 'Сложность'));
+    DIFF.forEach((D, i) => dsel.appendChild(btn(D.n, () => { DG_DIFF = i; this.openGate(po); }, DG_DIFF === i ? 'main' : '')));
+    body.appendChild(dsel);
+    body.appendChild(mk('div', 'ds', DG_DIFF === 0 ? 'Обычная: как раньше.' : DG_DIFF === 1 ? 'Героическая: враги на 5 уровней сильнее, здоровье ×2,2. Награда ×1,6, больше камней, 4% на мифическое оружие.' : 'Мифическая: враги на 10 уровней сильнее, здоровье ×4. Нужно уложиться в 10 минут. Награда ×2,5, лучшие камни, 10% на мифическое оружие.'));
     const list = mk('div', 'shop');
     for (const id of DUNGEON_IDS) {
+      recSubscribe(id + '_' + DG_DIFF);
       const z = ZONES[id], d = z.dungeon, r = mk('div', 'srow skrow');
       const ic = mk('div', 'ski'); ic.style.backgroundImage = 'url(' + iconURL({ base: d.looks[0][1], rarity: 2 }) + ')';
       const info = mk('div'); info.style.minWidth = '0';
+      { const top = recTop(id + '_' + DG_DIFF); if (top.length) info.appendChild(mk('div', 'ss rec', 'Рекорды: ' + top.slice(0, 3).map(r => mmssLong(r.t) + ' ' + cleanText(r.n)).join(' · '))); }
       info.append(mk('div', 'sn r2', z.name), mk('div', 'ss', 'С ' + d.minLv + ' ур. · враги ' + d.lv + ' ур. · ' + d.gold + ' мон, эпическое снаряжение, шанс на редкие облики' + (save.dgDone[id] ? ' · пройдено ' + save.dgDone[id] + ' раз' : '')));
       const lead = inParty() && PARTY.lead === save.pid;
-      if (d.raid) { info.appendChild(mk('div', 'ss', 'Рейд для отряда от 2 человек: огненные круги, щит из кристаллов, метка затмения. Войти может лидер отряда.')); r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Начать рейд' : 'Нужен отряд', () => { this.closeDlg(); this.travel({ to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id } }); }, 'main', save.lv < d.minLv || !lead)); list.appendChild(r); continue; }
-      r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Войти с друзьями' : 'Войти с отрядом', () => { this.closeDlg(); this.travel(lead ? { to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id } } : { to: id }); }, 'main', save.lv < d.minLv));
+      if (d.raid) { info.appendChild(mk('div', 'ss', 'Рейд для отряда от 2 человек: огненные круги, щит из кристаллов, метка затмения. Войти может лидер отряда.')); r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Начать рейд' : 'Нужен отряд', () => { this.closeDlg(); this.travel({ to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id, diff: DG_DIFF } }); }, 'main', save.lv < d.minLv || !lead)); list.appendChild(r); continue; }
+      r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Войти с друзьями' : 'Войти с отрядом', () => { this.closeDlg(); this.travel(lead ? { to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id, diff: DG_DIFF } } : { to: id, extra: { diff: DG_DIFF } }); }, 'main', save.lv < d.minLv));
       list.appendChild(r);
     }
     body.appendChild(list);
@@ -6311,7 +6411,7 @@ class World extends Phaser.Scene {
     }
   }
   mobVictim(m, heroSafe) {
-    const h = this.hero, ok = d => d < m.aggro || (m.angry && d < m.aggro * 2.5);
+    const h = this.hero, ag = m.aggro * (this.weather === 'fog' ? .6 : 1), ok = d => d < ag || (m.angry && d < ag * 2.5);
     let best = null;
     const tank = this.allies.find(a => a.role === 'tank' && a.alive);
     if (tank) { const d = dist(m, tank); if (d < 3.4) return { u: tank, d }; }
@@ -6387,9 +6487,9 @@ class World extends Phaser.Scene {
   updateDungeon() {
     const D = this.dg, cfg = this.zone.dungeon;
     if (this.dgRemote) return;
-    const crew = this.dgHost ? partyMatesHere(this).length : 0, hpK = 1 + .6 * crew;
+    const crew = this.dgHost ? partyMatesHere(this).length : 0, DD = dgDiff(this), hpK = (1 + .6 * crew) * DD.hp;
     const tell = o => { if (this.dgHost && PARTY) netSend('g/' + PARTY.id, Object.assign({ f: save.pid, id: PARTY.id, i: this.inst }, o)); };
-    const spawnAround = (kind, lv) => { for (let k = 0; k < 30; k++) { const a = rand(0, 6.28), r = rand(2.5, 7), x = C + Math.cos(a) * r, y = C - 2 + Math.sin(a) * r; if (this.mobWalkable(x, y)) { const m = this.spawnMob(kind, x, y, lv); if (hpK > 1) { m.maxHp = m.hp = Math.round(m.maxHp * hpK); this.drawBar(m); } return m; } } };
+    const spawnAround = (kind, lv) => { for (let k = 0; k < 30; k++) { const a = rand(0, 6.28), r = rand(2.5, 7), x = C + Math.cos(a) * r, y = C - 2 + Math.sin(a) * r; if (this.mobWalkable(x, y)) { const m = this.spawnMob(kind, x, y, lv + DD.lv); m.atk *= DD.atk; if (hpK !== 1) { m.maxHp = m.hp = Math.round(m.maxHp * hpK); this.drawBar(m); } return m; } } };
     if (D.state === 'wait' && this.now > D.t) {
       for (const [kind, n] of cfg.waves[D.wave]) for (let i = 0; i < n; i++) spawnAround(kind, cfg.lv + ri(-1, 1));
       D.state = 'fight'; banner('Волна ' + (D.wave + 1) + ' из ' + cfg.waves.length, this.zone.name); tell({ t: 'wave', w: D.wave + 1, n: cfg.waves.length });
@@ -6408,7 +6508,8 @@ class World extends Phaser.Scene {
   dgReward() {
     const cfg = this.zone.dungeon;
     stat('dg'); save.stats.dgKinds[this.zoneId] = (save.stats.dgKinds[this.zoneId] || 0) + 1;
-    if (cfg.raid) { stat('raids'); if (Math.random() < .15) { const it = mythWeapon(cfg.lv + 2); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); } }
+    const dI = dgRecord(this), D = DIFF[dI]; save.gold += Math.round(cfg.gold * (D.rew - 1)); gemDrop(this, 1 + dI * 2, D.gems); if (Math.random() < D.myth) { const it = mythWeapon(cfg.lv + 2 + D.lv); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); }
+    if (cfg.raid) { stat('raids'); gemDrop(this, 3, 2); if (Math.random() < .15) { const it = mythWeapon(cfg.lv + 2); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); } }
     {
       save.gold += cfg.gold; save.dgDone[this.zoneId] = (save.dgDone[this.zoneId] || 0) + 1;
       const sealN = SEAL_PER[this.zoneId] || 15; save.seals += sealN; save.mats.ore += 10; save.mats.ess += 4; save.mats.star += 1; if (save.guild) guildXp(50);
@@ -6428,7 +6529,9 @@ class World extends Phaser.Scene {
   }
 
   updateDayNight(t) {
-    const cyc = (t / 300 + .15) % 1, n = this.zone.dungeon ? .72 : Math.max(0, Math.min(1, .5 - .5 * Math.cos(cyc * Math.PI * 2) * 1.25 + .05));
+    const cyc = (t / 300 + .15) % 1; let n = this.zone.dungeon ? .72 : Math.max(0, Math.min(1, .5 - .5 * Math.cos(cyc * Math.PI * 2) * 1.25 + .05));
+    if (!this.zone.dungeon && holidayNow() === 'hw') n = Math.max(n, .78);
+    if (this.weather === 'storm' || this.weather === 'rain') n = Math.max(n, .45);
     this.nightK = n;
     const day = [255, 255, 255], dusk = [255, 205, 172], nite = [128, 142, 196];
     const mix = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
@@ -6557,13 +6660,13 @@ class World extends Phaser.Scene {
     if (this.allies.length) this.updateAllies(dt);
     if (this.pet) this.updatePet(dt);
     netUpdate(this, dt);
-    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this);
+    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); bgTick(this);
     if (performance.now() > (this.achT || 0)) { this.achT = performance.now() + 2000; checkAch(this); evHud(); }
-    if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); }
+    if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); dgTimerHud(this); pathTick(this); }
     if (this.zone.dungeon) this.updateDungeon();
     for (const n of this.npcs) this.placeUnit(n, Math.sin(this.now * 1.6 + n.off) * .8);
 
-    if (!this.zone.dungeon && this.now > this.nextSpawn) {
+    if (!this.zone.dungeon && this.zone.mobs.length && this.now > this.nextSpawn) {
       this.nextSpawn = this.now + (N > 60 ? .7 : 1.4);
       if (N > 60) for (const m of this.mobs) if (m.alive && !m.boss && !m.angry && h.target !== m && dist(m, h) > 46) { m.alive = false; m.spr.destroy(); m.shadow.destroy(); m.bar.destroy(); m.label.destroy(); m.gone = true; }
       { const alive = this.mobs.filter(m => m.alive && !m.boss).length; if (alive < 32) for (let k = 0; k < (N > 60 && alive < 18 ? 3 : 1); k++) this.trySpawn(false); }
@@ -6917,7 +7020,7 @@ function openClassPick(paid) {
 
 $('sk0').addEventListener('click', () => GAME && GAME.targetNearest());
 [1, 2, 3, 4, 5, 6].forEach(n => $('sk' + n).addEventListener('click', () => GAME && GAME.cast(n)));
-$('skAuto').addEventListener('click', () => { save.auto = !save.auto; persist(); syncAuto();
+$('skAuto').addEventListener('click', () => { TUT_EV.auto = true; save.auto = !save.auto; persist(); syncAuto();
   if (save.auto && save.cls && CLASSES[save.cls].skills.filter(id => skLv(id)).length < 2) log('Подсказка: изучите техники во вкладке «Навыки» (K), и автобой будет применять их сам.', 'info'); log(save.auto ? 'Автобой включён: техники, колобки и ближайшие враги — сами.' : 'Автобой выключен.', 'info'); });
 function syncAuto() { $('skAuto').classList.toggle('on', !!save.auto); $('skAuto').setAttribute('aria-pressed', save.auto ? 'true' : 'false'); }
 syncAuto();
@@ -6931,7 +7034,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '40', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '41', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = [];
 window.addEventListener('error', e => { JS_ERRS.push(String(e.message || e.error || 'error').slice(0, 160) + (e.lineno ? ' @' + e.lineno : '')); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
 window.addEventListener('unhandledrejection', e => { JS_ERRS.push('promise: ' + String(e.reason && e.reason.message || e.reason).slice(0, 160)); if (JS_ERRS.length > 5) JS_ERRS.shift(); });
@@ -6939,7 +7042,7 @@ function setFbKind(k) { FB_KIND = k; for (const b of document.querySelectorAll('
 for (const b of document.querySelectorAll('#fbKinds .tab')) b.addEventListener('click', () => setFbKind(b.dataset.fk));
 { const hp = document.querySelector('.help'); if (hp) hp.append(' · версия ' + GAME_VER); }
 /* ---------- phone layout: compact HUD, menu buttons folded behind one button ---------- */
-const MENU_IDS = ['skHero', 'skBag', 'skDiary', 'skMarket', 'skBook', 'skWorld', 'skForge', 'skWheel', 'skTop', 'skFb'];
+const MENU_IDS = ['skHero', 'skBag', 'skDiary', 'skMarket', 'skEmote', 'skBook', 'skWorld', 'skForge', 'skWheel', 'skTop', 'skFb'];
 function isMobileLayout() { return (window.matchMedia && matchMedia('(pointer: coarse)').matches) || innerWidth < 700 || innerHeight < 480; }
 function applyLayout() {
   const mob = isMobileLayout(), root = document.documentElement, menu = $('mobMenu'), bar = document.querySelector('.skills'), mb = $('skMenu');
@@ -6948,7 +7051,7 @@ function applyLayout() {
   mb.hidden = !mob;
   const sep = bar.querySelector('.sep');
   if (mob) { for (const id of MENU_IDS) { const b = $(id); if (b && b.parentNode !== menu) menu.appendChild(b); } }
-  else for (const id of ['skHero', 'skWheel', 'skTop', 'skFb', 'skWorld', 'skForge', 'skBook', 'skDiary', 'skMarket', 'skBag']) { const b = $(id); if (b && b.parentNode !== bar) bar.insertBefore(b, $('skRice')); }
+  else for (const id of ['skHero', 'skWheel', 'skTop', 'skFb', 'skWorld', 'skForge', 'skBook', 'skDiary', 'skMarket', 'skEmote', 'skBag']) { const b = $(id); if (b && b.parentNode !== bar) bar.insertBefore(b, $('skRice')); }
   if (!mob) { menu.hidden = true; mb.setAttribute('aria-expanded', 'false'); }
 }
 $('skMenu').addEventListener('click', e => { e.stopPropagation(); const m = $('mobMenu'); m.hidden = !m.hidden; $('skMenu').setAttribute('aria-expanded', String(!m.hidden)); });
@@ -7094,10 +7197,12 @@ document.addEventListener('pointerdown', e => { const p = $('sndP'); if (p && !p
 for (const b of document.querySelectorAll('#marketP [data-mt]')) b.addEventListener('click', () => { MARKET_TAB = b.dataset.mt; renderMarket(); });
 $('marketX').addEventListener('click', () => { $('marketP').hidden = true; });
 $('skMarket').addEventListener('click', () => openMarket());
+$('skEmote').addEventListener('click', () => emotePicker());
+{ const pc = mk('button', 'photox', '✕ Выйти из фоторежима'); pc.type = 'button'; pc.addEventListener('click', () => photoMode(false)); document.body.appendChild(pc); }
 
 /* ---------- the Diary: daily tasks, login calendar, achievements, titles, cooking, events ---------- */
 let DIARY_TAB = 'daily';
-function openDiary(tab) { const p = $('diaryP'); if (tab) DIARY_TAB = tab; p.hidden = tab ? false : !p.hidden; if (!p.hidden) { if (typeof bringFront === 'function') bringFront(p); renderDiary(); } }
+function openDiary(tab) { TUT_EV.diary = true; const p = $('diaryP'); if (tab) DIARY_TAB = tab; p.hidden = tab ? false : !p.hidden; if (!p.hidden) { if (typeof bringFront === 'function') bringFront(p); renderDiary(); } }
 function renderDiary() {
   const p = $('diaryP'); if (!p || p.hidden || !GAME || !GAME.hero) return;
   dailyCheck(GAME);
@@ -7157,6 +7262,12 @@ function renderDiary() {
       body.appendChild(r);
     }
     const b = buffsActive(); if (Object.keys(b).length) note('Действует: ' + ($('buffTxt') ? $('buffTxt').textContent : ''));
+  } else if (DIARY_TAB === 'path') {
+    renderPathTab(body, G);
+  } else if (DIARY_TAB === 'home') {
+    renderHomeTab(body, G);
+  } else if (DIARY_TAB === 'holiday') {
+    renderHolidayTab(body, G);
   } else if (DIARY_TAB === 'season') {
     renderSeasonTab(body, G);
   } else if (DIARY_TAB === 'events') {
@@ -7321,6 +7432,8 @@ function itemExtra(it) {
   if (it.set && SETS[it.set]) { const n = setCounts()[it.set] || 0, S = SETS[it.set]; s += ' · сет «' + S.name + '» (надето ' + n + ' из 4): 2 вещи — ' + bonusText(S.b2) + '; 4 вещи — ' + bonusText(S.b4); }
   if (it.crafted) s += ' · выковано в кузнице';
   if (it.excl) s += ' · эксклюзив подземелья';
+  if (it.gems && it.gems.length) s += ' · камни: ' + it.gems.map(k => { const [g, t] = k.split('_'); return GEMS[g] ? gemName(g, +t) : ''; }).join(', ');
+  if (it.slot === 'pet' && it.plv) s += ' · уровень питомца ' + it.plv;
   if (it.slot === 'pet' && PETS[it.base]) s += ' · ' + PETS[it.base].text;
   return s;
 }
@@ -7334,7 +7447,7 @@ function renderForge() {
   for (const b of p.querySelectorAll('[data-ft]')) { b.classList.toggle('on', b.dataset.ft === FORGE_TAB); b.setAttribute('aria-selected', String(b.dataset.ft === FORGE_TAB)); }
   const body = $('forgeBody'); body.innerHTML = '';
   const row = (it, title, sub, label, fn, dis) => {
-    const r = mk('div', 'srow'), info = mk('div'); info.style.minWidth = '0';
+    const r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0';
     const t = mk('div', 'sn r' + it.rarity, title), s = mk('div', 'ss'); s.innerHTML = sub;
     info.append(t, s); r.append(cellFor(it), info, btn(label, fn, 'main', dis)); body.appendChild(r);
   };
@@ -7432,7 +7545,7 @@ function renderSealShop(body, G) {
     const open = (save.dgDone[did] || 0) > 0;
     box.appendChild(mk('div', 'label', ZONES[did].name + (open ? '' : ' · сначала пройдите подземелье')));
     for (const [kind, id, price] of SEAL_SHOP[did]) {
-      const it = sealItem(did, kind, id), r = mk('div', 'srow'), info = mk('div'); info.style.minWidth = '0';
+      const it = sealItem(did, kind, id), r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0';
       info.append(mk('div', 'sn r' + it.rarity, itemName(it)), mk('div', 'ss', describe(it)));
       r.append(cellFor(it), info, btn(price + ' печатей', () => {
         if (!open || save.seals < price) return; if (save.inv.length >= BAG) { log('Сумка полна.', 'bad'); return; }
@@ -7573,7 +7686,7 @@ function myPresence() {
   if (!GAME || !GAME.hero || GAME.hero.atk == null) return null;
   const f = myFighter(), a = save.eq.armor, c = save.eq.costume, w = save.eq.weapon;
   return { pid: save.pid, n: cleanText(save.name).slice(0, 20), c: f.c, lv: f.lv, bm: f.bm, a: f.a, hp: f.hp, d: f.d, cr: f.cr, pl: f.pl, r: save.arena.r,
-    g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId, in: GAME.inst || GAME.zoneId, ti: titleName(save.title),
+    g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId, in: GAME.inst || GAME.zoneId, ti: titleName(save.title), rb: save.reb || 0,
     x: Math.round(GAME.hero.x), y: Math.round(GAME.hero.y),
     look: { ar: a ? a.base : null, r: a ? Math.min(2, a.rarity) : 0, co: c ? c.base : null, w: w ? w.base : null, wr: w ? w.rarity : 0, wg: GAME.wingLook ? GAME.wingLook() : null, mt: save.eq.mount ? save.eq.mount.base : null, b: save.body || 'anime' }, chat: MY_CHAT.slice(-6) };
 }
@@ -7705,7 +7818,7 @@ async function mqttRoom() {
     const now = Date.now();
     for (const [url, c] of conns) {
       if (c.pend && now - c.pend > 5000) rotate(url, 'stall');
-      else if (c.bytes > 6000) rotate(url, 'rot');
+      else if (c.bytes > 4e6) rotate(url, 'rot');
     }
   }, 1500);
   const first = new Promise(res => { let left = NET_SERVERS.length; for (const u of NET_SERVERS) openOne(u).then(() => { if (conns.size || --left <= 0) res(); }); });
@@ -7749,14 +7862,14 @@ function makeRemote(S, p, mv) {
   u.wspr = S.add.image(0, 0, S.weaponTexKey(wb, Math.min(3, +L.wr || 0))).setOrigin(GRIP[0] / HERO_W, GRIP[1] / HERO_H).setScale(HERO_K / 4);
   const name = cleanText(p.n).slice(0, 20) || 'Игрок', tag = p.g && p.g.t ? ' [' + cleanText(p.g.t).slice(0, 4) + ']' : '';
   const fr = save.friends && save.friends.some(f => f.pid === p.pid);
-  u.label = S.add.text(0, 0, (p.ti ? '«' + cleanText(p.ti).slice(0, 30) + '»\n' : '') + name + tag + ' · ' + (+p.lv || 1), { fontFamily: FONT, fontSize: '12px', color: fr ? '#8fe3bf' : '#ffe08a', stroke: '#000', strokeThickness: 3 }).setOrigin(.5, 1).setDepth(190000);
+  u.label = S.add.text(0, 0, (p.ti ? '«' + cleanText(p.ti).slice(0, 30) + '»\n' : '') + (p.rb ? rebStars(+p.rb) + ' ' : '') + name + tag + ' · ' + (+p.lv || 1), { fontFamily: FONT, fontSize: '12px', color: fr ? '#8fe3bf' : '#ffe08a', stroke: '#000', strokeThickness: 3 }).setOrigin(.5, 1).setDepth(190000);
   u.mark = { setPosition() { return this; } };
   u.sig = remoteSig(p, fr);
   u.parts = [u.shadow, u.spr, u.wspr, u.label, u.wingR, u.wingL, u.mountB, u.mountF].filter(Boolean);
   for (const o of u.parts) if (o.setInteractive && o === u.spr) o.setInteractive({ useHandCursor: true }).on('pointerdown', (pt, lx, ly, ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); openPeerCard(p.pid); });
   return u;
 }
-const remoteSig = (p, fr) => JSON.stringify([p.look, p.n, p.g && p.g.t, p.lv, p.c, !!fr, p.ti]);
+const remoteSig = (p, fr) => JSON.stringify([p.look, p.n, p.g && p.g.t, p.lv, p.c, !!fr, p.ti, p.rb]);
 function dropRemote(u) { for (const o of u.parts) try { o.destroy(); } catch (e) {} }
 function openPeerCard(pid) {
   WORLD_TAB = 'friends'; toggleWorld(true);
@@ -7771,7 +7884,7 @@ function netUpdate(S, dt) {
     if ((moved && now > (S.netT || 0)) || now > (S.netT || 0) + 2.5) {
       S.netLastHp = h.hp;
       S.netT = now + .25; S.netLast = { x: h.x, y: h.y };
-      ROOM.move({ i: save.pid, z: S.inst || S.zoneId, x: Math.round(h.x * 100) / 100, y: Math.round(h.y * 100) / 100, f: h.spr && h.spr.flipX ? 1 : 0, m: h.moving ? 1 : 0, h: h.maxHp ? Math.round(Math.max(0, h.hp) / h.maxHp * 100) : 100, d: h.alive ? 0 : 1 });
+      ROOM.move({ e: h.emote && performance.now() < h.emote.until ? h.emote.id : 0, i: save.pid, z: S.inst || S.zoneId, x: Math.round(h.x * 100) / 100, y: Math.round(h.y * 100) / 100, f: h.spr && h.spr.flipX ? 1 : 0, m: h.moving ? 1 : 0, h: h.maxHp ? Math.round(Math.max(0, h.hp) / h.maxHp * 100) : 100, d: h.alive ? 0 : 1 });
     }
   }
   const want = new Map();
@@ -7787,6 +7900,7 @@ function netUpdate(S, dt) {
     if (d > 8) { u.x = tx; u.y = ty; } else { const k = Math.min(1, dt * 9); u.x += (tx - u.x) * k; u.y += (ty - u.y) * k; }
     const moving = d > .05 || (w.mv && w.mv.m && Date.now() - w.mv.t < 600);
     if (Math.abs(tx - u.x) > .01) u.flip = iso(tx, ty).x < iso(u.x, u.y).x; else if (w.mv) u.flip = !!w.mv.f;
+    if (w.mv && w.mv.e && u.lastE !== w.mv.e) { u.lastE = w.mv.e; showEmote(S, u, w.mv.e); } else if (w.mv && !w.mv.e) u.lastE = 0;
     placeRemote(S, u, moving);
   }
 }
@@ -7856,7 +7970,8 @@ function onDirect(d) {
   }
   else if (d.t === 'pvpinv') { if (LIVE) return; askPopup(cleanText(d.n) + ' (' + (CLASSES[d.c] ? CLASSES[d.c].name : '') + ', ур. ' + (+d.lv || 1) + ') вызывает вас на живую дуэль. Бой до первого падения, рейтинг арены изменится.', 'Принять бой', () => { liveDuelStart(d.f, d.n); netSend('d/' + d.f, { t: 'pvpacc', f: save.pid, n: save.name }); }, () => netSend('d/' + d.f, { t: 'decl', f: save.pid, n: save.name })); }
   else if (d.t === 'pvpacc') liveDuelStart(d.f, d.n);
-  else if (d.t === 'pvphit') { if (LIVE && d.f === LIVE.pid && GAME && GAME.hero.alive) GAME.hurtHero(Math.max(1, Math.min(1e6, +d.d || 1))); }
+  else if (typeof d.t === 'string' && d.t.startsWith('bg')) bgMsg(d);
+  else if (d.t === 'pvphit') { if (((LIVE && d.f === LIVE.pid) || (BG && bgEnemies().includes(d.f))) && GAME && GAME.hero.alive) GAME.hurtHero(Math.max(1, Math.min(1e6, +d.d || 1))); }
   else if (d.t === 'pvpend') { if (LIVE && d.f === LIVE.pid) liveDuelEnd(d.win === save.pid); }
   else if (typeof d.t === 'string' && d.t.startsWith('trade')) { if (GAME) tradeMsg(GAME, d); }
   else if (d.t === 'busy') log(cleanText(d.n) + ' уже в другом отряде.', 'bad');
@@ -7902,7 +8017,8 @@ function onParty(d, topic) {
   }
   if (d.f === save.pid) return;
   if (d.t === 'leave' && PARTY.lead === save.pid) { const m = PARTY.mem.find(x => x.pid === d.f); PARTY.mem = PARTY.mem.filter(x => x.pid !== d.f); if (m) log(m.n + ' покидает отряд.', ''); partyBroadcast(); return; }
-  if (d.t === 'pchat') { const m = PARTY.mem.find(x => x.pid === d.f); if (m) log('[Отряд] ' + m.n + ': ' + cleanText(d.s).slice(0, 140), 'good'); return; }
+  if (d.t === 'pchat') { const m = PARTY.mem.find(x => x.pid === d.f); if (m && !isMuted(d.f)) log('[Отряд] ' + m.n + ': ' + chatClean(cleanText(d.s)).slice(0, 140), 'good'); return; }
+  if (d.t === 'heal' && GAME && GAME.hero.alive && d.i === GAME.inst) { const mv = NET_MOVES.get(d.f), h = GAME.hero; if (mv && Math.hypot(mv.x - h.x, mv.y - h.y) < 8) { h.hp = Math.min(h.maxHp, h.hp + h.maxHp * (+d.k || .05)); GAME.floatText(h.x, h.y - .3, '+лечение', '#7aff9a', 14); } return; }
   if (!GAME || !GAME.hero) return;
   const S = GAME;
   if (d.t === 'ms') netOnMs(S, d);
@@ -7911,7 +8027,7 @@ function onParty(d, topic) {
   else if (d.t === 'dmg' && d.to === save.pid && S.hero.alive && d.i === S.inst) S.hurtHero(Math.max(1, +d.d || 1));
   else if (d.t === 'dgcall' && d.f === PARTY.lead && S.inst !== d.i) {
     const z = ZONES[d.z]; if (!z || !z.dungeon) return;
-    askPopup('Лидер отряда входит в подземелье «' + z.name + '». Пойти с отрядом?', save.lv >= z.dungeon.minLv ? 'Войти' : 'Нужен ' + z.dungeon.minLv + ' ур.', () => { if (save.lv >= z.dungeon.minLv && GAME) GAME.travel({ to: d.z, extra: { dgInst: d.i } }); }, null, save.lv < z.dungeon.minLv);
+    askPopup('Лидер отряда входит в подземелье «' + z.name + '». Пойти с отрядом?', save.lv >= z.dungeon.minLv ? 'Войти' : 'Нужен ' + z.dungeon.minLv + ' ур.', () => { if (save.lv >= z.dungeon.minLv && GAME) GAME.travel({ to: d.z, extra: { dgInst: d.i, diff: +d.df || 0 } }); }, null, save.lv < z.dungeon.minLv);
   }
   else if (d.t === 'wave' && d.i === S.inst && S.dgRemote) banner(d.b ? MOBS[d.b] ? MOBS[d.b].name : 'Хозяин логова' : 'Волна ' + d.w + ' из ' + d.n, d.b ? 'Хозяин логова приближается' : S.zone.name);
   else if (d.t === 'rmech') raidMech(S, d);
@@ -7974,17 +8090,19 @@ function netPlaceNear(S, x, y) {
 function netMobTick(S) {
   const rtn = performance.now() / 1000;
   if (!inParty() || rtn < (S.msT || 0)) return;
-  S.msT = rtn + .25;
+  S.msT = rtn + .3;
   const mates = partyMatesHere(S); S.partyUnits = mates.map(p => { const u = S.puMap.get(p.pid) || { pu: true, pid: p.pid, lungeT: -9, def: 0 }; u.x = p.x; u.y = p.y; u.alive = !p.dead; S.puMap.set(p.pid, u); return u; });
   if (!mates.length) { if (S.msLast) { netSend('g/' + PARTY.id, { t: 'ms', f: save.pid, id: PARTY.id, i: S.inst, m: [] }); S.msLast = 0; } return; }
-  const arr = [], h = S.hero;
+  const arr = [], h = S.hero, full = rtn > (S.msFullT || 0); if (full) { S.msFullT = rtn + 2; if (!S.msSig) S.msSig = new Map(); S.msSig.clear(); } if (!S.msSig) S.msSig = new Map();
   for (const m of S.mobs) {
     if (!m.alive || m.remote || m.sb || m.pvp || !m.nid) continue;
     if (Math.hypot(h.x - m.x, h.y - m.y) > 28 && !mates.some(p => Math.hypot(p.x - m.x, p.y - m.y) < 28)) continue;
-    arr.push([m.nid, m.kind, m.lv, Math.round(m.x * 10) / 10, Math.round(m.y * 10) / 10, Math.max(0, Math.round(m.hp)), m.maxHp]);
+    const row = [m.nid, m.kind, m.lv, Math.round(m.x * 5) / 5, Math.round(m.y * 5) / 5, Math.max(0, Math.round(m.hp)), m.maxHp], sig = row.join();
+    if (!full && S.msSig.get(m.nid) === sig) continue; S.msSig.set(m.nid, sig);
+    arr.push(row);
     if (arr.length >= 40) break;
   }
-  if (arr.length || S.msLast) netSend('g/' + PARTY.id, { t: 'ms', f: save.pid, id: PARTY.id, i: S.inst, m: arr });
+  if (arr.length || full) netSend('g/' + PARTY.id, { t: 'ms', f: save.pid, id: PARTY.id, i: S.inst, m: arr, full: full ? 1 : 0 });
   S.msLast = arr.length;
   // flush batched hits on friends' monsters
   for (const [o, q] of S.hitQ) if (q.length) { netSend('g/' + PARTY.id, { t: 'hit', f: save.pid, id: PARTY.id, i: S.inst, o, h: q.splice(0) }); }
@@ -8001,7 +8119,8 @@ function netOnMs(S, d) {
     m.nx = +r[3]; m.ny = +r[4]; m.maxHp = Math.max(1, +r[6] || 1); m.hp = Math.min(m.hp, Math.max(1, +r[5] || 1)); if (+r[5] > m.hp && S.now - (m.hitT || -9) > 1) m.hp = +r[5];
     m.rT = performance.now() / 1000; S.drawBar(m);
   }
-  for (const [key, m] of S.rmobs) if (key.startsWith(pre) && !seen.has(key)) { if (m.alive) netDropMob(S, m); S.rmobs.delete(key); }
+  if (d.full) for (const [key, m] of S.rmobs) if (key.startsWith(pre) && !seen.has(key)) { if (m.alive) netDropMob(S, m); S.rmobs.delete(key); }
+  else for (const [key, m] of S.rmobs) if (key.startsWith(pre)) m.rT = performance.now() / 1000;
 }
 function netDropMob(S, m) {
   if (!m.alive && m.gone) return;
@@ -8098,7 +8217,7 @@ function evHud() {
 }
 
 /* ---------- lifetime statistics ---------- */
-const STAT_KEYS = ['raids', 'dailyDone', 'kills', 'bosses', 'dg', 'wbJoin', 'wbKill', 'wbTop1', 'arenaW', 'duelW', 'duelL', 'fish', 'herbs', 'cooked', 'crafted', 'forgeOps', 'maxPlus', 'myth', 'partyKills', 'deaths', 'goldEarned', 'logins', 'streakMax', 'gbKills', 'gwWins', 'trades', 'eventKills'];
+const STAT_KEYS = ['storm', 'raids', 'dailyDone', 'kills', 'bosses', 'dg', 'wbJoin', 'wbKill', 'wbTop1', 'arenaW', 'duelW', 'duelL', 'fish', 'herbs', 'cooked', 'crafted', 'forgeOps', 'maxPlus', 'myth', 'partyKills', 'deaths', 'goldEarned', 'logins', 'streakMax', 'gbKills', 'gwWins', 'trades', 'eventKills'];
 function ensureStats() {
   if (!save.stats) save.stats = {};
   for (const k of STAT_KEYS) if (typeof save.stats[k] !== 'number') save.stats[k] = 0;
@@ -8209,6 +8328,10 @@ const ACHS = [
   { id: 'event100', name: 'Праздник в долине', desc: 'Победить 100 демонов во время событий', test: s => s.eventKills >= 100, prog: s => [s.eventKills, 100], title: 'festive', gold: 2000 },
   { id: 'raid1', name: 'Затмение рассеялось', desc: 'Пройти рейд «Цитадель Затмения»', test: s => s.raids >= 1, title: 'eclipsebreaker', gold: 8000 },
   { id: 'raid10', name: 'Хозяин Цитадели', desc: 'Пройти рейд 10 раз', test: s => s.raids >= 10, prog: s => [s.raids, 10], title: 'citadel', gold: 20000 },
+  { id: 'storm20', name: 'В самое сердце бури', desc: 'Победить 20 грозовых они', test: s => s.storm >= 20, prog: s => [s.storm, 20], title: 'stormchaser', gold: 3000 },
+  { id: 'z_ryu', name: 'Под волнами', desc: 'Одолеть Рюдзина', test: s => s.bossKinds.ryujin > 0, title: 'ryugu', gold: 15000 },
+  { id: 'z_spirit', name: 'Шествие рассеяно', desc: 'Одолеть Нурарихёна', test: s => s.bossKinds.nurarihyon > 0, title: 'spirits', gold: 18000 },
+  { id: 'z_volcano', name: 'Огонь уснул', desc: 'Одолеть Кагуцути', test: s => s.bossKinds.kagutsuchi > 0, title: 'kagutsuchi', gold: 25000 },
   { id: 'trade10', name: 'Слово купца', desc: 'Совершить 10 обменов с игроками', test: s => s.trades >= 10, prog: s => [s.trades, 10], title: 'merchant', gold: 2000 }
 ];
 const achTitle = a => typeof a.title === 'function' ? a.title() : a.title;
@@ -8281,7 +8404,7 @@ function dailyReward(G, q) {
   if (q.id === 'boss' || q.id === 'dg') G.give(scroll(1));
   log('Задание дня «' + d.name + '» выполнено: +' + (300 + lv * 40) + ' мон, +5 печатей, материалы.', 'good');
   if (save.daily.list.every(x => x.claimed) && !save.daily.chest) {
-    save.daily.chest = true; G.give(genItem(lv, 2)); save.gold += 1000; if (save.mats) save.mats.star += 2;
+    save.daily.chest = true; G.give(genItem(lv, 2)); gemDrop(G, 2, 1); save.gold += 1000; if (save.mats) save.mats.star += 2;
     banner('Все задания дня выполнены', 'Эпическая вещь, 1000 мон и звёздные кристаллы');
   }
   persist(); G.renderInv();
@@ -8471,7 +8594,7 @@ function liveDuelEnd(won, iLost) {
 }
 function pvpProxyTick(S, m) {
   const ru = S.remotes.get(m.pvp), mv = NET_MOVES.get(m.pvp);
-  if (!LIVE || LIVE.pid !== m.pvp) { netDropMob(S, m); S.pvpProxy = null; return; }
+  if (m.bg ? !BG : (!LIVE || LIVE.pid !== m.pvp)) { netDropMob(S, m); if (!m.bg) S.pvpProxy = null; return; }
   if (ru) { m.x = ru.x; m.y = ru.y; }
   if (mv && mv.hp != null) { const hp = Math.max(1, mv.hp); if (hp !== m.hp) { m.hp = hp; S.drawBar(m); } }
   S.placeUnit(m, 0);
@@ -8490,6 +8613,7 @@ function liveTick(S) {
 }
 function pvpHit(S, m, d, crit) {
   d = Math.max(1, Math.round(d * .4));
+  if (m.bg) { S.floatText(m.x, m.y, crit ? d + '!' : String(d), crit ? '#ffd36a' : '#ffffff', crit ? 24 : 17, crit); netSend('d/' + m.pvp, { t: 'pvphit', f: save.pid, d, c: crit ? 1 : 0 }); return; }
   S.floatText(m.x, m.y, crit ? d + '!' : String(d), crit ? '#ffd36a' : '#ffffff', crit ? 24 : 17, crit);
   S.burst(m.x, m.y, crit ? [0xffd36a, 0xffffff] : [0xffffff, 0xbfe3ff], crit ? 12 : 6, crit ? 30 : 20);
   if (LIVE) netSend('d/' + LIVE.pid, { t: 'pvphit', f: save.pid, d, c: crit ? 1 : 0 });
@@ -8579,7 +8703,7 @@ const WB = makeShared({ topic: 'wb', kind: 'wbking', max: 150000, off: { x: 13, 
       stat('wbKill'); if (R.me === 1) stat('wbTop1');
       save.gold += 3000 + lv * 150; save.seals = (save.seals || 0) + (R.me === 1 ? 50 : R.me <= 3 ? 30 : 20);
       if (save.mats) { save.mats.ore += 20; save.mats.ess += 8; save.mats.star += 2; }
-      S.give(genItem(lv + 2, 2)); S.give(scroll(3)); S.gainXp(Math.round(xpNeed(lv) * .35));
+      S.give(genItem(lv + 2, 2)); S.give(scroll(3)); S.gainXp(Math.round(xpNeed(lv) * .35)); gemDrop(S, 3, 1);
       if (R.me === 1) S.give(genItem(lv + 2, 2));
       if (Math.random() < (R.me === 1 ? 1 : R.me <= 3 ? .5 : .12)) { const it = mythWeapon(lv + 2); if (S.give(it)) banner(it.name, 'Мифическое оружие!'); }
       if (save.guild) guildXp(80);
@@ -9056,11 +9180,497 @@ function renderSeasonTab(body, G) {
 }
 const seasonBadge = () => { seasonEnsure(); const S = save.season, lv = seasonLv(); for (let i = 1; i <= lv; i++) if (!S.free[i] || (S.premium && !S.prem[i])) return true; return false; };
 
+/* ---------- the hero's path: rebirth, specializations, gems, wardrobe, growing pets ---------- */
+const REB_MAX = 10, REB_K = .06;
+const rebBonus = () => Math.min(REB_MAX, save.reb || 0) * REB_K;
+const rebStars = n => n ? '★'.repeat(Math.min(5, n)) + (n > 5 ? '+' + (n - 5) : '') : '';
+function rebirth(G) {
+  if (save.lv < LV_CAP) { log('Перерождение доступно на ' + LV_CAP + ' уровне.', 'bad'); return; }
+  save.reb = (save.reb || 0) + 1; save.lv = 1; save.xp = 0; save.gold += 5000;
+  G.give(gemItem('ruby', 3)); G.give(gemItem('sapphire', 3));
+  if (!save.titles.includes('reborn')) save.titles.push('reborn');
+  if (save.reb >= 5 && !save.titles.includes('phoenixsoul')) save.titles.push('phoenixsoul');
+  G.recalc(true); G.hero.hp = G.hero.maxHp; banner('Перерождение ' + save.reb, 'Сила +' + Math.round(rebBonus() * 100) + '% навсегда'); sfx('myth');
+  log('Вы переродились! Уровень снова 1, но атака и здоровье навсегда выше на ' + Math.round(rebBonus() * 100) + '%. Снаряжение и навыки остались с вами.', 'good');
+  persist(); setupSkillButtons(); G.updateQuestHud(); G.renderInv(); G.renderHeroPanel(); pushPresence(true);
+}
+const SPECS = {
+  warrior: { guard: { n: 'Страж', d: 'Здоровье +25%, защита +20. Держит удары за весь отряд.', hp: .25, def: 20 }, berserk: { n: 'Берсерк', d: 'Атака +22%, крит +6%, здоровье −10%.', atk: .22, crit: 6, hp: -.1 } },
+  mage: { healer: { n: 'Целитель', d: 'Ки +30%, здоровье +10%. Каждые 6 секунд лечит себя и отряд рядом на 5%.', mp: .3, hp: .1, aura: .05 }, destroyer: { n: 'Разрушитель', d: 'Техники бьют на 30% сильнее, атака +8%.', atk: .08, skill: .3 } },
+  archer: { sniper: { n: 'Снайпер', d: 'Крит +10%, урон крита +35%.', crit: 10, critDmg: .35 }, hunter: { n: 'Ловчий', d: 'Скорость атаки +25%, атака +10%.', aspd: .25, atk: .1 } }
+};
+const specDef = () => save.spec && SPECS[save.cls] ? SPECS[save.cls][save.spec] : null;
+function chooseSpec(G, id) {
+  if (!SPECS[save.cls] || !SPECS[save.cls][id]) return;
+  if (save.lv < 20 && !save.reb) { log('Вторая ветка открывается на 20 уровне.', 'bad'); return; }
+  if (save.spec && save.spec !== id) { if (save.gold < 5000) { log('Смена ветки стоит 5000 мон.', 'bad'); return; } save.gold -= 5000; }
+  save.spec = id; G.recalc(); persist(); banner('Путь: ' + SPECS[save.cls][id].n, SPECS[save.cls][id].d); renderDiary();
+}
+/* gems */
+const GEMS = { ruby: { n: 'рубин', st: 'atk', v: 8, col: ['#ff6a7a', '#8a1020'], label: 'атака' }, sapphire: { n: 'сапфир', st: 'hp', v: 60, col: ['#7ab0ff', '#14307a'], label: 'здоровье' }, emerald: { n: 'изумруд', st: 'def', v: 4, col: ['#7affb0', '#0a6a3a'], label: 'защита' }, topaz: { n: 'топаз', st: 'crit', v: 1.5, col: ['#ffd36a', '#8a5a0a'], label: 'крит' }, amethyst: { n: 'аметист', st: 'ki', v: 20, col: ['#d8a0ff', '#4a1a8a'], label: 'ки' } };
+const GEM_TIER = ['', 'Осколок', 'Камень', 'Огранённый', 'Безупречный', 'Звёздный'];
+const gemName = (g, t) => t <= 2 ? GEM_TIER[t] + ' ' + (t === 1 ? GEMS[g].n + 'а' : GEMS[g].n) : GEM_TIER[t] + ' ' + GEMS[g].n;
+const gemItem = (g, t) => ({ uid: uid(), slot: 'use', base: 'gem_' + g + '_' + t, kind: 'gem_' + g + '_' + t, name: gemName(g, t).replace(/^./, c => c.toUpperCase()), rarity: Math.min(4, t - 1), qty: 1, value: 200 * 3 ** (t - 1), st: {} });
+const GEM_REF = it => { const m = it && it.slot === 'use' && /^gem_([a-z]+)_(\d)$/.exec(it.base || ''); return m && GEMS[m[1]] ? { g: m[1], t: +m[2] } : null; };
+const gemVal = (g, t) => GEMS[g].v * t * (1 + (t - 1) * .5);
+const SOCKETS = { weapon: 2, armor: 2, ring: 1, ring2: 1, earring: 1, charm: 1 };
+const sockCount = it => it && !it.kind ? (SOCKETS[it.slot] || 0) : 0;
+function gemIconURL(it) {
+  const key = 'gemi_' + it.base; if (ICONS[key]) return ICONS[key];
+  const R = GEM_REF(it), G = GEMS[R.g], cv = document.createElement('canvas'); cv.width = cv.height = 64; const x = cv.getContext('2d');
+  const bg = x.createRadialGradient(32, 28, 4, 32, 32, 46); bg.addColorStop(0, RBG[it.rarity][0]); bg.addColorStop(1, RBG[it.rarity][1]); x.fillStyle = bg; x.fillRect(0, 0, 64, 64);
+  const s = 12 + R.t * 2.4, g = x.createLinearGradient(32 - s, 32 - s, 32 + s, 32 + s); g.addColorStop(0, G.col[0]); g.addColorStop(1, G.col[1]);
+  x.fillStyle = g; x.beginPath(); x.moveTo(32, 32 - s); x.lineTo(32 + s, 30); x.lineTo(32, 32 + s); x.lineTo(32 - s, 30); x.closePath(); x.fill();
+  x.fillStyle = 'rgba(255,255,255,.55)'; x.beginPath(); x.moveTo(32, 32 - s); x.lineTo(32 + s * .45, 30); x.lineTo(32, 31); x.lineTo(32 - s * .45, 30); x.closePath(); x.fill();
+  x.strokeStyle = 'rgba(0,0,0,.4)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(32, 32 - s); x.lineTo(32 + s, 30); x.lineTo(32, 32 + s); x.lineTo(32 - s, 30); x.closePath(); x.stroke();
+  x.fillStyle = '#ffe9a0'; x.font = 'bold 10px sans-serif'; x.textAlign = 'center'; x.fillText('★'.repeat(R.t), 32, 60);
+  return (ICONS[key] = cv.toDataURL());
+}
+function gemStats(it) { const out = {}; for (const k of it.gems || []) { const [g, t] = k.split('_'); if (!GEMS[g]) continue; const st = GEMS[g].st; out[st] = (out[st] || 0) + gemVal(g, +t); } return out; }
+function socketGem(G, it, gemIt) {
+  const R = GEM_REF(gemIt); if (!R) return; if (!it.gems) it.gems = [];
+  if (it.gems.length >= sockCount(it)) { log('Все гнёзда заняты.', 'bad'); return; }
+  it.gems.push(R.g + '_' + R.t); gemIt.qty--; if (gemIt.qty <= 0) save.inv.splice(save.inv.indexOf(gemIt), 1);
+  sfx('loot'); log('Камень вставлен: ' + gemName(R.g, R.t) + ' — ' + GEMS[R.g].label + ' +' + Math.round(gemVal(R.g, R.t) * 10) / 10 + '.', 'good');
+  G.recalc(); persist(); G.renderInv(); G.renderHeroPanel();
+}
+function unsocketGem(G, it, i) {
+  const k = (it.gems || [])[i]; if (!k) return; const [g, t] = k.split('_'), cost = 500 * +t;
+  if (save.gold < cost) { log('Извлечение стоит ' + cost + ' мон.', 'bad'); return; }
+  if (!G.give(gemItem(g, +t), true)) return;
+  save.gold -= cost; it.gems.splice(i, 1); G.recalc(); persist(); G.renderInv(); G.renderHeroPanel();
+}
+function mergeGems(G, g, t) {
+  if (t >= 5) return; const s = save.inv.find(i => i && i.kind === 'gem_' + g + '_' + t); if (!s || s.qty < 3) { log('Нужно 3 одинаковых камня.', 'bad'); return; }
+  s.qty -= 3; if (s.qty <= 0) save.inv.splice(save.inv.indexOf(s), 1);
+  G.give(gemItem(g, t + 1), true); sfx('loot'); log('Слияние: ' + gemName(g, t + 1) + '.', 'good'); persist(); G.renderInv();
+}
+function gemDrop(G, maxT, n) { const keys = Object.keys(GEMS); for (let i = 0; i < (n || 1); i++) { const t = Math.max(1, Math.min(5, Math.round(1 + Math.random() * (maxT - 1)))); G.give(gemItem(keys[Math.floor(Math.random() * keys.length)], t)); } }
+function socketUI(det, G, it) {
+  const n = sockCount(it); if (!n) return;
+  const row = mk('div', 'sockets'); row.appendChild(mk('span', 'label', 'Гнёзда'));
+  for (let i = 0; i < n; i++) {
+    const k = (it.gems || [])[i];
+    if (k) { const [g, t] = k.split('_'); const c = mk('span', 'sock on'); c.style.background = 'url(' + gemIconURL({ base: 'gem_' + g + '_' + t, rarity: Math.min(4, +t - 1) }) + ') center/cover'; c.title = gemName(g, +t); row.appendChild(c); row.appendChild(btn('Извлечь · ' + 500 * +t, () => unsocketGem(G, it, i), 'mini')); }
+    else { row.appendChild(mk('span', 'sock')); }
+  }
+  const gems = save.inv.filter(x => GEM_REF(x));
+  if ((it.gems || []).length < n && gems.length) { const sel = mk('select'); for (const gi of gems) { const o = mk('option', '', gi.name + ' ×' + gi.qty); o.value = gi.kind; sel.appendChild(o); } row.append(sel, btn('Вставить', () => { const gi = save.inv.find(x => x && x.kind === sel.value); if (gi) socketGem(G, it, gi); }, 'mini main')); }
+  det.appendChild(row);
+}
+/* wardrobe: wear the look of any weapon or wings you have owned */
+function wardrobeNote(it) { if (!it || it.kind) return; if (!save.wcoll) save.wcoll = []; if (it.slot === 'weapon' && WGEO[it.base] && !save.wcoll.includes(it.base)) save.wcoll.push(it.base); }
+/* growing pets */
+const petNeed = l => 25 + l * 6;
+function petGain(G) {
+  const it = save.eq.pet; if (!it) return;
+  it.plv = it.plv || 1; it.pxp = (it.pxp || 0) + 1;
+  if (it.plv < 30 && it.pxp >= petNeed(it.plv)) {
+    it.pxp = 0; it.plv++;
+    const sk = it.plv === 10 ? 'Свирепость: урон питомца +25%' : it.plv === 20 ? 'Собиратель: +10% монет с демонов' : it.plv === 30 ? 'Хранитель: лечит вас на 3% каждые 10 секунд' : '';
+    G.floatText(G.hero.x, G.hero.y - .7, (PETS[it.base] ? PETS[it.base].name.split(' ')[0] : 'Питомец') + ' · ур. ' + it.plv, '#8fe3bf', 16);
+    if (sk) { banner('Питомец научился', sk); log('Питомец достиг ' + it.plv + ' уровня и выучил умение «' + sk + '».', 'good'); }
+    G.recalc();
+  }
+}
+const petMul = it => 1 + (((it && it.plv) || 1) - 1) * .03;
+
+/* ---------- holidays: Halloween (Oct 25 – Nov 7) and New Year (Dec 20 – Jan 14) ---------- */
+let HOL_FORCE = ''; try { HOL_FORCE = new URLSearchParams(location.search).get('hol') || ''; } catch (e) {}
+function holidayNow() {
+  if (HOL_FORCE === 'hw') return 'hw'; if (HOL_FORCE === 'ny') return 'ny';
+  const d = new Date(), m = d.getMonth() + 1, day = d.getDate();
+  if ((m === 10 && day >= 25) || (m === 11 && day <= 7)) return 'hw';
+  if ((m === 12 && day >= 20) || (m === 1 && day <= 14)) return 'ny';
+  return null;
+}
+Object.assign(MOBS, {
+  pumpkin: { name: 'Тыквенный демон', key: 'horned', tint: 0xff9a2a },
+  pumpkinking: { name: 'Тыквенный князь', key: 'general', tint: 0xff8a1a, boss: true, drops: [['mount', 'bat', .3], ['wings', 'shadow', .3], ['costume', 'raven', .3]] },
+  snowoni: { name: 'Ёлочный они', key: 'icedemon', tint: 0xd8ffe0 },
+  frostgrand: { name: 'Морозный дед', key: 'general', tint: 0xcfe8ff, boss: true, drops: [['mount', 'whitetiger', .2], ['wings', 'frost', .4], ['costume', 'fox', .3]] }
+});
+Object.assign(LIFE, {
+  ev_candle: { name: 'Тыквенная свеча', r: 1, price: 5, type: 'event', col: ['#ffb040', '#8a3a0a'] },
+  ev_gift: { name: 'Новогодний подарок', r: 2, price: 5, type: 'event', col: ['#ff4a5a', '#2a8a4a'] }
+});
+const HOLIDAYS = {
+  hw: { name: 'Хэллоуин в долине', mob: 'pumpkin', boss: 'pumpkinking', cur: 'ev_candle', title: 'pumpkinlord', need: 50,
+    desc: 'Тыквенные демоны бродят по всем землям, ночь не кончается. Собирайте тыквенные свечи и меняйте их в лавке праздника.',
+    shop: [['mount', 'bat', 60, 'Маунт «Летучая мышь»'], ['wings', 'shadow', 40, 'Крылья Ночного ворона'], ['costume', 'raven', 35, 'Наряд ворона'], ['head', 'oni', 20, 'Маска они'], ['gem', 'amethyst', 15, 'Огранённый аметист'], ['scroll', '', 8, 'Свиток заточки']] },
+  ny: { name: 'Новый год в долине', mob: 'snowoni', boss: 'frostgrand', cur: 'ev_gift', title: 'nyspirit', need: 50,
+    desc: 'В деревне идёт снег, а в лесах шалят ёлочные они. Открывайте подарки или меняйте их в лавке праздника.',
+    shop: [['mount', 'whitetiger', 60, 'Маунт «Белый тигр»'], ['wings', 'frost', 40, 'Крылья Инея'], ['costume', 'fox', 35, 'Наряд лисы'], ['head', 'crown', 25, 'Пламенная корона'], ['gem', 'sapphire', 15, 'Огранённый сапфир'], ['scroll', '', 8, 'Свиток заточки']] }
+};
+Object.assign(TITLES, { pumpkinlord: 'Тыквенный король', nyspirit: 'Дух Нового года', reborn: 'Перерождённый', phoenixsoul: 'Душа феникса', bgchamp: 'Знамя поля битвы', landlord: 'Владыка земель', homebody: 'Хранитель очага', speedrun: 'Быстрее тени', mythicdg: 'Покоритель мифов', ryugu: 'Гость дворца Рюгу', spirits: 'Друг духов', kagutsuchi: 'Усмиритель вулкана', stormchaser: 'Ловец бурь' });
+const holCount = () => { const h = HOLIDAYS[holidayNow()]; if (!h) return 0; const s = save.inv.find(i => i && i.kind === h.cur); return s ? s.qty : 0; };
+function holidayKill(G, m) {
+  const id = holidayNow(), H = HOLIDAYS[id]; if (!H || m.remote || m.sb || m.pvp) return;
+  const ch = m.kind === H.mob ? .6 : m.boss ? 1 : .08;
+  if (Math.random() < ch) { const q = m.kind === H.boss ? 10 : 1; if (G.give(lifeItem(H.cur, q), true)) { save.holGot = (save.holGot || 0) + q; G.floatText(m.x, m.y - .4, LIFE[H.cur].name + (q > 1 ? ' ×' + q : ''), '#ffcf6a', 14); if (save.holGot >= H.need && !save.titles.includes(H.title)) { save.titles.push(H.title); banner('Титул «' + TITLES[H.title] + '»', H.name); } } }
+}
+function holidaySpawnKind(z) { const H = HOLIDAYS[holidayNow()]; if (!H || z.dungeon) return null; return Math.random() < .18 ? H.mob : null; }
+function holidayBuy(G, i) {
+  const H = HOLIDAYS[holidayNow()]; if (!H) return; const [kind, id, price] = H.shop[i];
+  const s = save.inv.find(x => x && x.kind === H.cur); if (!s || s.qty < price) { log('Не хватает: ' + LIFE[H.cur].name + '.', 'bad'); return; }
+  if (save.inv.length >= BAG && s.qty > price) { log('Сумка полна.', 'bad'); return; }
+  s.qty -= price; if (s.qty <= 0) save.inv.splice(save.inv.indexOf(s), 1);
+  const it = kind === 'mount' ? mount(id, save.lv) : kind === 'wings' ? wings(id, save.lv) : kind === 'costume' ? costume(id) : kind === 'head' ? cosmetic('head', id) : kind === 'gem' ? gemItem(id, 3) : scroll(1);
+  G.give(it); persist(); renderDiary();
+}
+function openGift(G) {
+  const s = save.inv.find(x => x && x.kind === 'ev_gift'); if (!s) return;
+  s.qty--; if (s.qty <= 0) save.inv.splice(save.inv.indexOf(s), 1);
+  const r = Math.random();
+  if (r < .4) { const g = 300 + save.lv * 30; save.gold += g; log('В подарке: ' + g + ' мон!', 'good'); }
+  else if (r < .65) G.give(rice(5)); else if (r < .85) G.give(scroll(1)); else if (r < .97) gemDrop(G, 3, 1); else G.give(genItem(save.lv, 2));
+  sfx('loot'); persist(); G.renderInv();
+}
+function holidayDecor(S) {
+  const id = holidayNow(); if (!id || S.zone.dungeon) return;
+  if (id === 'hw') {
+    const key = 'jack_o';
+    if (!S.textures.exists(key)) S.canvasTex(key, 32, 32, c => { const g = c.createRadialGradient(14, 14, 2, 16, 18, 14); g.addColorStop(0, '#ffc060'); g.addColorStop(1, '#c0500a'); c.fillStyle = g; c.beginPath(); c.ellipse(16, 19, 12, 10, 0, 0, 6.29); c.fill(); c.fillStyle = '#3a6a1a'; c.fillRect(15, 6, 3, 5); c.fillStyle = '#ffee80'; c.beginPath(); c.moveTo(10, 16); c.lineTo(13, 13); c.lineTo(14, 17); c.fill(); c.beginPath(); c.moveTo(22, 16); c.lineTo(19, 13); c.lineTo(18, 17); c.fill(); c.beginPath(); c.moveTo(9, 21); c.quadraticCurveTo(16, 27, 23, 21); c.lineTo(20, 23); c.lineTo(16, 22); c.lineTo(12, 23); c.closePath(); c.fill(); }, 'rgba(10,6,20,.7)', 2);
+    const R = mulberry32(S.zone.seed * 31 + 7);
+    for (let k = 0; k < 70; k++) { const x = C + (R() - .5) * 46, y = C + (R() - .5) * 46; if (!S.walkable(x, y)) continue; const p = iso(x, y); S.add.image(p.x, p.y, key).setOrigin(.5, .9).setScale(WK * .8).setDepth(p.y); S.add.image(p.x, p.y - 10, 'glow').setTint(0xff9a3a).setBlendMode(Phaser.BlendModes.ADD).setScale(.5).setAlpha(.55).setDepth(185000); }
+  } else if (S.zone.village) {
+    for (let i = 0; i < 160; i++) { const sx = Math.random() * S.scale.width, sy = Math.random() * S.scale.height, f = S.add.image(sx, sy, 'glow').setTint(0xffffff).setScale(rand(.04, .09)).setAlpha(rand(.5, .9)).setScrollFactor(0).setDepth(179000); S.tweens.add({ targets: f, y: sy + S.scale.height, x: sx + rand(-40, 40), duration: rand(6000, 12000), repeat: -1, onRepeat: () => { f.y = -10; } }); }
+  }
+}
+function renderHolidayTab(body, G) {
+  const id = holidayNow(), H = HOLIDAYS[id];
+  if (!H) { body.appendChild(mk('div', 'ds', 'Сейчас праздников нет. Хэллоуин — с 25 октября по 7 ноября, Новый год — с 20 декабря по 14 января.')); return; }
+  const head = mk('div', 'seasonhead'); head.append(mk('b', '', H.name), mk('span', '', H.desc), mk('span', 'ss', 'У вас: ' + LIFE[H.cur].name + ' ×' + holCount() + ' · собрано за праздник ' + (save.holGot || 0) + ' из ' + H.need + ' для титула «' + TITLES[H.title] + '»')); body.appendChild(head);
+  if (id === 'ny' && holCount()) body.appendChild(btn('Открыть подарок', () => { openGift(G); renderDiary(); }, 'main'));
+  body.appendChild(mk('div', 'label', 'Лавка праздника'));
+  H.shop.forEach(([kind, sid, price, name], i) => { const r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0'; info.append(mk('div', 'sn r2', name), mk('div', 'ss', price + ' × ' + LIFE[H.cur].name)); r.append(info, btn('Обменять', () => holidayBuy(G, i), 'main', holCount() < price)); body.appendChild(r); });
+}
+
+/* ---------- tutorial for the first minutes ---------- */
+const TUT = [
+  { t: 'Добро пожаловать в долину Кумо!', s: 'Нажмите на землю, чтобы идти. На телефоне — просто коснитесь экрана.', done: () => TUT_EV.moved },
+  { t: 'Первый бой', s: 'Нажмите на демона — герой сам подойдёт и будет атаковать. Кнопка «Цель» выбирает ближайшего врага.', done: () => save.stats.kills >= 1 },
+  { t: 'Мастер Гэнсай', s: 'Над мастером в центре деревни горит «!». Подойдите к нему и возьмите задание.', done: () => save.q && (save.q.state !== 'avail' || save.q.i > 0) },
+  { t: 'Снаряжение', s: 'Откройте «Сумку» (I или в меню) и наденьте найденные вещи. Лучшие вещи — в окне «Герой».', done: () => TUT_EV.bag },
+  { t: 'Техники', s: 'Откройте «Навыки» (K) и изучите первую технику. Потом жмите её кнопку на панели внизу.', done: () => TUT_EV.cast },
+  { t: 'Дневник', s: 'В «Дневнике» (J) — задания дня, награда за вход, достижения и титулы. Загляните туда.', done: () => TUT_EV.diary },
+  { t: 'Вместе веселее', s: 'В окне «Мир» (O) видно, кто в игре. Позовите друга в отряд — демоны и награды станут общими.', done: () => TUT_EV.world },
+  { t: 'Автобой', s: 'Кнопка «Авто» (T) сама ищет врагов, пока вы отдыхаете. Удачи, странник!', done: () => TUT_EV.auto }
+];
+const TUT_EV = {};
+function tutInit() { if (save.tut == null) save.tut = save.lv >= 5 || (save.stats && save.stats.kills > 30) ? TUT.length : 0; tutRender(); }
+function tutRender() {
+  let box = $('tutBox');
+  if (save.tut >= TUT.length) { if (box) box.remove(); return; }
+  if (!box) { box = mk('div', 'tutbox'); box.id = 'tutBox'; document.querySelector('.hud').appendChild(box); }
+  const T = TUT[save.tut]; box.innerHTML = '';
+  box.append(mk('div', 'tutn', 'Подсказка ' + (save.tut + 1) + ' из ' + TUT.length), mk('b', '', T.t), mk('div', 'tuts', T.s));
+  const a = mk('div', 'acts'); a.append(btn('Пропустить обучение', () => { save.tut = TUT.length; persist(); tutRender(); }, 'mini'), btn('Дальше', () => { save.tut++; persist(); tutRender(); }, 'mini main')); box.appendChild(a);
+}
+setInterval(() => { if (save.tut == null || save.tut >= TUT.length) return; let ok = false; try { ok = TUT[save.tut].done(); } catch (e) {} if (ok) { save.tut++; persist(); sfx('chime'); tutRender(); } }, 700);
+
+/* ---------- install as an app, reminders ---------- */
+let PWA_EVT = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); PWA_EVT = e; });
+if ('serviceWorker' in navigator && /^https:/.test(location.protocol) && !/claude/.test(location.host)) navigator.serviceWorker.register('sw.js').catch(() => {});
+function pwaInstall() {
+  if (PWA_EVT) { PWA_EVT.prompt(); PWA_EVT.userChoice.finally(() => { PWA_EVT = null; renderWorld(); }); return; }
+  log(/iphone|ipad/i.test(navigator.userAgent) ? 'На iPhone: нажмите «Поделиться» в Safari и выберите «На экран Домой».' : 'Откройте меню браузера (⋮) и выберите «Установить приложение» или «Добавить на главный экран».', 'info');
+}
+function remindToggle() {
+  if (!('Notification' in window)) { log('Этот браузер не поддерживает уведомления.', 'bad'); return; }
+  if (save.remind) { save.remind = false; persist(); renderWorld(); return; }
+  Notification.requestPermission().then(p => { save.remind = p === 'granted'; persist(); log(save.remind ? 'Напоминания включены: игра предупредит о мировом и гильдейском боссе, пока вкладка открыта.' : 'Уведомления запрещены в браузере.', save.remind ? 'good' : 'bad'); renderWorld(); });
+}
+const REMIND_DONE = {};
+setInterval(() => {
+  if (!save.remind || !('Notification' in window) || Notification.permission !== 'granted') return;
+  for (const B of SHARED) { const st = B.cfg.state(); if (st.phase === 'soon' && !REMIND_DONE[st.id] && document.hidden) { REMIND_DONE[st.id] = 1; try { new Notification('Облачный клинок', { body: B.cfg.label + ' «' + MOBS[B.cfg.kind].name + '» появится через несколько минут!', icon: 'icon-192.png', tag: st.id }); } catch (e) {} } }
+}, 30000);
+
+/* ---------- emotes and photo mode ---------- */
+const EMOTES = { bow: ['Поклон', '🙇'], wave: ['Привет', '👋'], dance: ['Танец', '💃'], sit: ['Сесть', '🔥'], laugh: ['Смех', '😄'], gg: ['Хорошая игра', '👍'] };
+function doEmote(id) { const S = GAME; if (!S || !S.hero || !EMOTES[id]) return; S.hero.emote = { id, until: performance.now() + 4000 }; S.netT = 0; showEmote(S, S.hero, id); }
+function showEmote(S, u, id) {
+  const p = iso(u.x, u.y), t = S.add.text(p.x, p.y - 95 * WK, EMOTES[id][1], { fontSize: '26px' }).setOrigin(.5, 1).setDepth(195000);
+  S.tweens.add({ targets: t, y: t.y - 26, alpha: 0, duration: 2600, delay: 600, onComplete: () => t.destroy() });
+  if (id === 'dance' || id === 'bow' || id === 'sit') { const spr = u.spr; if (!spr) return; S.tweens.add({ targets: spr, angle: id === 'dance' ? { from: -10, to: 10 } : id === 'bow' ? 18 : 0, scaleY: id === 'sit' ? spr.scaleY * .8 : spr.scaleY, yoyo: true, repeat: id === 'dance' ? 5 : 0, duration: id === 'dance' ? 220 : 500, onComplete: () => { spr.setAngle(0); } }); }
+}
+let PHOTO = false;
+function photoMode(on) {
+  PHOTO = on == null ? !PHOTO : on; document.documentElement.classList.toggle('photo', PHOTO);
+  const cam = GAME && GAME.cameras.main; if (cam) cam.zoomTo(PHOTO ? 1.35 : 1, 400);
+  if (PHOTO) log('Фоторежим: интерфейс скрыт. Нажмите P или кнопку «✕», чтобы вернуться.', 'info');
+}
+
+/* ---------- chat: filter and mute ---------- */
+const BAD_WORDS = /(х[уy][йияеёюл]|п[иi]зд|[её]б[ауеиоы]|бля|сук[аи]|мудак|пид[оа]р|гандон|шлюх|залуп|д[оа]лб[оа][её]б)/gi;
+const chatClean = s => String(s || '').replace(BAD_WORDS, m => m[0] + '*'.repeat(Math.max(2, m.length - 1)));
+const isMuted = pid => (save.muted || []).includes(pid);
+function toggleMute(o) { if (!save.muted) save.muted = []; const i = save.muted.indexOf(o.pid); if (i >= 0) save.muted.splice(i, 1); else save.muted.push(o.pid); persist(); log(i >= 0 ? cleanText(o.n) + ' снова слышен в чате.' : cleanText(o.n) + ' заглушён — его сообщений не видно.', ''); renderWorld(); }
+
+/* ---------- leaderboards: everyone publishes a small card, the table is built from them ---------- */
+const LB = { data: {}, sub: false, pubT: 0 };
+function lbTick() {
+  if (!netOk() || NET_STATE !== 'online') return;
+  if (!LB.sub) { LB.sub = true; ROOM.listen(NET_NS + 'lb/', d => { if (d && d.f) LB.data[String(d.f)] = d; }, NET_NS + 'lb/+'); }
+  if (Date.now() < LB.pubT) return; LB.pubT = Date.now() + 120000;
+  const R = save.records || {};
+  netSend('lb/' + save.pid, { f: save.pid, n: save.name, c: save.cls, lv: save.lv, reb: save.reb || 0, gold: save.gold, fish: save.stats.fish, kills: save.stats.kills, raid: R.r_eclipse_2 || R.r_eclipse_1 || R.r_eclipse_0 || 0, t: Date.now() }, true);
+}
+setInterval(lbTick, 15000);
+const LB_KINDS = [['lv', 'Уровень и перерождения', d => (d.reb || 0) * 100 + (d.lv || 0), d => (d.reb ? rebStars(d.reb) + ' ' : '') + d.lv + ' ур.'], ['gold', 'Богатейшие', d => d.gold || 0, d => Math.round(d.gold || 0).toLocaleString('ru-RU') + ' мон'], ['kills', 'Истребители демонов', d => d.kills || 0, d => (d.kills || 0).toLocaleString('ru-RU')], ['fish', 'Лучшие рыбаки', d => d.fish || 0, d => (d.fish || 0) + ' рыб'], ['raid', 'Быстрейший рейд', d => d.raid ? -d.raid : -1e12, d => d.raid ? mmssLong(d.raid) : '—']];
+const mmssLong = ms => { const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+let LB_KIND = 'lv';
+function renderLeaderboard(body) {
+  const tabs = mk('div', 'acts'); for (const [k, n] of LB_KINDS) tabs.appendChild(btn(n, () => { LB_KIND = k; renderWorld(); }, k === LB_KIND ? 'main' : ''));
+  body.appendChild(tabs);
+  const K = LB_KINDS.find(x => x[0] === LB_KIND), me = { f: save.pid, n: save.name, c: save.cls, lv: save.lv, reb: save.reb || 0, gold: save.gold, fish: save.stats.fish, kills: save.stats.kills, raid: (save.records || {}).r_eclipse_0 || 0 };
+  const all = Object.values(Object.assign({}, LB.data, { [save.pid]: me })).filter(d => LB_KIND !== 'raid' || d.raid).sort((a, b) => K[2](b) - K[2](a));
+  body.appendChild(mk('div', 'ds', 'Таблица собирается из всех игроков, кто заходил в игру. Обновляется раз в пару минут.'));
+  const tb = mk('div', 'rank');
+  all.slice(0, 30).forEach((d, i) => { const r = mk('div', 'rrow' + (d.f === save.pid ? ' me' : '')); r.append(mk('span', 'rp', String(i + 1)), mk('span', 'rn', cleanText(d.n)), mk('span', 'rc', CLASSES[d.c] ? CLASSES[d.c].name : ''), mk('span', 'rv', K[3](d)), mk('span', '', '')); tb.appendChild(r); });
+  if (!all.length) tb.appendChild(mk('div', 'ds', 'Пока пусто.'));
+  body.appendChild(tb);
+}
+
+/* ---------- dungeon difficulty, timer and records ---------- */
+const DIFF = [
+  { n: 'Обычная', hp: 1, atk: 1, lv: 0, rew: 1, myth: 0, gems: 1 },
+  { n: 'Героическая', hp: 2.2, atk: 1.5, lv: 5, rew: 1.6, myth: .04, gems: 3 },
+  { n: 'Мифическая', hp: 4, atk: 2.1, lv: 10, rew: 2.5, myth: .1, gems: 4, timer: 600 }
+];
+let DG_DIFF = 0;
+const dgDiff = S => DIFF[(S && S.dgDiff) || 0];
+function dgTimerHud(S) {
+  let box = $('dgTimer');
+  if (!S.zone.dungeon || !S.dg || S.dg.state === 'done' || S.dg.state === 'remote' && !S.dgT0) { if (box) box.hidden = true; return; }
+  if (!box) { box = mk('div', 'dgtimer'); box.id = 'dgTimer'; document.querySelector('.hud').appendChild(box); }
+  box.hidden = false;
+  const t = (Date.now() - S.dgT0) / 1000, D = dgDiff(S), lim = D.timer;
+  box.textContent = D.n + ' · ' + mmssLong(t * 1000) + (lim ? ' / ' + mmssLong(lim * 1000) : '');
+  box.classList.toggle('late', !!lim && t > lim * .8);
+}
+function dgRecord(S) {
+  const t = Date.now() - S.dgT0, key = S.zoneId + '_' + (S.dgDiff || 0), D = dgDiff(S);
+  if (!save.records) save.records = {};
+  const best = save.records[key], late = D.timer && t > D.timer * 1000;
+  if (late) { log('Мифическое подземелье пройдено, но не уложились во время: награда как за героическое.', 'bad'); return 1; }
+  if (!best || t < best) { save.records[key] = t; log('Новый рекорд «' + S.zone.name + '» (' + D.n.toLowerCase() + '): ' + mmssLong(t) + '!', 'good'); netSend('rec/' + key + '/' + save.pid, { f: save.pid, n: save.name, t, party: inParty() ? PARTY.mem.map(m => m.n).join(', ') : save.name }, true); }
+  if (t < 180000) { if (!save.titles.includes('speedrun')) { save.titles.push('speedrun'); banner('Титул «Быстрее тени»', 'Подземелье за 3 минуты'); } }
+  if ((S.dgDiff || 0) === 2 && !save.titles.includes('mythicdg')) { save.titles.push('mythicdg'); banner('Титул «Покоритель мифов»', 'Мифическое подземелье'); }
+  return S.dgDiff || 0;
+}
+const REC = { data: {}, sub: {} };
+function recSubscribe(key) { if (!netOk() || REC.sub[key]) return; REC.sub[key] = true; REC.data[key] = {}; ROOM.listen(NET_NS + 'rec/' + key + '/', d => { if (d && d.f) REC.data[key][String(d.f)] = d; }, NET_NS + 'rec/' + key + '/+'); }
+function recTop(key) { const all = Object.values(REC.data[key] || {}); if (save.records && save.records[key]) all.push({ f: save.pid, n: save.name, t: save.records[key] }); const seen = new Set(); return all.filter(d => !seen.has(d.f) && seen.add(d.f)).sort((a, b) => a.t - b.t).slice(0, 5); }
+
+/* ---------- battleground: party against party, three banners ---------- */
+const BG_ID = 'bg_field', BG_WIN = 300;
+let BG = null;
+function bgInvite(o) {
+  if (!inParty() || PARTY.lead !== save.pid) { log('Вызвать на поле битвы может лидер отряда.', 'bad'); return; }
+  netSend('d/' + o.pid, { t: 'bginv', f: save.pid, n: save.name, pid: PARTY.id, size: PARTY.mem.length });
+  log('Вызов на поле битвы отправлен отряду игрока ' + cleanText(o.n) + '.', 'good');
+}
+function bgStart(teams, host, matchId) {
+  BG = { id: matchId, host, teams, score: [0, 0], flags: [-1, -1, -1], cap: [0, 0, 0], t0: Date.now(), deadUntil: 0 };
+  const myTeam = teams[0].includes(save.pid) ? 0 : 1; BG.me = myTeam;
+  banner('Поле битвы', 'Захватите знамёна — до ' + BG_WIN + ' очков');
+  if (GAME) GAME.travel({ to: BG_ID, extra: { dgInst: 'bg:' + matchId } });
+}
+const bgEnemies = () => BG ? BG.teams[1 - BG.me] : [];
+function bgFlagsPos() { return [[C - 12, C], [C, C], [C + 12, C]]; }
+function bgTick(S) {
+  if (!BG || S.zoneId !== BG_ID) return;
+  // enemies become proxies we can hit, like in a duel
+  for (const pid of bgEnemies()) {
+    const ru = S.remotes.get(pid); if (!ru) continue;
+    let m = S.mobs.find(x => x.alive && x.pvp === pid);
+    if (!m) { m = S.spawnMob('pvpdummy', ru.x, ru.y, save.lv, true); m.pvp = pid; m.bg = true; m.nid = 0; m.maxHp = 100; m.hp = 100; m.spr.setAlpha(.01); m.shadow.setVisible(false); m.label.setVisible(false); S.tweens.killTweensOf(m.spr); m.spr.setAlpha(.01); }
+  }
+  if (S.hero.alive === false && Date.now() > BG.deadUntil && BG.deadUntil) { BG.deadUntil = 0; S.respawn(); const base = BG.me === 0 ? [C - 20, C] : [C + 20, C]; S.hero.x = base[0]; S.hero.y = base[1]; }
+  // the host counts who stands at each banner and keeps the score
+  if (BG.host === save.pid && Date.now() > (BG.tickT || 0)) {
+    BG.tickT = Date.now() + 1000;
+    const pos = pid => pid === save.pid ? (S.hero.alive ? { x: S.hero.x, y: S.hero.y } : null) : (() => { const mv = NET_MOVES.get(pid); return mv && !mv.d && Date.now() - mv.t < 8000 ? mv : null; })();
+    bgFlagsPos().forEach(([fx, fy], i) => {
+      const n = [0, 1].map(t => BG.teams[t].filter(pid => { const p = pos(pid); return p && Math.hypot(p.x - fx, p.y - fy) < 3; }).length);
+      if (n[0] && !n[1]) BG.cap[i] = Math.min(5, BG.cap[i] + 1); else if (n[1] && !n[0]) BG.cap[i] = Math.max(-5, BG.cap[i] - 1);
+      BG.flags[i] = BG.cap[i] >= 5 ? 0 : BG.cap[i] <= -5 ? 1 : BG.flags[i] === -1 ? -1 : BG.flags[i];
+    });
+    for (const f of BG.flags) if (f >= 0) BG.score[f] += 5;
+    const st = { t: 'bgst', f: save.pid, id: BG.id, score: BG.score, flags: BG.flags, cap: BG.cap };
+    for (const pid of [...BG.teams[0], ...BG.teams[1]]) if (pid !== save.pid) netSend('d/' + pid, st);
+    if (BG.score[0] >= BG_WIN || BG.score[1] >= BG_WIN || Date.now() - BG.t0 > 600000) { const win = BG.score[0] === BG.score[1] ? -1 : BG.score[0] > BG.score[1] ? 0 : 1; for (const pid of [...BG.teams[0], ...BG.teams[1]]) if (pid !== save.pid) netSend('d/' + pid, { t: 'bgend', f: save.pid, id: BG.id, win }); bgEnd(win); }
+  }
+  bgDraw(S); bgHud();
+}
+function bgDraw(S) {
+  if (!S.bgFlags) S.bgFlags = bgFlagsPos().map(([x, y]) => { const p = iso(x, y), g = S.add.graphics().setDepth(p.y - 2).setPosition(p.x, p.y); const pole = S.add.rectangle(p.x, p.y - 30, 3, 60, 0xd8c8a0).setDepth(p.y); const fl = S.add.rectangle(p.x + 12, p.y - 52, 24, 14, 0xcccccc).setDepth(p.y); return { g, fl }; });
+  S.bgFlags.forEach((F, i) => { const o = BG.flags[i], col = o === BG.me ? 0x4ab0ff : o === 1 - BG.me ? 0xff4a4a : 0xcccccc; F.fl.setFillStyle(col); F.g.clear().lineStyle(2, col, .8).strokeEllipse(0, 0, 3 * HW * 2.83, 3 * HH * 2.83).fillStyle(col, .08).fillEllipse(0, 0, 3 * HW * 2.83, 3 * HH * 2.83); });
+}
+function bgHud() {
+  let box = $('bgHud'); if (!BG) { if (box) box.hidden = true; return; }
+  if (!box) { box = mk('div', 'card bghud'); box.id = 'bgHud'; document.querySelector('.hud').appendChild(box); }
+  box.hidden = false; const my = BG.score[BG.me], en = BG.score[1 - BG.me];
+  box.innerHTML = ''; box.append(mk('div', 'wbn', 'Поле битвы · до ' + BG_WIN), mk('div', 'bgsc', 'Вы ' + my + ' : ' + en + ' Враги'), mk('div', 'ss', 'Знамёна: ' + BG.flags.map(f => f === BG.me ? '🟦' : f === 1 - BG.me ? '🟥' : '⬜').join(' ') + ' · стойте у знамени, чтобы захватить'));
+}
+function bgEnd(win) {
+  if (!BG) return; const me = BG.me, S = GAME; BG = null;
+  if (S) { for (const m of S.mobs) if (m.bg && m.alive) netDropMob(S, m); S.bgFlags = null; }
+  if (win === me) { stat('duelW'); save.arena.r += 25; save.arena.honor += 60; save.seals = (save.seals || 0) + 20; save.bgW = (save.bgW || 0) + 1; if (save.bgW >= 5 && !save.titles.includes('bgchamp')) save.titles.push('bgchamp'); banner('Победа на поле битвы', 'Рейтинг +25 · честь +60 · печати +20'); }
+  else if (win === -1) banner('Ничья на поле битвы', 'Честь +20'); else { save.arena.honor += 20; banner('Поражение на поле битвы', 'Честь +20'); }
+  persist(); bgHud(); if (S && S.zoneId === BG_ID) setTimeout(() => S.travel({ to: 'village' }), 3000);
+}
+function bgMsg(d) {
+  if (d.t === 'bginv') {
+    if (!inParty() || PARTY.lead !== save.pid) { netSend('d/' + d.f, { t: 'decl', f: save.pid, n: save.name }); return; }
+    askPopup('Отряд игрока ' + cleanText(d.n) + ' (' + (+d.size || 1) + ' чел.) вызывает ваш отряд на поле битвы: три знамени, до ' + BG_WIN + ' очков.', 'Принять бой', () => { netSend('d/' + d.f, { t: 'bgacc', f: save.pid, mem: PARTY.mem.map(m => m.pid) }); }, () => netSend('d/' + d.f, { t: 'decl', f: save.pid, n: save.name }));
+  } else if (d.t === 'bgacc' && inParty() && PARTY.lead === save.pid && Array.isArray(d.mem)) {
+    const teams = [PARTY.mem.map(m => m.pid), d.mem.slice(0, 4).map(String)], id = save.pid + Date.now().toString(36);
+    const msg = { t: 'bggo', f: save.pid, teams, host: save.pid, id };
+    for (const pid of [...teams[0], ...teams[1]]) if (pid !== save.pid) netSend('d/' + pid, msg);
+    bgStart(teams, save.pid, id);
+  } else if (d.t === 'bggo' && Array.isArray(d.teams)) bgStart(d.teams.map(t => t.map(String)), String(d.host), String(d.id));
+  else if (d.t === 'bgst' && BG && d.id === BG.id) { BG.score = d.score; BG.flags = d.flags; BG.cap = d.cap; }
+  else if (d.t === 'bgend' && BG && d.id === BG.id) bgEnd(d.win);
+}
+
+/* ---------- the hero's house in the village ---------- */
+const HOME_LV = [0, 20000, 60000, 150000, 400000];
+const HOME_N = ['Пустой участок', 'Хижина', 'Дом с садом', 'Усадьба', 'Поместье'];
+function homeBonus() { const h = save.home || {}; const lv = h.lv || 0, trophies = Object.keys((save.stats || {}).bossKinds || {}).length; return { hp: lv * .02 + trophies * .01, atk: trophies * .01, beds: h.plots || 0 }; }
+function homeUpgrade(G) { if (!save.home) save.home = { lv: 0, plots: 0, garden: [] }; const H = save.home; if (H.lv >= 4) return; const cost = HOME_LV[H.lv + 1]; if (save.gold < cost) { log('Нужно ' + cost.toLocaleString('ru-RU') + ' мон.', 'bad'); return; } save.gold -= cost; H.lv++; H.plots = H.lv; if (H.lv >= 2 && !save.titles.includes('homebody')) save.titles.push('homebody'); G.recalc(); persist(); banner(HOME_N[H.lv], 'Дом построен'); renderDiary(); }
+function homePlant(G, i, herb) { const H = save.home; const s = save.inv.find(x => x && x.kind === herb); if (!s) { log('Нужен хотя бы один ' + LIFE[herb].name.toLowerCase() + ' для посадки.', 'bad'); return; } s.qty--; if (s.qty <= 0) save.inv.splice(save.inv.indexOf(s), 1); H.garden[i] = { h: herb, at: Date.now() + 30 * 60000 }; persist(); G.renderInv(); renderDiary(); }
+function homeHarvest(G, i) { const H = save.home, g = H.garden[i]; if (!g || Date.now() < g.at) return; if (G.give(lifeItem(g.h, 4), true)) { H.garden[i] = null; stat('herbs', 4); log('Урожай: ' + LIFE[g.h].name + ' ×4.', 'good'); persist(); renderDiary(); } }
+function renderHomeTab(body, G) {
+  const H = save.home || { lv: 0, plots: 0, garden: [] }, B = homeBonus(), trophies = Object.keys((save.stats || {}).bossKinds || {});
+  const head = mk('div', 'seasonhead'); head.append(mk('b', '', HOME_N[H.lv || 0]), mk('span', '', 'Дом в деревне Кумо. Каждый уровень дома даёт +2% здоровья и грядку для трав. Каждый трофей с босса на стене — +1% к атаке и здоровью.'), mk('span', 'ss', 'Сейчас: здоровье +' + Math.round(B.hp * 100) + '%, атака +' + Math.round(B.atk * 100) + '%')); body.appendChild(head);
+  if ((H.lv || 0) < 4) body.appendChild(btn('Построить: ' + HOME_N[(H.lv || 0) + 1] + ' · ' + HOME_LV[(H.lv || 0) + 1].toLocaleString('ru-RU') + ' мон', () => homeUpgrade(G), 'main', save.gold < HOME_LV[(H.lv || 0) + 1]));
+  body.appendChild(mk('div', 'label', 'Трофеи на стене · ' + trophies.length));
+  body.appendChild(mk('div', 'ds', trophies.length ? trophies.map(k => MOBS[k] ? MOBS[k].name : k).join(' · ') : 'Победите боссов зон, чтобы повесить их трофеи.'));
+  if (H.plots) {
+    body.appendChild(mk('div', 'label', 'Сад · грядок ' + H.plots + ' (урожай через 30 минут, 4 травы с грядки)'));
+    for (let i = 0; i < H.plots; i++) {
+      const g = (H.garden || [])[i], r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0';
+      if (!g) { info.append(mk('div', 'sn', 'Грядка ' + (i + 1) + ' · пусто')); r.appendChild(info); for (const hb of ['h_ginseng', 'h_lotus', 'h_fire', 'h_frost']) r.appendChild(btn(LIFE[hb].name, () => homePlant(G, i, hb), 'mini', !save.inv.some(x => x && x.kind === hb))); }
+      else { const left = g.at - Date.now(); info.append(mk('div', 'sn', 'Грядка ' + (i + 1) + ' · ' + LIFE[g.h].name), mk('div', 'ss', left > 0 ? 'созреет через ' + Math.ceil(left / 60000) + ' мин' : 'урожай готов!')); r.append(info, btn('Собрать', () => homeHarvest(G, i), 'main', left > 0)); }
+      body.appendChild(r);
+    }
+  }
+}
+
+/* ---------- Diary tab «Путь»: rebirth, specialization, gems, wardrobe, pet ---------- */
+function renderPathTab(body, G) {
+  // rebirth
+  const rb = save.reb || 0, head = mk('div', 'seasonhead');
+  head.append(mk('b', '', 'Перерождение' + (rb ? ' · ' + rebStars(rb) : '')), mk('span', '', 'На ' + LV_CAP + ' уровне можно переродиться: уровень станет 1, а атака и здоровье навсегда вырастут на 6% (до 10 перерождений). Снаряжение, навыки, питомцы и всё имущество остаются.'), mk('span', 'ss', 'Перерождений: ' + rb + ' · бонус сейчас +' + Math.round(rebBonus() * 100) + '%'));
+  body.appendChild(head);
+  body.appendChild(confirmBtn(save.lv >= LV_CAP ? 'Переродиться' : 'Доступно на ' + LV_CAP + ' уровне', () => rebirth(G)));
+  // specialization
+  body.appendChild(mk('div', 'label', 'Вторая ветка навыков (с 20 уровня)'));
+  const sp = SPECS[save.cls] || {};
+  for (const [id, s] of Object.entries(sp)) { const r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0'; info.append(mk('div', 'sn' + (save.spec === id ? ' r3' : ''), s.n + (save.spec === id ? ' · выбрано' : '')), mk('div', 'ss', s.d)); r.append(info, btn(save.spec === id ? 'Выбрано' : save.spec ? 'Сменить · 5000' : 'Выбрать', () => chooseSpec(G, id), save.spec === id ? '' : 'main', save.spec === id || (save.lv < 20 && !save.reb))); body.appendChild(r); }
+  // gems
+  body.appendChild(mk('div', 'label', 'Камни'));
+  body.appendChild(mk('div', 'ds', 'Камни выпадают с боссов, из подземелий (на сложных — больше и лучше), рейда, мирового босса и сундука заданий дня. Вставляются в гнёзда оружия и доспеха (по 2) и украшений (по 1) — выберите вещь в сумке или в окне «Герой». Три одинаковых камня сливаются в камень следующей ступени.'));
+  const gems = save.inv.filter(x => GEM_REF(x));
+  if (!gems.length) body.appendChild(mk('div', 'ss', 'Камней пока нет.'));
+  for (const gi of gems) { const R = GEM_REF(gi), r = mk('div', 'srow skrow'), ic = mk('div', 'ski'); ic.style.backgroundImage = 'url(' + gemIconURL(gi) + ')'; const info = mk('div'); info.style.minWidth = '0'; info.append(mk('div', 'sn r' + gi.rarity, gi.name + ' ×' + gi.qty), mk('div', 'ss', GEMS[R.g].label + ' +' + Math.round(gemVal(R.g, R.t) * 10) / 10 + ' за камень')); r.append(ic, info, btn('Слить 3 → 1', () => { mergeGems(G, R.g, R.t); renderDiary(); }, 'main', gi.qty < 3 || R.t >= 5)); body.appendChild(r); }
+  // wardrobe
+  body.appendChild(mk('div', 'label', 'Гардероб'));
+  body.appendChild(mk('div', 'ds', 'Носите облик любого оружия своего класса и любых крыльев, которые у вас когда-либо были, — характеристики остаются от надетых вещей.'));
+  const tf = save.tf || {}, wr = mk('div', 'titlelist');
+  wr.appendChild(btn('Облик оружия: своё', () => { save.tf = Object.assign({}, save.tf, { w: null }); persist(); G.applyLook(); renderDiary(); }, tf.w ? '' : 'main'));
+  for (const b of (save.wcoll || []).filter(b => WEAPON_CLASS[b] === save.cls)) wr.appendChild(btn(NAMES.weapon[BASES.weapon.indexOf(b)] ? NAMES.weapon[BASES.weapon.indexOf(b)][2] : b, () => { save.tf = Object.assign({}, save.tf, { w: b }); persist(); G.applyLook(); renderDiary(); }, tf.w === b ? 'main' : ''));
+  body.appendChild(wr);
+  const wg = mk('div', 'titlelist'), wl = save.coll.filter(k => k.startsWith('wings:')).map(k => k.slice(6)).filter(id => WINGS[id]);
+  wg.appendChild(btn('Крылья: свои', () => { save.tf = Object.assign({}, save.tf, { g: null }); persist(); G.applyLook(); renderDiary(); }, tf.g ? '' : 'main'));
+  for (const id of wl) wg.appendChild(btn(WINGS[id].name, () => { save.tf = Object.assign({}, save.tf, { g: id }); persist(); G.applyLook(); renderDiary(); }, tf.g === id ? 'main' : ''));
+  body.appendChild(wg);
+  // pet
+  const pet = save.eq.pet;
+  body.appendChild(mk('div', 'label', 'Питомец'));
+  body.appendChild(mk('div', 'ds', pet ? (PETS[pet.base] ? PETS[pet.base].name : pet.name) + ' · уровень ' + (pet.plv || 1) + ' из 30 · опыт ' + (pet.pxp || 0) + ' / ' + petNeed(pet.plv || 1) + '. Питомец растёт с каждой вашей победой: характеристики +3% за уровень, на 10 уровне — «Свирепость» (урон +25%), на 20 — «Собиратель» (+10% монет), на 30 — «Хранитель» (лечит вас на 3% каждые 10 секунд).' : 'Питомец не надет. Наденьте его в окне «Герой».'));
+}
+/* emote picker and photo mode buttons */
+function emotePicker() {
+  let p = $('emoteP'); if (p) { p.remove(); return; }
+  p = mk('div', 'emotep'); p.id = 'emoteP';
+  for (const [id, [n, ic]] of Object.entries(EMOTES)) { const b = btn(ic + ' ' + n, () => { doEmote(id); p.remove(); }, ''); p.appendChild(b); }
+  p.appendChild(btn('📷 Фоторежим', () => { p.remove(); photoMode(true); }, ''));
+  document.querySelector('.hud').appendChild(p);
+}
+
+/* weather: each land changes every 10 minutes, the same for everyone */
+const WEATHER = { clear: { n: 'Ясно' }, rain: { n: 'Дождь', xp: 1.1 }, fog: { n: 'Туман', aggro: .6 }, storm: { n: 'Гроза', xp: 1.25, mob: 'stormoni' }, blizzard: { n: 'Метель', xp: 1.15 } };
+function weatherNow(z, zid) {
+  if (!z || z.dungeon) return 'clear';
+  const p = Math.floor(Date.now() / 600000); let h = p * 2654435761 ^ (z.seed || 1) * 40503; h = (h ^ (h >>> 13)) >>> 0;
+  const r = (h % 1000) / 1000, snow = z.tiles === 's';
+  if (r < .5) return 'clear'; if (r < .68) return snow ? 'blizzard' : 'rain'; if (r < .84) return 'fog'; return snow ? 'blizzard' : 'storm';
+}
+function weatherApply(S) {
+  const w = weatherNow(S.zone, S.zoneId); if (S.weather === w) return; S.weather = w;
+  if (S.wfx) { for (const o of S.wfx) o.destroy(); } S.wfx = [];
+  const W = S.scale.width, H = S.scale.height;
+  if (w === 'rain' || w === 'storm' || w === 'blizzard') {
+    for (let i = 0; i < (w === 'blizzard' ? 140 : 110); i++) {
+      const o = w === 'blizzard' ? S.add.image(0, 0, 'glow').setTint(0xffffff).setScale(rand(.04, .08)).setAlpha(.8) : S.add.rectangle(0, 0, 1.2, rand(10, 18), 0xaad0ff, .45).setAngle(12);
+      o.setScrollFactor(0).setDepth(179500).setPosition(Math.random() * W, Math.random() * H); S.wfx.push(o);
+      S.tweens.add({ targets: o, y: { from: -20, to: H + 20 }, x: '+=' + (w === 'blizzard' ? rand(-60, 60) : -40), duration: w === 'blizzard' ? rand(3000, 6000) : rand(500, 800), repeat: -1, delay: Math.random() * 800 });
+    }
+  }
+  if (w === 'fog' || w === 'blizzard') { const f = S.add.rectangle(W / 2, H / 2, W * 1.4, H * 1.4, 0xd8e0ec, w === 'fog' ? .22 : .14).setScrollFactor(0).setDepth(179400); S.wfx.push(f); }
+  if (w === 'storm') { const fl = S.add.rectangle(W / 2, H / 2, W * 1.4, H * 1.4, 0xffffff, 0).setScrollFactor(0).setDepth(179600).setBlendMode(Phaser.BlendModes.ADD); S.wfx.push(fl); S.wfx.push(S.time.addEvent({ delay: 7000, loop: true, callback: () => { if (Math.random() < .6) { fl.setAlpha(.5); S.tweens.add({ targets: fl, alpha: 0, duration: 300 }); sfx('boom', { vol: .4 }); } } })); }
+  if (w !== 'clear') log('Погода в «' + S.zone.name + '»: ' + WEATHER[w].n.toLowerCase() + '.' + (WEATHER[w].xp ? ' Опыт ×' + WEATHER[w].xp + '.' : '') + (w === 'storm' ? ' В грозу появляются грозовые они.' : '') + (w === 'fog' ? ' В тумане демоны замечают вас позже.' : ''), 'info');
+}
+/* territories: the guild that earns most in a land this week holds it and finds more loot there */
+const TERR = { data: {}, sub: null, pubT: 0, sent: '' };
+function terrTick() {
+  if (!netOk() || NET_STATE !== 'online') return;
+  const wk = weekNo(Date.now());
+  if (TERR.sub !== wk) { if (TERR.sub != null && ROOM.unlisten) ROOM.unlisten(NET_NS + 'tw/' + TERR.sub + '/+'); TERR.sub = wk; TERR.data = {}; ROOM.listen(NET_NS + 'tw/' + wk + '/', d => { if (d && d.f) TERR.data[String(d.f)] = d; }, NET_NS + 'tw/' + wk + '/+'); }
+  if (!save.guild) return;
+  if (!save.terr || save.terr.week !== wk) save.terr = { week: wk, z: {} };
+  const sig = JSON.stringify(save.terr.z);
+  if (sig !== TERR.sent && Date.now() > TERR.pubT) { TERR.pubT = Date.now() + 30000; TERR.sent = sig; netSend('tw/' + wk + '/' + save.pid, { f: save.pid, g: gtag(save.guild), gn: save.guild.n, gt: save.guild.t, z: save.terr.z }, true); }
+}
+setInterval(terrTick, 10000);
+function terrKill(zid) { if (!save.guild || ZONES[zid].dungeon) return; const wk = weekNo(Date.now()); if (!save.terr || save.terr.week !== wk) save.terr = { week: wk, z: {} }; save.terr.z[zid] = (save.terr.z[zid] || 0) + 1; }
+function terrOwner(zid) {
+  const by = {};
+  const all = Object.assign({}, TERR.data); if (save.guild && save.terr) all[save.pid] = { g: gtag(save.guild), gn: save.guild.n, gt: save.guild.t, z: save.terr.z };
+  for (const d of Object.values(all)) { const v = d && d.z && +d.z[zid] || 0; if (!v) continue; (by[d.g] ||= { g: d.g, n: cleanText(d.gn).slice(0, 20), t: cleanText(d.gt).slice(0, 4), p: 0 }).p += v; }
+  const list = Object.values(by).sort((a, b) => b.p - a.p); return list[0] && list[0].p >= 30 ? list[0] : null;
+}
+const terrMine = zid => { const o = terrOwner(zid); return !!(o && save.guild && o.g === gtag(save.guild)); };
+function terrSection(body) {
+  body.appendChild(mk('div', 'label', 'Земли гильдий на этой неделе'));
+  body.appendChild(mk('div', 'ds', 'Каждая победа участника гильдии в открытой земле приносит ей очко. Гильдия, набравшая больше всех (от 30 очков), владеет землёй до понедельника: её участники находят там на 15% больше добычи и монет.'));
+  for (const zid of Object.keys(ZONES)) { if (ZONES[zid].dungeon) continue; const o = terrOwner(zid); body.appendChild(mk('div', 'ss', '· ' + ZONES[zid].name + ': ' + (o ? (o.t ? '[' + o.t + '] ' : '') + o.n + ' (' + o.p + ' очк.)' + (save.guild && o.g === gtag(save.guild) ? ' — ваша!' : '') : 'ничья'))); }
+}
+
+
+function pathTick(S) {
+  const sp = specDef(), h = S.hero; if (!h || !h.alive) return;
+  if (sp && sp.aura && performance.now() > (S.auraT || 0)) { S.auraT = performance.now() + 6000; h.hp = Math.min(h.maxHp, h.hp + h.maxHp * sp.aura); if (inParty()) netSend('g/' + PARTY.id, { t: 'heal', f: save.pid, id: PARTY.id, i: S.inst, k: sp.aura }); }
+  const pet = save.eq.pet; if (pet && (pet.plv || 1) >= 30 && performance.now() > (S.petHealT || 0)) { S.petHealT = performance.now() + 10000; if (h.hp < h.maxHp) { h.hp = Math.min(h.maxHp, h.hp + h.maxHp * .03); S.floatText(h.x, h.y - .3, '+3%', '#7aff9a', 13); } }
+}
+function holidayTick(S) {
+  const H = HOLIDAYS[holidayNow()]; if (!H || S.zoneId !== 'village') return;
+  if (S.now > (S.holBossT == null ? (S.holBossT = S.now + 60) : S.holBossT) && !S.mobs.some(m => m.alive && m.kind === H.boss) && netMayOwnBoss(S)) {
+    S.holBossT = S.now + 600;
+    for (let k = 0; k < 30; k++) { const x = C - 14 + rand(-3, 3), y = C - 10 + rand(-3, 3); if (S.mobWalkable(x, y)) { const m = S.spawnMob(H.boss, x, y, save.lv + 2); m.maxHp = m.hp = Math.round(m.maxHp * 1.5); S.drawBar(m); banner(MOBS[H.boss].name, H.name); break; } }
+  }
+}
+
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
   if (!ROOM) { NET_STATE = 'connecting'; renderWorld(); while (!(GAME && GAME.hero && GAME.hero.atk != null)) await new Promise(r => setTimeout(r, 300)); await new Promise(r => setTimeout(r, 1200)); try { ROOM = await mqttRoom(); } catch (e) { console.warn(e); ROOM = null; } if (!ROOM) NET_STATE = 'offline'; }
   if (!ROOM) { renderWorld(); return; }
-  if (ROOM.onMove) ROOM.onMove(d => { NET_MOVES.set(String(d.i), { z: String(d.z), x: +d.x, y: +d.y, f: d.f, m: d.m, hp: d.h == null ? null : +d.h, d: d.d ? 1 : 0, t: Date.now() }); });
+  if (ROOM.onMove) ROOM.onMove(d => { NET_MOVES.set(String(d.i), { e: EMOTES[d.e] ? d.e : 0, z: String(d.z), x: +d.x, y: +d.y, f: d.f, m: d.m, hp: d.h == null ? null : +d.h, d: d.d ? 1 : 0, t: Date.now() }); });
   ROOM.onPeers(ch => { ROOM_PEERS = ch.peers; for (const p of ch.joined) { const o = p.presence && p.presence.ok; if (o && save.friends.some(f => f.pid === o.pid)) log('Друг в сети: ' + cleanText(o.n), 'good'); } renderWorld(true); }, () => { ROOM = null; renderWorld(); });
   setInterval(() => pushPresence(false), 3000); setTimeout(() => pushPresence(true), 1500);
   partyInit();
@@ -9068,9 +9678,9 @@ const seasonBadge = () => { seasonEnsure(); const S = save.season, lv = seasonLv
 
 /* ---------- world panel ---------- */
 let WORLD_TAB = 'friends', WORLD_RT = 0;
-function toggleWorld(open) { const p = $('worldP'); p.hidden = open === true ? false : open === false ? true : !p.hidden; if (!p.hidden) { bringFront(p); arenaDaily(); renderWorld(); } }
+function toggleWorld(open) { TUT_EV.world = true; const p = $('worldP'); p.hidden = open === true ? false : open === false ? true : !p.hidden; if (!p.hidden) { bringFront(p); arenaDaily(); renderWorld(); } }
 function sendChat(text, ch) {
-  text = cleanText(text).slice(0, 140); if (!text) return;
+  text = chatClean(cleanText(text)).slice(0, 140); if (!text) return;
   if (ch === 'g' && !save.guild) { log('Вы не в гильдии.', 'bad'); return; }
   MY_CHAT.push({ t: Date.now(), s: text, ch: ch === 'g' ? 'g:' + save.guild.n : 'w' }); MY_CHAT = MY_CHAT.slice(-6);
   pushPresence(true); renderWorld();
@@ -9079,7 +9689,7 @@ function chatLines(ch) {
   const lines = [];
   const add = (who, m, me, c) => { if (m && typeof m.s === 'string' && (m.ch === ch)) lines.push({ t: +m.t || 0, who, s: cleanText(m.s).slice(0, 140), me, c }); };
   for (const m of MY_CHAT) add(save.name, m, true, save.cls);
-  for (const p of others()) for (const m of (Array.isArray(p.chat) ? p.chat : []).slice(-6)) add(cleanText(p.n), m, false, p.c);
+  for (const p of others()) { if (isMuted(p.pid)) continue; for (const m of (Array.isArray(p.chat) ? p.chat : []).slice(-6)) add(cleanText(p.n), Object.assign({}, m, { s: chatClean(m.s) }), false, p.c); }
   return lines.sort((a, b) => a.t - b.t).slice(-40);
 }
 function chatBox(ch, ph) {
@@ -9144,11 +9754,17 @@ function renderWorld(soft) {
         btn(fr ? 'В друзьях' : 'Добавить', () => { if (fr) return; save.friends.push({ pid: o.pid, n: cleanText(o.n), c: o.c, lv: o.lv, bm: o.bm, r: o.r, seen: Date.now() }); persist(); log('Добавлен в друзья: ' + cleanText(o.n), 'good'); renderWorld(); }, fr ? '' : 'main', fr),
         btn('Дуэль', () => startDuel(fighterOf(o), 'friend'), ''),
         btn('Бой', () => liveDuelInvite(o), '', !netOk() || !GAME || (o.in || o.z) !== GAME.inst),
-        partyBtn(o)
+        partyBtn(o),
+        btn('Поле битвы', () => bgInvite(o), '', !inParty() || PARTY.lead !== save.pid || PARTY.mem.some(m => m.pid === o.pid)),
+        btn(isMuted(o.pid) ? 'Слышать' : 'Заглушить', () => toggleMute(o), '')
       ]));
     }
+  } else if (WORLD_TAB === 'lb') {
+    renderLeaderboard(body);
   } else if (WORLD_TAB === 'save') {
     renderSaveTab(body);
+    body.appendChild(mk('div', 'label', 'Приложение и напоминания'));
+    { const r = mk('div', 'acts'); r.append(btn('Установить как приложение', () => pwaInstall(), 'main'), btn(save.remind ? 'Напоминания о боссах: вкл' : 'Напоминать о боссах', () => remindToggle(), save.remind ? 'main' : '')); body.appendChild(r); }
   } else if (WORLD_TAB === 'chat') {
     if (inParty()) { const r = mk('div', 'chatrow'), i = mk('input'); i.type = 'text'; i.maxLength = 140; i.placeholder = 'Сообщение отряду'; i.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { partyChat(i.value); i.value = ''; } }); r.append(i, btn('Отряду', () => { partyChat(i.value); i.value = ''; }, '')); body.append(mk('div', 'label', 'Чат отряда (сообщения видны в журнале)'), r); }
     body.appendChild(chatBox('w', 'Сообщение всем в игре'));
@@ -9187,6 +9803,7 @@ function renderWorld(soft) {
       body.appendChild(chatBox('g:' + g.n, 'Сообщение гильдии'));
     }
     if (save.guild) gwSection(body);
+    terrSection(body);
   } else if (WORLD_TAB === 'arena') {
     const L = league(A.r), pl = pvpLevel();
     const head = mk('div', 'arenahead');
@@ -9215,7 +9832,7 @@ function renderWorld(soft) {
     body.appendChild(mk('div', 'label', 'Лавка жетонов · ' + A.tok));
     for (const [k, price, id] of ARENA_SHOP) {
       const it = k === 'pet' ? petItem(id, save.lv) : k === 'costume' ? costume(id) : k === 'wings' ? wings(id, save.lv) : k === 'scroll' ? scroll(1) : null;
-      const r = mk('div', 'srow'), info = mk('div'); info.style.minWidth = '0';
+      const r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0';
       if (it) { info.append(mk('div', 'sn r' + it.rarity, itemName(it)), mk('div', 'ss', describe(it))); r.appendChild(cellFor(it)); }
       else { const im = mk('img', 'mati'); im.src = matIcon(k); im.alt = ''; r.appendChild(im); info.append(mk('div', 'sn', id), mk('div', 'ss', MATS[k].n + ' — для кузницы')); }
       r.append(info, btn(price + ' жетонов', () => {
