@@ -271,6 +271,12 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
 .srow.noic{grid-template-columns:minmax(0,1fr) auto}
+#chatP #log,html.mob #chatP #log{display:flex !important;flex-direction:column;justify-content:flex-end;max-height:none !important;overflow:visible !important;gap:2px}
+#log>div{flex:0 0 auto;line-height:1.3}
+.boxp{position:absolute;top:calc(env(safe-area-inset-top,0px) + 80px);right:16px;width:min(460px,calc(100vw - 32px));max-height:70vh;display:grid;grid-template-rows:auto auto 1fr;gap:6px;pointer-events:auto;z-index:5}
+.boxlist{overflow:auto;display:grid;gap:5px;align-content:start}
+.topbtns .skill .qty{position:absolute;right:2px;top:1px;font-size:11px;color:#ffd36a;font-weight:700}
+
 .topbtns{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(max(16px,env(safe-area-inset-right,0px)) + 232px);display:flex;gap:6px;pointer-events:auto}
 .topbtns .sndbtn{position:static !important;align-self:center;margin:0}
 .topbtns .skill{width:52px;height:52px}.topbtns .skill kbd{display:none}.topbtns .skill em{font-size:10px}
@@ -867,6 +873,7 @@ function describe(it) {
   if (it.st.ki) p.push('Ки +' + statVal(it, 'ki'));
   if (it.st.spd) p.push('Скорость +' + statVal(it, 'spd') + '%');
   if (it.slot === 'mount') p.push('звёзды ' + starText(it.stars || 0));
+  if (it.myth) p.push('мифическая сила растёт вместе с уровнем героя');
   if (it.grow) p.push('растёт: ступень ' + it.gl + ' из ' + GROW_MAX + (it.gl < GROW_MAX ? ', до следующей ' + (GROW_STEP - it.gk) + ' побед' : ''));
   const wc = it.slot === 'weapon' ? WEAPON_CLASS[it.base] : null;
   return SLOT_NAME[it.slot] + ' · ' + RAR[it.rarity].n + ' · ур. ' + it.lv + (wc ? ' · класс: ' + CLASSES[wc].name : '') + ' — ' + p.join(', ') + itemExtra(it);
@@ -2008,7 +2015,7 @@ const GROW_STEP = 25, GROW_MAX = 100;
 function growStats(it) {
   if (!it || !it.grow) return;
   if (it.slot === 'pet') { petStats(it); return; }
-  const lv = Math.max(save.lv, it.lv || 1), g = 1 + (it.gl - 1) * .045, k = RAR[3].k;
+  const lv = Math.max(save.lv, it.lv || 1), g = 1 + (it.gl - 1) * .006, k = RAR[3].k;
   if (it.slot === 'weapon') { const cls = WEAPON_CLASS[it.base]; it.st = { atk: Math.round((3 + lv * 1.6) * k * 1.3 * g), crit: 8 + Math.floor(it.gl / 10) }; if (cls === 'mage') it.st.ki = Math.round((10 + lv * 2.5) * g); }
   if (it.slot === 'armor') it.st = { hp: Math.round((15 + lv * 8) * k * 1.25 * g), def: Math.round((2 + lv * 1.2) * k * 1.25 * g), crit: 3 };
   if (it.slot === 'wings') it.st = { atk: Math.round((4 + lv * 1.1) * k * 1.3 * g), hp: Math.round((20 + lv * 6) * k * 1.3 * g), def: Math.round((1 + lv * .6) * k * 1.3 * g), crit: 5 };
@@ -5230,7 +5237,7 @@ class World extends Phaser.Scene {
 
   /* ---------- stats & items ---------- */
   recalc(fill) {
-    for (const it of [...Object.values(save.eq), ...save.inv]) if (it && it.grow) growStats(it);
+    for (const it of [...Object.values(save.eq), ...save.inv]) { if (it && it.grow) growStats(it); if (it && it.myth) mythStats(it); }
     const h = this.hero, b = heroBase(save.lv), cl = CLASSES[save.cls || 'warrior'];
     let atk = b.atk * cl.atk, hp = Math.round(b.maxHp * cl.hp), mp = Math.round(b.maxMp * (cl.mp || 1)), def = cl.def, crit = 15 + cl.crit;
     for (const s of STAT_SLOTS) {
@@ -5264,9 +5271,9 @@ class World extends Phaser.Scene {
       const s = this.stack(it.kind);
       if (s) s.qty += it.qty;
       else if (save.inv.length < BAG) save.inv.push(it);
-      else { log('Сумка полна: ' + it.name + ' пришлось оставить.', 'bad'); return false; }
+      else { boxPut(it); return true; }
     } else {
-      if (save.inv.length >= BAG) { log('Сумка полна: ' + itemName(it) + ' остался лежать.', 'bad'); return false; }
+      if (save.inv.length >= BAG) { boxPut(it); wardrobeNote(it); return true; }
       save.inv.push(it);
     }
     if (!quiet) log('Получено: ' + itemName(it) + (it.qty > 1 ? ' ×' + it.qty : ''), 'r' + it.rarity);
@@ -5699,7 +5706,7 @@ class World extends Phaser.Scene {
     if (save.inv.length + slotsNeeded > BAG) { log('Освободите место в сумке, чтобы получить награду.', 'bad'); return; }
     if (r.item) this.give(genItem(Math.max(save.lv, q.minLv), r.item[1], r.item[0]));
     if (r.costume) this.give(costume(r.costume));
-    if (r.myth) { const it = mythWeapon(Math.max(save.lv, q.minLv)); if (this.give(it)) banner(it.name, 'Мифическое оружие'); }
+    if (r.myth) { const it = mythDrop(Math.max(save.lv, q.minLv)); if (this.give(it)) banner(it.name, 'Мифическая добыча'); }
     if (r.rice) this.give(rice(r.rice));
     save.gold += r.gold;
     log('Награда: ' + r.gold + ' мон, ' + r.xp + ' опыта.', 'xp');
@@ -6175,7 +6182,7 @@ class World extends Phaser.Scene {
     const def = MOBS[m.kind], roll = Math.random();
     if (m.boss) {
       this.give(genItem(m.lv, 2)); this.give(genItem(m.lv, 1)); this.give(rice(3));
-      if (Math.random() < .015) { const it = mythWeapon(m.lv + 1); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); }
+      if (Math.random() < .015) { const it = mythDrop(m.lv + 1); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); }
       if (Math.random() < .3) gemDrop(this, 2, 1);
       for (const [kind, id, ch] of def.drops || []) if (Math.random() < ch) {
         const it = kind === 'costume' ? costume(id) : kind === 'wings' ? wings(id, m.lv) : kind === 'mount' ? mount(id, m.lv) : cosmetic(kind, id);
@@ -6703,8 +6710,8 @@ class World extends Phaser.Scene {
   dgReward() {
     const cfg = this.zone.dungeon;
     stat('dg'); save.stats.dgKinds[this.zoneId] = (save.stats.dgKinds[this.zoneId] || 0) + 1;
-    const dI = dgRecord(this), D = DIFF[dI]; save.gold += Math.round(cfg.gold * (D.rew - 1)); gemDrop(this, 1 + dI * 2, D.gems); if (Math.random() < D.myth) { const it = mythWeapon(cfg.lv + 2 + D.lv); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); }
-    if (cfg.raid) { stat('raids'); gemDrop(this, 3, 2); if (Math.random() < .15) { const it = mythWeapon(cfg.lv + 2); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); } }
+    const dI = dgRecord(this), D = DIFF[dI]; save.gold += Math.round(cfg.gold * (D.rew - 1)); gemDrop(this, 1 + dI * 2, D.gems); if (Math.random() < D.myth) { const it = mythDrop(cfg.lv + 2 + D.lv); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); }
+    if (cfg.raid) { stat('raids'); gemDrop(this, 3, 2); if (Math.random() < .15) { const it = mythDrop(cfg.lv + 2); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); } }
     {
       save.gold += cfg.gold; save.dgDone[this.zoneId] = (save.dgDone[this.zoneId] || 0) + 1;
       const sealN = SEAL_PER[this.zoneId] || 15; save.seals += sealN; save.mats.ore += 10; save.mats.ess += 4; save.mats.star += 1; if (save.guild) guildXp(50);
@@ -6716,7 +6723,7 @@ class World extends Phaser.Scene {
         const it = kind === 'costume' ? costume(id) : kind === 'wings' ? wings(id, lv) : kind === 'mount' ? mount(id, lv) : cosmetic(kind, id);
         if (this.give(it)) banner(it.name, 'Добыча подземелья');
       }
-      if (Math.random() < .03) { const it = mythWeapon(lv); if (this.give(it)) banner(it.name, 'Мифическое оружие!'); }
+      if (Math.random() < .03) { const it = mythDrop(lv); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); }
       banner('Подземелье пройдено', '+' + cfg.gold + ' мон, эпическое снаряжение и свитки');
       log('Подземелье пройдено! Выход — портал у входа.', 'good');
       persist(); this.renderInv();
@@ -7235,7 +7242,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '48', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '49', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -8187,7 +8194,7 @@ function mythWeapon(lv, cls) {
   it.st.hp = (it.st.hp || 0) + Math.round((20 + lv * 6) * 1.6);
   it.rarity = 4; it.myth = true;
   const nm = MYTH_NAMES[cls]; it.name = nm[ri(0, nm.length - 1)];
-  it.value = Math.round((10 + lv * 6) * 9);
+  it.value = Math.round((10 + lv * 6) * 9); mythStats(it);
   return it;
 }
 
@@ -8618,7 +8625,7 @@ const LOGIN_REWARDS = [
   { name: 'Эпическая вещь', give: G => G.give(genItem(save.lv, 2)) },
   { name: '4 000 мон и 2 звёздных кристалла', give: G => { save.gold += 4000; if (save.mats) save.mats.star += 2; } },
   { name: '30 печатей подземелья', give: G => { save.seals = (save.seals || 0) + 30; } },
-  { name: 'Сундук дракона: 2 эпические вещи, 50 печатей, шанс 10% на мифическое оружие', give: G => { G.give(genItem(save.lv + 1, 2)); G.give(genItem(save.lv + 1, 2)); save.seals = (save.seals || 0) + 50; if (Math.random() < .1) { const it = mythWeapon(save.lv + 1); if (G.give(it)) banner(it.name, 'Мифическое оружие!'); } } }
+  { name: 'Сундук дракона: 2 эпические вещи, 50 печатей, шанс 10% на мифическое оружие', give: G => { G.give(genItem(save.lv + 1, 2)); G.give(genItem(save.lv + 1, 2)); save.seals = (save.seals || 0) + 50; if (Math.random() < .1) { const it = mythDrop(save.lv + 1); if (G.give(it)) banner(it.name, 'Мифическая добыча!'); } } }
 ];
 const dayKeyOf = d => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 function dailyCheck(G) {
@@ -8949,9 +8956,9 @@ const WB = makeShared({ topic: 'wb', kind: 'wbking', max: 150000, off: { x: 13, 
       if (save.mats) { save.mats.ore += 20; save.mats.ess += 8; save.mats.star += 2; }
       S.give(genItem(lv + 2, 2)); S.give(scroll(3)); S.gainXp(Math.round(xpNeed(lv) * .35)); gemDrop(S, 3, 1);
       if (R.me === 1) S.give(genItem(lv + 2, 2));
-      if (Math.random() < (R.me === 1 ? 1 : R.me <= 3 ? .5 : .12)) { const it = mythWeapon(lv + 2); if (S.give(it)) banner(it.name, 'Мифическое оружие!'); }
+      if (Math.random() < (R.me === 1 ? 1 : R.me <= 3 ? .5 : .12)) { const it = mythDrop(lv + 2); if (S.give(it)) banner(it.name, 'Мифическая добыча!'); }
       if (save.guild) guildXp(80);
-    } else { save.gold += 1000 + lv * 60; S.give(scroll(1)); if (Math.random() < .03) { const it = mythWeapon(lv + 2); if (S.give(it)) banner(it.name, 'Мифическое оружие!'); } }
+    } else { save.gold += 1000 + lv * 60; S.give(scroll(1)); if (Math.random() < .03) { const it = mythDrop(lv + 2); if (S.give(it)) banner(it.name, 'Мифическая добыча!'); } }
   } });
 const GB = makeShared({ topic: 'gb', kind: 'gbking', max: 80000, off: { x: -13, y: 3 }, hud: 'gbHud', zone: 'village', where: 'Окрестности деревни Кумо', state: gbState, label: 'Гильдейский босс', tint: 0xb08aff, color: '#c8a8ff', atkK: 2,
   reward(S, B, killed, R) {
@@ -8959,7 +8966,7 @@ const GB = makeShared({ topic: 'gb', kind: 'gbking', max: 80000, off: { x: -13, 
     if (killed) {
       stat('gbKills'); guildXp(250); save.gold += 2000 + lv * 100; save.seals = (save.seals || 0) + 25;
       S.give(genItem(lv + 1, 2)); if (R.me === 1) S.give(genItem(lv + 1, 2));
-      if (Math.random() < .05) { const it = mythWeapon(lv + 1); if (S.give(it)) banner(it.name, 'Мифическое оружие!'); }
+      if (Math.random() < .05) { const it = mythDrop(lv + 1); if (S.give(it)) banner(it.name, 'Мифическая добыча!'); }
     } else { guildXp(60); save.gold += 600 + lv * 40; }
   } });
 const SHARED = [WB, GB];
@@ -9396,7 +9403,7 @@ function seasonReward(lv, prem) {
   }
   if (lv === 10) return { name: 'Наряд «Золотой император»', give: G => G.give(costume('goldemperor')) };
   if (lv === 20) return { name: 'Маунт «Белый тигр»', give: G => G.give(mount('whitetiger', L)) };
-  if (lv === SEASON_LV) return { name: 'Крылья «Небесные», мифическое оружие и титул «Герой сезона»', give: G => { G.give(wings('celestial', L)); const it = mythWeapon(L + 2); G.give(it); if (!save.titles.includes('seasonhero')) save.titles.push('seasonhero'); banner('Герой сезона', 'Небесные крылья и мифическое оружие'); } };
+  if (lv === SEASON_LV) return { name: 'Крылья «Небесные», мифическое оружие и титул «Герой сезона»', give: G => { G.give(wings('celestial', L)); const it = mythDrop(L + 2); G.give(it); if (!save.titles.includes('seasonhero')) save.titles.push('seasonhero'); banner('Герой сезона', 'Небесные крылья и мифическое оружие'); } };
   if (lv % 5 === 0) return { name: '2 эпические вещи и 3 звёздных кристалла', give: G => { G.give(genItem(L + 1, 2)); G.give(genItem(L + 1, 2)); if (save.mats) save.mats.star += 3; } };
   return [{ name: (1000 + lv * 300) + ' мон', give: () => { save.gold += 1000 + lv * 300; } }, { name: '2 свитка заточки', give: G => G.give(scroll(2)) }, { name: '25 печатей и 1 звёздный кристалл', give: () => { save.seals = (save.seals || 0) + 25; if (save.mats) save.mats.star += 1; } }, { name: 'Материалы кузницы: руда ×20, эссенция ×10', give: () => { if (save.mats) { save.mats.ore += 20; save.mats.ess += 10; } } }][lv % 4];
 }
@@ -10877,6 +10884,53 @@ function autoRespawn(S) {
   if (!S.autoResT) { S.autoResT = performance.now() + 6000; log('Автобой: возрождение через 6 секунд.', 'info'); return; }
   if (performance.now() > S.autoResT) { S.autoResT = 0; S.respawn(); }
 }
+
+/* ---------- mythic gear: clearly stronger than the top-up sets, grows with the hero ---------- */
+const MYTH_ARMOR = ['Доспех Пожирателя лун', 'Хаори Звёздного пепла', 'Латы Кровавой луны', 'Облачение Небесного грома', 'Кираса Бездонной ночи'];
+function mythStats(it) {
+  if (!it || !it.myth) return;
+  const lv = Math.max(save.lv, it.mlv || it.lv || 1), k = RAR[4].k; it.mlv = lv; it.lv = lv;
+  if (it.slot === 'weapon') { const cls = WEAPON_CLASS[it.base]; it.st = { atk: Math.round((3 + lv * 1.6) * k * 2.4), hp: Math.round((20 + lv * 6) * 2.2), crit: 14 }; if (cls === 'mage') it.st.ki = Math.round((14 + lv * 3.2) * 1.6); }
+  else if (it.slot === 'armor') it.st = { hp: Math.round((15 + lv * 8) * k * 2.2), def: Math.round((2 + lv * 1.2) * k * 2.2), atk: Math.round((2 + lv * .5) * k), crit: 6 };
+}
+function mythArmor(lv) {
+  const it = genItem(lv, 2, 'armor'); it.rarity = 4; it.myth = true; it.name = MYTH_ARMOR[ri(0, MYTH_ARMOR.length - 1)]; it.value = Math.round((10 + lv * 6) * 9); mythStats(it); return it;
+}
+const mythDrop = lv => Math.random() < .35 ? mythArmor(lv) : mythWeapon(lv);
+
+/* ---------- mailbox: whatever does not fit in the bag waits here ---------- */
+if (!Array.isArray(save.mailbox)) save.mailbox = [];
+function boxPut(it, why) {
+  save.mailbox.push({ it, t: Date.now(), why: why || 'Не поместилось в сумку' }); if (save.mailbox.length > 200) save.mailbox.shift();
+  persist(); boxBadge(); log('Сумка полна: «' + itemName(it) + '» отправлено на почту ✉.', 'info');
+}
+function boxBadge() { const b = $('skBox'); if (!b) return; const n = save.mailbox.length; let q = b.querySelector('.qty'); if (!q) { q = mk('span', 'qty'); b.appendChild(q); } q.textContent = n ? String(n) : ''; q.hidden = !n; b.classList.toggle('ready', n > 0); }
+function boxTake(i) {
+  const G = GAME; if (!G) return; const e = save.mailbox[i]; if (!e) return;
+  const it = e.it, fits = it.kind ? (G.stack(it.kind) || save.inv.length < BAG) : save.inv.length < BAG;
+  if (!fits) { log('В сумке нет места. Продайте или выбросьте лишнее.', 'bad'); return false; }
+  save.mailbox.splice(i, 1); G.give(it, true); persist(); boxBadge(); G.renderInv(); return true;
+}
+function boxPanel(open) {
+  let p = $('boxP'); if (p && open !== true) { p.remove(); return; }
+  if (!p) { p = mk('div', 'panel boxp'); p.id = 'boxP'; document.querySelector('.hud').appendChild(p); }
+  p.innerHTML = '';
+  const head = mk('div', 'phead'); head.append(mk('b', '', 'Почта'), mk('span', '', 'вещи, не поместившиеся в сумку'));
+  const x = mk('button', 'x', '×'); x.type = 'button'; x.onclick = () => p.remove(); head.appendChild(x); p.appendChild(head);
+  const acts = mk('div', 'acts');
+  acts.append(btn('Забрать всё', () => { let n = 0; while (save.mailbox.length && boxTake(0) !== false) n++; if (n) log('Забрано с почты: ' + n + '.', 'good'); boxPanel(true); }, 'main', !save.mailbox.length));
+  acts.appendChild(mk('span', 'ds', 'Свободно в сумке: ' + Math.max(0, BAG - save.inv.length)));
+  p.appendChild(acts);
+  const list = mk('div', 'boxlist');
+  if (!save.mailbox.length) list.appendChild(mk('div', 'ds', 'Почта пуста.'));
+  save.mailbox.forEach((e, i) => { const r = mk('div', 'srow'), c = cellFor(e.it, ''); c.tabIndex = -1; const info = mk('div'); info.style.minWidth = '0'; info.append(mk('div', 'sn r' + e.it.rarity, itemName(e.it)), mk('div', 'ss', describe(e.it).slice(0, 120) + ' · ' + new Date(e.t).toLocaleString('ru-RU'))); r.append(c, info, btn('Забрать', () => { boxTake(i); boxPanel(true); }, 'main')); list.appendChild(r); });
+  p.appendChild(list); if (typeof bringFront === 'function') bringFront(p);
+}
+(() => {
+  const bar = $('topBtns'); if (!bar) return;
+  const b = mk('button', 'skill', ''); b.id = 'skBox'; b.type = 'button'; b.setAttribute('aria-label', 'Почта'); b.innerHTML = '<span class="ic">✉</span><em>Почта</em>';
+  b.addEventListener('click', () => boxPanel()); bar.insertBefore(b, $('skFb')); boxBadge();
+})();
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
