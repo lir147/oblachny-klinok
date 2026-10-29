@@ -1,1 +1,18 @@
-{}
+{
+ "kgp3x4kkbn-1793286982898": {
+  "c": "Маг",
+  "err": [],
+  "issue": 1,
+  "k": "kgp3x4kkbn-1793286982898",
+  "kind": "bug",
+  "lv": 24,
+  "n": "Komik",
+  "s": "В верхней части анимации у донатного дракончика обрезаются крылья.",
+  "scr": "360x672",
+  "st": 0,
+  "t": 1793286982898,
+  "ua": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+  "v": "40",
+  "z": "snow"
+ }
+}
