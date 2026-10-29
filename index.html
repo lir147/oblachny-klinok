@@ -277,6 +277,7 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 @media (max-width:700px){.topbtns{right:calc(max(16px,env(safe-area-inset-right,0px)) + 160px)}}
 html.mob .topbtns{top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(max(6px,env(safe-area-inset-right,0px)) + 134px);gap:4px}
 html.mob .topbtns .skill{width:40px;height:40px}html.mob .topbtns .skill em{display:none}
+.arhud{top:calc(env(safe-area-inset-top,0px) + 70px);border-color:#c9a35a;background:rgba(40,20,8,.92);color:#ffe0a0}
 .evp{position:absolute;top:calc(env(safe-area-inset-top,0px) + 80px);right:16px;width:min(420px,calc(100vw - 32px));pointer-events:auto;z-index:5}
 .evbody{display:grid;gap:5px;max-height:60vh;overflow:auto}
 .evrow{display:grid;gap:2px;padding:6px 9px;border:1px solid #2a3350;border-radius:6px;background:#0f1528}.evrow b{font-weight:600}.evrow span{font-size:13px;color:var(--muted)}
@@ -4243,6 +4244,7 @@ const WORLD_QUESTS = [
 ];
 ZONES.bg_field = { name: 'Поле битвы', seed: 177, tiles: 't', bg: '#0d1220', deco: 'sky', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 // zones were laid out on a 28x28 map; stretch each onto its own size (open worlds 150x150, dungeons 44x44)
+ZONES.arena_map = { name: 'Арена Облачного клинка', seed: 263, tiles: 'k', bg: '#100a14', deco: 'arena', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 ZONES.ghall = { name: 'Зал гильдии', seed: 251, tiles: 'k', bg: '#0e0a14', deco: 'sky', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 ZONES.tower = { name: 'Башня испытаний', seed: 233, tiles: 'v', bg: '#0a0814', deco: 'spirit', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 for (const z of Object.values(ZONES)) z.size = z.dungeon || z.arena ? 44 : 150;
@@ -4584,7 +4586,7 @@ class World extends Phaser.Scene {
 
     this.allies = []; this.remotes = new Map(); this.fishing = null; this.pvpProxy = null;
     safeRun('herbs', () => makeHerbs(this)); safeRun('daily', () => dailyCheck(this)); safeRun('title', () => titleHud()); safeRun('buff', () => buffHud());
-    safeRun('holiday', () => holidayDecor(this)); this.weather = null; safeRun('weather', () => weatherApply(this)); safeRun('tut', () => tutInit()); safeRun('gfx', () => gfxApply(this)); safeRun('tower', () => towerHud(this)); safeRun('ghDecor', () => ghDecor(this));
+    safeRun('holiday', () => holidayDecor(this)); this.weather = null; safeRun('weather', () => weatherApply(this)); safeRun('tut', () => tutInit()); safeRun('gfx', () => gfxApply(this)); safeRun('tower', () => towerHud(this)); safeRun('ghDecor', () => ghDecor(this)); safeRun('arena', () => arenaSetup(this));
     safeRun('wardrobe', () => { for (const it of [...save.inv, ...Object.values(save.eq)]) wardrobeNote(it); });
     safeRun('bg', () => { if (BG && this.zoneId !== BG_ID && Date.now() - BG.t0 > 15000) { BG = null; bgHud(); }
     if (BG && this.zoneId === BG_ID) { const base = BG.me === 0 ? [C - 20, C] : [C + 20, C]; this.hero.x = base[0]; this.hero.y = base[1]; } });
@@ -4660,6 +4662,7 @@ class World extends Phaser.Scene {
       else if (z.deco === 'sea') { if (r < .04) put('rock', .82); else if (r < .06) put('crystal', .92); else if (r < .085) put('bush', .82); else if (r < .09) put('shrine', .94); }
       else if (z.deco === 'spirit') { if (r < .02) put('shrine', .94); else if (r < .04) put('wist', .95); else if (r < .06) put('sakura', .95); else if (r < .075) put('dead', .95); else if (r < .09) put('rock', .82); }
       else if (z.deco === 'sky') { if (r < .03) put('sakura', .95); else if (r < .042) put('shrine', .94); else if (r < .062) put('rock', .82); else if (r < .076) put('crystal', .92); else if (r < .088) put('wist', .95); else if (r < .1) put('bush', .82); }
+      else if (z.deco === 'arena') { const rr = Math.hypot(cx - C, cy - C); if (rr > 12 && r < .05) put(r < .02 ? 'shrine' : r < .035 ? 'sakura' : 'rock', .9); }
       else { if (r < .07) put('snowpine', .95); else if (r < .082) put('dead', .95); else if (r < .108) put('snowrock', .82); else if (r < .122) put('crystal', .92); }
     }
     this.placeLandmarks(z, m);
@@ -6163,7 +6166,7 @@ class World extends Phaser.Scene {
     if (m.pvp) return;
     sfx(m.boss ? 'boom' : 'kill'); sfx('coin');
     m.gold = Math.round(m.gold * evMul('gold') * (terrMine(this.zoneId) ? 1.15 : 1) * (save.eq.pet && (save.eq.pet.plv || 1) >= 20 ? 1.1 : 1));
-    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); bestiaryKill(this, m); invKill(this, m); safeRun('ghKill', () => ghKill(this, m)); if (m.kind === 'stormoni') { stat('storm'); }
+    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); bestiaryKill(this, m); invKill(this, m); safeRun('ghKill', () => ghKill(this, m)); safeRun('arenaKill', () => arenaKill(this, m)); if (m.kind === 'stormoni') { stat('storm'); }
     stat('kills'); stat('goldEarned', m.gold); if (inParty()) stat('partyKills'); if (eventsNow().length) stat('eventKills');
     if (m.boss) { stat('bosses'); save.stats.bossKinds[m.kind] = (save.stats.bossKinds[m.kind] || 0) + 1; }
     save.gold += m.gold;
@@ -6236,6 +6239,7 @@ class World extends Phaser.Scene {
     stat('deaths'); sfx('death');
     if (BG && this.zoneId === BG_ID) { BG.deadUntil = Date.now() + 5000; setTimeout(() => { $('death').hidden = true; }, 0); log('Вы пали. Возрождение у своего знамени через 5 секунд.', 'bad'); }
     if (this.tw) towerDie(this);
+    if (this.ar) safeRun('arenaDeath', () => arenaDeath(this));
     const h = this.hero; h.alive = false; h.hp = 0; h.target = null; h.dest = null; h.talk = null;
     h.spr.setTint(0x666677).setAlpha(.6).setAngle(80);
     for (const m of this.mobs) m.angry = false;
@@ -6741,7 +6745,8 @@ class World extends Phaser.Scene {
     if (!h.target && !h.talk && !this.dlgNpc && (!h.dest || h.autoDest)) {
       let best = null, bd = 60;
       const inst = this.zone.dungeon || this.zone.arena, nearPortal = (x, y) => this.portals.some(p => Math.hypot(x - p.x, y - p.y) < 4);
-      for (const m of this.mobs) if (m.alive && !m.ally && !(inst ? false : this.safeAt(m.x, m.y)) && !(m.unreachUntil > this.now) && !(m.boss && dist(m, h) > 8 && !inst)) { const d = dist(m, h); if (d < bd) { bd = d; best = m; } }
+      bd = Infinity;
+      for (const m of this.mobs) if (m.alive && !m.ally && !(inst ? false : this.safeAt(m.x, m.y) && !m.angry) && !(m.unreachUntil > this.now) && !(m.boss && dist(m, h) > 14 && !inst) && !(m.arena && this.ar && this.ar.state !== 'fight')) { const d = dist(m, h); if (d < bd) { bd = d; best = m; } }
       if (best) { h.target = best; h.dest = null; h.autoDest = false; }
       else if (!h.dest && inst) { if (Math.hypot(h.x - C, h.y - C) > 2.5) { for (let k = 0; k < 12; k++) { const x = C + rand(-1.5, 1.5), y = C + rand(-1.5, 1.5); if (this.walkable(x, y)) { h.dest = { x, y }; h.autoDest = true; break; } } } }
       else if (!h.dest) { for (let k = 0; k < 10; k++) { const x = h.x + rand(-6, 6), y = h.y + rand(-6, 6); if (this.walkable(x, y) && !nearPortal(x, y)) { h.dest = { x, y }; h.autoDest = true; break; } } }
@@ -6854,7 +6859,7 @@ class World extends Phaser.Scene {
     if (this.allies.length) this.updateAllies(dt);
     if (this.pet) this.updatePet(dt);
     netUpdate(this, dt);
-    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); safeRun('bgTick', () => bgTick(this), 1); safeRun('towerTick', () => towerTick(this), 1); safeRun('htag', () => heroTagTick(this), 1);
+    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); safeRun('bgTick', () => bgTick(this), 1); safeRun('towerTick', () => towerTick(this), 1); safeRun('htag', () => heroTagTick(this), 1); safeRun('arenaTick', () => arenaTick(this), 1); safeRun('autoRes', () => autoRespawn(this), 1);
     if (performance.now() > (this.achT || 0)) { this.achT = performance.now() + 2000; checkAch(this); evHud(); }
     if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); safeRun('dgTimer', () => dgTimerHud(this), 1); safeRun('path', () => pathTick(this), 1); safeRun('inv', () => invTick(this), 1); safeRun('gh', () => ghTick(this), 1); }
     if (this.zone.dungeon) this.updateDungeon();
@@ -7230,7 +7235,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '47', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '48', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -7852,7 +7857,7 @@ function duelFloat(side, text, col) {
   const box = $('duelStage'), el = mk('div', 'dfl', text); el.style.color = col; el.style.left = side ? '68%' : '22%'; box.appendChild(el);
   setTimeout(() => el.remove(), 1100);
 }
-function startDuel(foe, mode) {
+function startDuelPanel(foe, mode) {
   if (!GAME || ARENA.busy) return;
   const A = save.arena; arenaDaily();
   if (mode === 'rank' && A.att <= 0) { log('Попытки арены на сегодня закончились. Завтра будет 10 новых или купите попытку.', 'bad'); return; }
@@ -9568,7 +9573,7 @@ function openGift(G) {
   sfx('loot'); persist(); G.renderInv();
 }
 function holidayDecor(S) {
-  const id = holidayNow(); if (!id || S.zone.dungeon) return;
+  const id = holidayNow(); if (!id || S.zone.dungeon || S.zone.arena) return;
   if (id === 'hw') {
     const key = 'jack_o';
     if (!S.textures.exists(key)) S.canvasTex(key, 32, 32, c => { const g = c.createRadialGradient(14, 14, 2, 16, 18, 14); g.addColorStop(0, '#ffc060'); g.addColorStop(1, '#c0500a'); c.fillStyle = g; c.beginPath(); c.ellipse(16, 19, 12, 10, 0, 0, 6.29); c.fill(); c.fillStyle = '#3a6a1a'; c.fillRect(15, 6, 3, 5); c.fillStyle = '#ffee80'; c.beginPath(); c.moveTo(10, 16); c.lineTo(13, 13); c.lineTo(14, 17); c.fill(); c.beginPath(); c.moveTo(22, 16); c.lineTo(19, 13); c.lineTo(18, 17); c.fill(); c.beginPath(); c.moveTo(9, 21); c.quadraticCurveTo(16, 27, 23, 21); c.lineTo(20, 23); c.lineTo(16, 22); c.lineTo(12, 23); c.closePath(); c.fill(); }, 'rgba(10,6,20,.7)', 2);
@@ -10787,6 +10792,90 @@ function heroPetDraw(ctx, cv, t) {
   ctx.save(); ctx.shadowColor = PETS[it.base].col; ctx.shadowBlur = 14; ctx.drawImage(img, x, y, w, h); ctx.restore();
   ctx.save(); ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.fillStyle = PETS[it.base].col;
   const n = PETS[it.base].name.split(' ')[0] + ' · ' + (it.plv || 1); ctx.strokeText(n, x + w / 2, y - 2); ctx.fillText(n, x + w / 2, y - 2); ctx.restore();
+}
+
+/* ---------- arena on its own map: the rival fights you for real ---------- */
+const AR_ID = 'arena_map', AR_TIME = 90000;
+MOBS.arenafoe = { name: 'Соперник', key: 'ronin', boss: false, drops: [] };
+BEST_SKIP.add('arenafoe');
+function startDuel(foe, mode) {
+  const G = GAME; if (!G || ARENA.busy) return;
+  if (G.zone.dungeon || G.tw || G.zoneId === AR_ID || (typeof BG !== 'undefined' && BG)) { log('Сначала выйдите отсюда — бой на арене начинается из открытого мира.', 'bad'); return; }
+  const A = save.arena; arenaDaily();
+  if (mode === 'rank' && A.att <= 0) { log('Попытки арены на сегодня закончились. Завтра будет 10 новых или купите попытку.', 'bad'); return; }
+  if (mode === 'rank') A.att--;
+  ARENA.busy = true; ARENA.pending = { foe, mode, back: G.zoneId, bx: G.hero.x, by: G.hero.y };
+  const w = $('worldP'); if (w) w.hidden = true; const o = $('duelO'); if (o) o.hidden = true;
+  persist(); G.travel({ to: AR_ID });
+}
+function arenaSetup(S) {
+  if (S.zoneId !== AR_ID) { if (ARENA.busy) { ARENA.busy = false; ARENA.pending = null; } const hud = $('arHud'); if (hud) hud.remove(); return; }
+  const P = ARENA.pending; if (!P) { S.time.delayedCall(300, () => S.travel({ to: 'village' })); return; }
+  S.ar = { foe: P.foe, mode: P.mode, state: 'count', t: performance.now() + 3500, end: 0, m: null };
+  S.hero.x = C - 4; S.hero.y = C; S.hero.hp = S.hero.maxHp; S.hero.mp = S.hero.maxMp; S.hero.cds = {};
+  banner('Арена', P.foe.n + ' · ' + CLASSES[P.foe.c].name + ' · ур. ' + P.foe.lv);
+  // arena decor: a ring of banners and braziers
+  for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6, x = C + Math.cos(a) * 9, y = C + Math.sin(a) * 9, p = iso(x, y);
+    S.add.image(p.x, p.y - 10, 'glow').setTint(i % 2 ? 0xff9a3a : 0xffd36a).setBlendMode(Phaser.BlendModes.ADD).setScale(.9).setAlpha(.55).setDepth(p.y); }
+  const c = iso(C, C); S.add.text(c.x, c.y - 230, 'АРЕНА ОБЛАЧНОГО КЛИНКА', { fontFamily: FONT, fontSize: '24px', color: '#ffd36a', stroke: '#000', strokeThickness: 5 }).setOrigin(.5).setDepth(185000);
+}
+function arenaRival(S) {
+  const f = S.ar.foe, m = S.spawnMob('arenafoe', C + 4, C, f.lv, true);
+  m.name = f.n; m.maxHp = m.hp = Math.max(50, Math.round(f.hp)); m.atk = Math.max(5, f.a * 1.35); m.angry = true; m.aggro = 40; m.speed = 2.6; m.gold = 0; m.xp = 0; m.arena = true; m.nextAtk = S.now + 1;
+  try {
+    const look = Object.assign({}, classLook(f.c), { armor: f.c === 'warrior' ? 'leather' : 'haori', r: 2, costume: null, head: null, body: 'anime', pose: 'idle' });
+    S.tweens.killTweensOf(m.spr); m.spr.setTexture(S.heroTexKey(look)).setOrigin(.5, HERO_FY / HERO_H).setScale(HERO_K / HRES).setAlpha(1); m.spr.clearTint(); m.spr.baseTint = null; m.heroLike = true;
+    const wb = CLASSES[f.c].starter; m.wspr = S.add.image(0, 0, S.weaponTexKey(wb, 2)).setOrigin(GRIP[0] / HERO_W, GRIP[1] / HERO_H).setScale(HERO_K / 4);
+  } catch (e) {}
+  m.label.setText(f.n + ' · ' + f.lv); S.drawBar(m);
+  S.ar.m = m; return m;
+}
+function arenaTick(S) {
+  const A = S.ar; if (!A || S.zoneId !== AR_ID) return;
+  let hud = $('arHud'); if (!hud) { hud = mk('div', 'invhud arhud'); hud.id = 'arHud'; document.querySelector('.hud').appendChild(hud); }
+  const now = performance.now();
+  if (A.state === 'count') { const s = Math.ceil((A.t - now) / 1000); setText(hud, s > 0 ? 'Бой начнётся через ' + s + '…' : 'В бой!'); if (now >= A.t) { arenaRival(S); A.state = 'fight'; A.end = now + AR_TIME; banner('В бой!', A.foe.n); } return; }
+  if (A.state === 'fight') {
+    const m = A.m, left = Math.max(0, A.end - now);
+    setText(hud, 'Арена · ' + A.foe.n + ' · осталось ' + mmssLong(left));
+    if (m && m.wspr && m.spr.scene) { const fs = m.spr.flipX ? -1 : 1; m.wspr.setPosition(m.spr.x + fs * (GRIP[0] - 32) * HERO_K, m.spr.y + (GRIP[1] - HERO_FY) * HERO_K).setDepth(m.spr.depth + .2).setFlipX(m.spr.flipX).setVisible(m.alive); }
+    if (left <= 0) arenaFinish(S, S.hero.hp / S.hero.maxHp >= (m ? m.hp / m.maxHp : 0));
+  }
+}
+function arenaKill(S, m) { if (m.kind === 'arenafoe' && S.ar && S.ar.state === 'fight') { if (m.wspr) m.wspr.destroy(); arenaFinish(S, true); } }
+function arenaDeath(S) { if (S.ar && S.ar.state === 'fight') { arenaFinish(S, false); setTimeout(() => { const d = $('death'); if (d) d.hidden = true; }, 0); } }
+function arenaFinish(S, win) {
+  const A = S.ar; if (!A || A.state === 'done') return; A.state = 'done'; ARENA.busy = false;
+  const h = S.hero, m = A.m, me = myFighter();
+  const St = [Object.assign({}, me, { cur: win ? Math.max(1, h.hp) : 0, hp: h.maxHp, side: 0 }), Object.assign({}, A.foe, { cur: win ? 0 : Math.max(1, m ? m.hp : 1), hp: m ? m.maxHp : A.foe.hp, side: 1 })];
+  if (m && m.alive) { m.alive = false; m.spr.setAlpha(.4); if (m.wspr) m.wspr.setAlpha(.4); }
+  const o = $('duelO'); o.hidden = false; bringFront(o);
+  for (const [side, f] of [[0, me], [1, A.foe]]) {
+    const L = league(f.r || 1000);
+    $('dName' + side).innerHTML = f.n + ' <small>' + CLASSES[f.c].name + ' · ур. ' + f.lv + '</small>';
+    $('dSub' + side).innerHTML = '<span style="color:' + L.col + '">' + L.full + ' · ' + (f.r || 1000) + '</span> · PvP ур. ' + f.pl + ' · БМ ' + f.bm;
+    portraitInto($('dCv' + side), f);
+    $('dHp' + side).style.transform = 'scaleX(' + Math.max(0, St[side].cur / St[side].hp).toFixed(3) + ')'; $('dHpT' + side).textContent = Math.max(0, Math.round(St[side].cur)) + ' / ' + St[side].hp;
+  }
+  endDuel(St, A.foe, A.mode);
+  const acts = $('duelActs'); acts.innerHTML = '';
+  acts.appendChild(btn('Вернуться', () => { o.hidden = true; arenaLeave(S); }, 'main'));
+  if (A.mode === 'rank' && save.arena.att > 0) acts.appendChild(btn('Ещё бой', () => { o.hidden = true; const P = ARENA.pending; arenaLeave(S, true); }, ''));
+  setTimeout(() => { if (S.zoneId === AR_ID && S.ar === A && !o.hidden) {} }, 0);
+}
+function arenaLeave(S, again) {
+  const P = ARENA.pending || { back: 'village' }; ARENA.pending = null; const hud = $('arHud'); if (hud) hud.remove();
+  S.hero.alive = true; S.hero.hp = Math.max(S.hero.hp, S.hero.maxHp * .5); S.hero.spr.clearTint().setAlpha(1).setAngle(0);
+  S.travel({ to: P.back && ZONES[P.back] && !ZONES[P.back].dungeon && !ZONES[P.back].arena ? P.back : 'village' });
+  if (again) setTimeout(() => { WORLD_TAB = 'arena'; toggleWorld(true); }, 1200);
+}
+
+/* autoplay: after a death, get back up by itself */
+function autoRespawn(S) {
+  const h = S.hero; if (!save.auto || !h || h.alive || S.ar || (typeof BG !== 'undefined' && BG && S.zoneId === BG_ID)) { S.autoResT = 0; return; }
+  const d = $('death'); if (!d || d.hidden) return;
+  if (!S.autoResT) { S.autoResT = performance.now() + 6000; log('Автобой: возрождение через 6 секунд.', 'info'); return; }
+  if (performance.now() > S.autoResT) { S.autoResT = 0; S.respawn(); }
 }
 
 (async () => {
