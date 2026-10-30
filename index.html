@@ -271,6 +271,8 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
 .srow.noic{grid-template-columns:minmax(0,1fr) auto}
+.genderrow{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:4px}
+
 .qtrack{display:grid;gap:3px;pointer-events:auto;overflow:hidden;align-content:start}
 @media (max-height:860px){#chatP #log>div:nth-last-child(n+4){display:none}.qtrack .qp{font-size:11px}}
 #chatP #log>div:nth-last-child(n+5){display:none}
@@ -2654,11 +2656,12 @@ function paintHeroAnime(ctx, look, part) {
   const doBack = !part || part === 'back', doBody = !part || part === 'body', doHead = !part || part === 'head';
   const coat = o.coat, inner = o.plates ? shade(o.coat, .55) : (o.inner || 0x2c3650);
   const pants = APANTS[look.costume] || (!look.armor && APANTS['base_' + look.key]) || (o.plates ? 0x2a2420 : 0x3a3428);
-  const wide = cls === 'guard' ? 1.5 : cls === 'dancer' ? -1 : 0;
+  const wide = look.fem ? -1.2 : cls === 'guard' ? 1.5 : cls === 'dancer' ? -1 : 0;
 
   // ---- behind: hair tail, band tails, scarf tail
   const covered = acc === 'kasa' || acc === 'ninja' || acc === 'kabuto' || hs === 'reaper';
   if (doBack) {
+  if (look.fem && !covered && hs !== 'hunter') cel(ctx, P([[20, 11], [8.5, 36, 11.5, 72], [21, 68.5], [32, 72], [43, 68.5], [52.5, 72], [55.5, 36, 44, 11]]), hair[0], P([[36, 11], [55.5, 36, 52.5, 72], [43, 68.5]]), P([[22, 14], [14, 36, 15, 60], [17, 58], [18, 36, 25, 16]]), .8);
   if (hs === 'hunter') cel(ctx, P([[22, 10], [16, 26, 17, 52], [23, 50], [25, 30], [39, 30], [41, 50], [47, 52], [48, 26, 42, 10]]), hair[0], P([[38, 10], [48, 26, 47, 52], [41, 50], [39, 30]]), null, .8);
   if (acc === 'ribbon') {
     cel(ctx, P([[23, 13], [19, 18, 17, 40], [21, 40], [22, 24, 25, 15]]), 0xf6f2ea, P([[21, 26], [21, 40], [17.6, 40]]), null, .85);
@@ -2789,11 +2792,16 @@ function paintHeroAnime(ctx, look, part) {
   if (acc === 'raven') { cel(ctx, P([[16, 34], [7, 26], [10, 33], [5, 36], [14, 39]]), 0x0b0b10); cel(ctx, P([[48, 34], [57, 26], [54, 33], [59, 36], [50, 39]]), 0x0b0b10); }
   }
   if (doHead) paintAnimeHead(ctx, look, o, cls, acc, hs, hair, band, covered, noBand);
+  if (doHead && look.fem) {
+    if (!covered && hs !== 'hunter') { cel(ctx, P([[24.8, 12.2], [20.6, 21, 21.6, 37], [24.2, 35.4], [23.8, 22, 26.6, 13.6]]), hair[0]); cel(ctx, P([[39.2, 12.2], [43.4, 21, 42.4, 37], [39.8, 35.4], [40.2, 22, 37.4, 13.6]]), hair[0]);
+    for (const bx of [27.2, 36.8]) fillPath(ctx, c => c.ellipse(bx, 25.2, 1.6, .8, 0, 0, 6.29), 'rgba(255,120,140,.38)', null); }
+    if (acc !== 'ninja' && !(cls === 'dancer' && !look.noMask && !hs && !look.npc)) fillPath(ctx, c => c.ellipse(32, 27.5, 1.25, .5, 0, 0, 6.29), '#d8505e', null);
+  }
 }
 function paintAnimeHead(ctx, look, o, cls, acc, hs, hair, band, covered, noBand) {
   // ---- neck, face and layered hair
   const masked = !!hs || acc === 'raven' || acc === 'ninja' || (cls === 'dancer' && acc !== 'fox' && !look.npc && !look.noMask);
-  paintFace2(ctx, cls, hair, hs, acc, masked);
+  paintFace2(ctx, cls, hair, hs, acc, masked, !!look.fem);
   if (acc === 'monk') for (let k = 0; k < 11; k++) { const a = Math.PI * (.12 + k * .076); fillPath(ctx, c => c.arc(32 + Math.cos(a) * 7.4, 31 + Math.sin(a) * 6.2, 1.05, 0, 6.29), '#5a3a22', INK, .3); }
   if (look.beard) { fillPath(ctx, c => { c.moveTo(26, 25); c.quadraticCurveTo(32, 29, 38, 25); c.quadraticCurveTo(37, 34, 32, 38); c.quadraticCurveTo(27, 34, 26, 25); c.closePath(); }, lin(ctx, 0, 25, 0, 38, [[0, '#ffffff'], [1, '#c8c8d0']]), INK, .5); strokeLine(ctx, [[28, 25.6], [32, 26.6], [36, 25.6]], '#e8e8ee', 1.2); }
   if (acc !== 'kasa' && acc !== 'ninja' && hs !== 'reaper') {
@@ -3318,7 +3326,7 @@ function hairLock(ctx, x0, y0, x1, y1, w, bend, base, hi) {
   for (const k of [-.35, .3]) { ctx.beginPath(); ctx.moveTo(x0 + nx * w * k, y0 + ny * w * k); ctx.quadraticCurveTo(mx + nx * w * k * .6, my + ny * w * k * .6, x0 + dx * .82, y0 + dy * .82); ctx.strokeStyle = sc(base, .5); ctx.globalAlpha = .45; ctx.lineWidth = .3; ctx.stroke(); ctx.globalAlpha = 1; }
   if (hi) { ctx.beginPath(); ctx.moveTo(x0 + (x1 - x0) * .18, y0 + (y1 - y0) * .18); ctx.quadraticCurveTo(mx + bend * .2, my, x0 + (x1 - x0) * .6, y0 + (y1 - y0) * .6); ctx.strokeStyle = sc(hi, 1.1); ctx.globalAlpha = .55; ctx.lineWidth = .6; ctx.stroke(); ctx.globalAlpha = 1; }
 }
-function paintFace2(ctx, cls, hair, hs, acc, masked) {
+function paintFace2(ctx, cls, hair, hs, acc, masked, fem) {
   // neck with jaw shadow
   cel(ctx, P([[28.6, 25], [35.4, 25], [35.6, 33], [28.4, 33]]), SKIN, P([[28.4, 25], [35.6, 25], [35.6, 29.2], [28.4, 30.4]]), null, .76);
   // ears
@@ -3349,6 +3357,7 @@ function paintFace2(ctx, cls, hair, hs, acc, masked) {
     // upper lid with lash wing, lower lid
     fillPath(ctx, c => { c.moveTo(ex - 3.3, 20.6); c.quadraticCurveTo(ex - .4, 17.2, ex + 3.2, 19.4); c.lineTo(ex + 4.4, 18.6); c.lineTo(ex + 3.6, 20.2); c.quadraticCurveTo(ex - .2, 18.4, ex - 3.1, 21); c.closePath(); }, '#1a0c12', null);
     strokeLine(ctx, [[ex - 1.8, 23.8], [ex + .6, 24.1], [ex + 2, 23.6]], 'rgba(70,30,30,.55)', .4);
+    if (fem) { strokeLine(ctx, [[ex + 2.6, 19.4], [ex + 4.8, 18.2]], '#1a0c12', .55); strokeLine(ctx, [[ex + 2.2, 19.0], [ex + 4.0, 17.4]], '#1a0c12', .4); }
     // brow
     fillPath(ctx, c => { c.moveTo(ex - 3, 16.6); c.quadraticCurveTo(ex, 15, ex + 3.4, 15.8); c.quadraticCurveTo(ex, 15.8, ex - 3, 17.2); c.closePath(); }, cssc(cls === 'guard' ? shade(hair[0], .55) : shade(hair[0], 1.1)), null);
     if (fl < 0) ctx.restore();
@@ -5221,7 +5230,7 @@ class World extends Phaser.Scene {
   }
 
   heroTexKey(look) {
-    const key = 'dhero4_' + (look.pose || 'idle') + '_' + (look.body || 'anime') + '_' + (look.key || look.cls) + '_' + (look.costume || (look.armor ? look.armor + look.r : 'plain')) + '_' + (look.head || '');
+    const key = 'dhero4_' + (look.fem ? 'f' : '') + (look.pose || 'idle') + '_' + (look.body || 'anime') + '_' + (look.key || look.cls) + '_' + (look.costume || (look.armor ? look.armor + look.r : 'plain')) + '_' + (look.head || '');
     if (!this.textures.exists(key)) this.canvasTex(key, HERO_W, HERO_H, c => { look.body === 'warrior' ? paintHeroWarrior(c, look) : paintHeroAnime(c, look); heroLightPass(c); }, 'rgba(10,6,20,.8)', HRES, true);
     return key;
   }
@@ -5281,7 +5290,8 @@ class World extends Phaser.Scene {
   wingLook() { const sk = this.lookOn('wingskin'); return sk ? sk.base : save.eq.wings ? (save.tf && save.tf.g && WINGS[save.tf.g] ? save.tf.g : save.eq.wings.base) : null; }
   currentLook() {
     const a = save.eq.armor, c = this.lookOn('costume'), hd = this.lookOn('head');
-    return { ...classLook(save.cls), armor: a ? a.base : null, r: a ? a.rarity : 0, costume: c ? c.base : null, head: hd ? hd.base : null, body: save.body || 'anime' };
+    const L0 = { ...classLook(save.cls), armor: a ? a.base : null, r: a ? a.rarity : 0, costume: c ? c.base : null, head: hd ? hd.base : null, body: save.body || 'anime' };
+    return save.fem ? femLook(L0, save.cls) : L0;
   }
   applyLook() {
     const h = this.hero; if (!h || !h.spr) return;
@@ -7285,7 +7295,7 @@ function openClassPick(paid) {
   $('classNote').textContent = paid ? '' : 'Класс определяет оружие, силу и техники. Выбор окончательный: сменить класс потом нельзя. Нажмите на карточку дважды, чтобы подтвердить.';
   for (const id of Object.keys(CLASSES)) {
     const c = CLASSES[id], b = mk('button', 'cls'); b.type = 'button';
-    if (GAME) { try { const im = mk('img'); const key = GAME.heroTexKey(Object.assign(classLook(id), { armor: null, r: 0, costume: null })); im.src = GAME.textures.getBase64(key); im.alt = ''; b.appendChild(im); } catch (e) {} }
+    if (GAME) { try { const im = mk('img'); const key = GAME.heroTexKey((save.fem ? femLook : (x => x))(Object.assign(classLook(id), { armor: null, r: 0, costume: null }), id)); im.src = GAME.textures.getBase64(key); im.alt = ''; b.appendChild(im); } catch (e) {} }
     b.appendChild(mk('b', '', c.name));
     b.appendChild(mk('div', 'cd2', c.desc));
     const st = 'Здоровье ×' + c.hp + ' · Атака ×' + c.atk + (c.def ? ' · Защита +' + c.def : '') + ' · Крит ' + (c.crit >= 0 ? '+' : '') + c.crit + '%';
@@ -7325,7 +7335,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '53', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '54', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -8018,7 +8028,7 @@ function myPresence() {
   return { pid: save.pid, n: cleanText(save.name).slice(0, 20), c: f.c, lv: f.lv, bm: f.bm, a: f.a, hp: f.hp, d: f.d, cr: f.cr, pl: f.pl, r: save.arena.r,
     g: save.guild ? { n: cleanText(save.guild.n).slice(0, 20), t: cleanText(save.guild.t).slice(0, 4), lv: save.guild.lv } : null, z: GAME.zoneId, in: GAME.inst || GAME.zoneId, ti: titleName(save.title), tid: save.title || null, pt: save.eq.pet && PETS[save.eq.pet.base] ? save.eq.pet.base : null, rb: save.reb || 0,
     x: Math.round(GAME.hero.x), y: Math.round(GAME.hero.y),
-    look: { ar: a ? a.base : null, r: a ? Math.min(2, a.rarity) : 0, co: c ? c.base : null, w: w ? w.base : null, wr: w ? w.rarity : 0, wg: GAME.wingLook ? GAME.wingLook() : null, mt: save.eq.mount ? save.eq.mount.base : null, b: save.body || 'anime' }, chat: MY_CHAT.slice(-6) };
+    look: { fm: save.fem ? 1 : 0, ar: a ? a.base : null, r: a ? Math.min(2, a.rarity) : 0, co: c ? c.base : null, w: w ? w.base : null, wr: w ? w.rarity : 0, wg: GAME.wingLook ? GAME.wingLook() : null, mt: save.eq.mount ? save.eq.mount.base : null, b: save.body || 'anime' }, chat: MY_CHAT.slice(-6) };
 }
 let PRES_T = 0, PRES_LAST = '', PRES_HB = 0;
 function pushPresence(force) {
@@ -8176,7 +8186,8 @@ const NET_MOVES = new Map();
 /* ---------- other players drawn in the world ---------- */
 function remoteLook(p) {
   const L = p.look || {};
-  return Object.assign({}, classLook(CLASSES[p.c] ? p.c : 'warrior'), { armor: L.ar && typeof L.ar === 'string' ? L.ar : null, r: Math.min(2, +L.r || 0), costume: L.co && COSTUMES[L.co] ? L.co : null, head: L.hd && typeof L.hd === 'string' ? L.hd : null, body: L.b === 'warrior' ? 'warrior' : 'anime' });
+  const R0 = Object.assign({}, classLook(CLASSES[p.c] ? p.c : 'warrior'), { armor: L.ar && typeof L.ar === 'string' ? L.ar : null, r: Math.min(2, +L.r || 0), costume: L.co && COSTUMES[L.co] ? L.co : null, head: L.hd && typeof L.hd === 'string' ? L.hd : null, body: L.b === 'warrior' ? 'warrior' : 'anime' });
+  return L.fm ? femLook(R0, CLASSES[p.c] ? p.c : 'warrior') : R0;
 }
 function makeRemote(S, p, mv) {
   const L = p.look || {}, look = remoteLook(p), u = { pid: p.pid, x: mv ? mv.x : +p.x || S.hero.x, y: mv ? mv.y : +p.y || S.hero.y, lungeT: -9, cur: '', sig: '' };
@@ -11429,6 +11440,25 @@ function qRender(S) {
 }
 
 for (const w of WORLD_QUESTS) if (!QUESTS.includes(w)) QUESTS.splice(QUESTS.length - 1, 0, w);
+
+
+/* ---------- hero gender: chosen on the class screen, can be changed in «Путь» ---------- */
+const FEM_HAIR = { warrior: [0x2a1220, 0x9a3a5a], mage: [0xd8d0f0, 0xffffff], archer: [0x7a3a14, 0xe09a50] };
+function femLook(L, cls) { return Object.assign({}, L, { fem: true, hair: FEM_HAIR[cls] || L.hair }); }
+(() => {
+  const row = $('newNickRow'); if (!row) return;
+  const g = mk('div', 'genderrow'); g.id = 'genderRow';
+  const mkb = (v, n) => { const b = mk('button', 'btn' + ((!!save.fem) === v ? ' main' : ''), n); b.type = 'button'; b.onclick = () => { save.fem = v; persist(); g.querySelectorAll('.btn').forEach(x => x.classList.toggle('main', x === b)); try { openClassPick(false); } catch (e) {} }; return b; };
+  g.append(mk('span', 'label', 'Пол героя'), mkb(false, 'Мужской'), mkb(true, 'Женский'));
+  row.appendChild(g);
+})();
+function genderSection(body, G) {
+  body.appendChild(mk('div', 'label', 'Облик героя'));
+  const r = mk('div', 'acts');
+  r.append(btn('Мужской', () => { save.fem = false; persist(); G.applyLook(); pushPresence(true); renderDiary(); }, save.fem ? '' : 'main'), btn('Женский', () => { save.fem = true; persist(); G.applyLook(); pushPresence(true); renderDiary(); }, save.fem ? 'main' : ''));
+  body.appendChild(r);
+}
+{ const _p3 = renderPathTab; renderPathTab = (b, G) => { genderSection(b, G); _p3(b, G); }; }
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
