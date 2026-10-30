@@ -6,6 +6,7 @@ self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Prom
 self.addEventListener('fetch', e => {
   const u = new URL(e.request.url);
   if (e.request.method !== 'GET' || u.origin !== location.origin) return;
+  if (u.pathname.includes('/next/')) return; // тестовая версия с графикой Flare — без кэша основной игры
   if (u.searchParams.has('v') || u.searchParams.has('r')) { e.respondWith(fetch(e.request).then(r => { if (r.ok && e.request.mode === 'navigate') { const copy = r.clone(); caches.open(CACHE).then(c => c.put('./', copy)); } return r; }).catch(() => caches.match('./'))); return; }
   const key = e.request.mode === 'navigate' ? './' : e.request;
   e.respondWith(caches.open(CACHE).then(c => c.match(key).then(hit => {

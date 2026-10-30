@@ -1,0 +1,2 @@
+Графика героев и монстров: проект Flare (https://flarerpg.org), лицензия CC-BY-SA 3.0.
+Исходники: https://github.com/flareteam/flare-game
