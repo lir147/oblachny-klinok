@@ -271,7 +271,9 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
 .srow.noic{grid-template-columns:minmax(0,1fr) auto}
-.qtrack{display:grid;gap:5px;pointer-events:auto}
+.qtrack{display:grid;gap:3px;pointer-events:auto;overflow:hidden;align-content:start}
+@media (max-height:860px){#chatP #log>div:nth-last-child(n+4){display:none}.qtrack .qp{font-size:11px}}
+#chatP #log>div:nth-last-child(n+5){display:none}
 .qtrack .qrow{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:start;padding:4px 5px;border-radius:5px;border:1px solid transparent}
 .qtrack .qrow.nav{border-color:#c9a35a;background:rgba(201,163,90,.12)}
 .qtrack .qtag{font-size:10px;padding:1px 5px;border-radius:3px;margin-top:2px;white-space:nowrap}
@@ -7323,7 +7325,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '52', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '53', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -10523,7 +10525,17 @@ function cpRender() {
   }
   if (atBottom || !CP.rendered) el.scrollTop = el.scrollHeight; CP.rendered = true;
 }
-setInterval(() => { cpRender(); cpChBtn(); }, 1000);
+setInterval(() => { cpRender(); cpChBtn(); qFit(); }, 1000);
+// keep the quest tracker above the system lines and the chat panel
+function qFit() {
+  const q = $('quest'), lg = $('log'), cp = $('chatP'); if (!q || !cp) return;
+  let bottom = cp.getBoundingClientRect().top; if (lg && lg.offsetParent && lg.children.length) bottom = Math.min(bottom, lg.getBoundingClientRect().top);
+  const top = q.getBoundingClientRect().top, room = Math.floor(bottom - top - 6);
+  q.style.maxHeight = Math.max(60, room) + 'px';
+  for (const r of q.querySelectorAll('.qrow')) r.style.display = '';
+  const rows = [...q.querySelectorAll('.qrow')]; for (let i = rows.length - 1; i > 0 && q.scrollHeight > q.clientHeight + 2; i--) rows[i].style.display = 'none';
+}
+window.addEventListener('resize', () => setTimeout(qFit, 50));
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.activeElement === document.body && $('cpIn') && !save.chatMin) { e.preventDefault(); $('cpIn').focus(); } });
 
 /* ---------- title badges: a drawn emblem above the name + a small bonus for the worn title ---------- */
@@ -11407,11 +11419,11 @@ function qRender(S) {
   };
   if (q && !q.repeat) {
     if (save.lv < q.minLv) row('Сюжет', 't-main', q.title, 'Откроется на ' + q.minLv + ' уровне', save.lv / q.minLv, null);
-    else row('Сюжет', 't-main', q.title, q.what + ': ' + s.n + ' / ' + q.need + (zoneOfKind(q.kind) && ZONES[zoneOfKind(q.kind)] ? ' · ' + ZONES[zoneOfKind(q.kind)].name : ''), s.n / q.need, 'main', q.kind);
+    else row('Сюжет', 't-main', q.title, q.what + ': ' + s.n + ' / ' + q.need, s.n / q.need, 'main', q.kind);
   }
-  if (H && MOBS[H.kind]) row('Охота', 't-hunt', MOBS[H.kind].name, H.n + ' / ' + H.need + ' · ' + (ZONES[H.zone] ? ZONES[H.zone].name : ''), H.n / H.need, 'hunt', H.kind, H.zone);
+  if (H && MOBS[H.kind]) row('Охота', 't-hunt', MOBS[H.kind].name + ': ' + H.n + ' / ' + H.need, ZONES[H.zone] ? ZONES[H.zone].name : '', H.n / H.need, 'hunt', H.kind, H.zone);
   if (save.daily && save.daily.list) {
-    const open = save.daily.list.filter(d => !d.claimed).slice(0, 3);
+    const open = save.daily.list.filter(d => !d.claimed).sort((a, b) => { const da = dailyDef(a.id), db = dailyDef(b.id); return (da ? dailyProg(b) / db.need : 0) - (db ? dailyProg(a) / da.need : 0); }).slice(0, innerHeight > 900 ? 2 : 1);
     for (const d of open) { const def = dailyDef(d.id); if (!def) continue; const p = dailyProg(d), done = p >= def.need; row('День', 't-day', def.name, done ? 'Готово — заберите награду в «Дневнике»' : p + ' / ' + def.need, p / def.need, null, null, null, () => openDiary('daily')); }
   }
 }
