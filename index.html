@@ -271,6 +271,16 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
 .srow.noic{grid-template-columns:minmax(0,1fr) auto}
+.qtrack{display:grid;gap:5px;pointer-events:auto}
+.qtrack .qrow{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:start;padding:4px 5px;border-radius:5px;border:1px solid transparent}
+.qtrack .qrow.nav{border-color:#c9a35a;background:rgba(201,163,90,.12)}
+.qtrack .qtag{font-size:10px;padding:1px 5px;border-radius:3px;margin-top:2px;white-space:nowrap}
+.qtag.t-main{background:#6a4a10;color:#ffe08a}.qtag.t-hunt{background:#5a1a1a;color:#ffb0a0}.qtag.t-day{background:#1a3a5a;color:#a0d8ff}
+.qtrack .qbody{min-width:0}.qtrack .qt{font-size:14px;line-height:1.2}.qtrack .qp{font-size:12px;color:var(--muted);line-height:1.25}
+.qtrack .qbar{height:4px;border-radius:2px;background:#1a2238;overflow:hidden;margin-top:3px}.qtrack .qbar i{display:block;height:100%;background:linear-gradient(90deg,#8a6a2a,#ffd36a)}
+.qtrack .qgo{font-size:13px;line-height:1;padding:4px 7px;border-radius:4px;border:1px solid #5a4424;background:linear-gradient(#3a2a14,#1a1208);color:#ffd36a;cursor:pointer}
+html.mob .qtrack .qt{font-size:12px}html.mob .qtrack .qrow:nth-of-type(n+4){display:none}
+
 .autho{z-index:100001;background:radial-gradient(circle at 50% 30%,#2a1e48,#06040c) !important}
 .authcard{width:min(420px,calc(100vw - 32px));display:grid;gap:10px}
 .authbody{display:grid;gap:8px}.authbody .btn{justify-self:stretch}
@@ -1738,12 +1748,39 @@ function paintMount2D(ctx, id, frame, layer) {
 /* ---------- anime-style hero (64x96 logical box, feet at y=93, drawn at 2x) ---------- */
 const WK = 1.2, HERO_W = 64, HERO_H = 96, HERO_FY = 93, HERO_K = .76 * WK, SHOULDER_Y = 36, HRES = 4;
 function heroLightPass(c) {
+  const cv = c.canvas, R = cv.width / 64;
   c.save(); c.globalCompositeOperation = 'source-atop';
-  let g = c.createLinearGradient(12, 0, 54, 0); g.addColorStop(0, 'rgba(255,244,222,.18)'); g.addColorStop(.48, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(18,10,40,.24)');
+  // two-tone cel shadow (light from the upper right)
+  let g = c.createLinearGradient(10, 0, 56, 0); g.addColorStop(0, 'rgba(24,12,48,.30)'); g.addColorStop(.36, 'rgba(24,12,48,.22)'); g.addColorStop(.42, 'rgba(24,12,48,0)'); g.addColorStop(.8, 'rgba(255,246,226,.06)'); g.addColorStop(1, 'rgba(255,246,226,.16)');
   c.fillStyle = g; c.fillRect(0, 0, 64, 96);
-  g = c.createLinearGradient(0, 0, 0, 96); g.addColorStop(0, 'rgba(255,255,255,.06)'); g.addColorStop(.6, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,10,.2)');
+  // cloth folds on the coat and trousers
+  for (const [x, w, a] of [[21, 1.6, .16], [27, 1.2, .1], [37.5, 1.2, .1], [43, 1.6, .14]]) { const fg = c.createLinearGradient(x - w, 0, x + w, 0); fg.addColorStop(0, 'rgba(0,0,0,0)'); fg.addColorStop(.5, 'rgba(14,8,30,' + a + ')'); fg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = fg; c.fillRect(x - w, 40, w * 2, 44); }
+  for (const x of [23, 40]) { const hg = c.createLinearGradient(x - 1.2, 0, x + 1.2, 0); hg.addColorStop(0, 'rgba(255,255,255,0)'); hg.addColorStop(.5, 'rgba(255,250,236,.10)'); hg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = hg; c.fillRect(x - 1.2, 42, 2.4, 38); }
+  // shoulder highlights, ground occlusion, top light
+  for (const x of [22, 42]) { const sg = c.createRadialGradient(x, 37, .5, x, 37, 6); sg.addColorStop(0, 'rgba(255,248,230,.20)'); sg.addColorStop(1, 'rgba(255,248,230,0)'); c.fillStyle = sg; c.fillRect(x - 6, 31, 12, 12); }
+  g = c.createLinearGradient(0, 0, 0, 96); g.addColorStop(0, 'rgba(255,255,255,.07)'); g.addColorStop(.62, 'rgba(0,0,0,0)'); g.addColorStop(.9, 'rgba(0,0,12,.18)'); g.addColorStop(1, 'rgba(0,0,12,.32)');
   c.fillStyle = g; c.fillRect(0, 0, 64, 96);
   c.restore();
+  // cool rim light on the upper-left edges (the warm one on the right is added later)
+  try {
+    const r = document.createElement('canvas'); r.width = cv.width; r.height = cv.height; const rc = r.getContext('2d');
+    rc.drawImage(cv, 0, 0); rc.globalCompositeOperation = 'destination-out'; rc.drawImage(cv, R * 1.0, R * .8);
+    rc.globalCompositeOperation = 'source-in'; rc.fillStyle = 'rgba(170,205,255,.42)'; rc.fillRect(0, 0, r.width, r.height);
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-atop'; c.drawImage(r, 0, 0); c.restore();
+  } catch (e) {}
+}
+function weaponPolish(c, r) {
+  const cv = c.canvas, R = cv.width / 64;
+  c.save(); c.globalCompositeOperation = 'source-atop';
+  const g = c.createLinearGradient(8, 92, 56, 4);
+  for (const [t, a] of [[0, 0], [.4, 0], [.46, .5], [.52, 0], [.66, 0], [.7, .28], [.74, 0], [1, 0]]) g.addColorStop(t, 'rgba(255,255,255,' + a + ')');
+  c.fillStyle = g; c.fillRect(0, 0, 64, 96);
+  c.restore();
+  if (r >= 2) { try {
+    const col = r >= 3 ? 'rgba(255,190,80,.9)' : 'rgba(150,120,255,.75)';
+    const t = document.createElement('canvas'); t.width = cv.width; t.height = cv.height; const tc = t.getContext('2d'); tc.drawImage(cv, 0, 0);
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'destination-over'; c.shadowColor = col; c.shadowBlur = R * (r >= 3 ? 3.2 : 2); c.drawImage(t, 0, 0); c.restore();
+  } catch (e) {} }
 }
 const AHAIR = { sword: [0x1e1218, 0x6a2a40], guard: [0x8a8f9e, 0xe4e8f0], dancer: [0x141a2e, 0x4a5c94] };
 const AIRIS = { sword: [0x8a1c2a, 0xff8a7a], guard: [0x2a6a8a, 0x9fe0ff], dancer: [0x3a2a8a, 0xb8a4ff] };
@@ -3301,6 +3338,7 @@ function paintFace2(ctx, cls, hair, hs, acc, masked) {
     fillPath(ctx, c => c.ellipse(ex + .25, 21.2, 2, 2.6, 0, 0, 6.29), lin(ctx, 0, 18.6, 0, 23.8, [[0, sc(ir[0], .45)], [.5, cssc(ir[0])], [1, cssc(ir[1])]]), null);
     ctx.lineWidth = .4; ctx.strokeStyle = sc(ir[0], .4); ctx.beginPath(); ctx.ellipse(ex + .25, 21.2, 2, 2.6, 0, 0, 6.29); ctx.stroke();
     fillPath(ctx, c => c.ellipse(ex + .3, 21, .85, 1.25, 0, 0, 6.29), '#0c060c', null);
+    fillPath(ctx, c => c.ellipse(ex + .3, 22.7, 1.5, .75, 0, 0, 6.29), 'rgba(255,255,255,.32)', null);
     fillPath(ctx, c => c.rect(ex - 3, 18, 6.2, 1.6), 'rgba(40,20,40,.35)', null);
     ctx.restore();
     fillPath(ctx, c => c.ellipse(ex - .6, 20.2, .78, .62, -.4, 0, 6.29), '#ffffff', null);
@@ -4932,7 +4970,7 @@ class World extends Phaser.Scene {
     const w = unIso(wx, wy);
     if (inWater(this, w.x, w.y) && startFishing(this, w.x, w.y)) return;
     const tx = Phaser.Math.Clamp(w.x, .4, N - .4), ty = Phaser.Math.Clamp(w.y, .4, N - .4);
-    h.target = null; h.talk = null; h.dest = { x: tx, y: ty }; h.autoDest = false; TUT_EV.moved = true;
+    h.target = null; h.talk = null; h.dest = { x: tx, y: ty }; h.autoDest = false; h.qnavDest = false; TUT_EV.moved = true; if (typeof QNAV !== 'undefined' && QNAV) { QNAV = null; }
     const mp = iso(tx, ty);
     this.marker.setPosition(mp.x, mp.y).setAlpha(1).setScale(1.3);
     this.tweens.killTweensOf(this.marker);
@@ -5181,7 +5219,7 @@ class World extends Phaser.Scene {
   }
 
   heroTexKey(look) {
-    const key = 'dhero3_' + (look.pose || 'idle') + '_' + (look.body || 'anime') + '_' + (look.key || look.cls) + '_' + (look.costume || (look.armor ? look.armor + look.r : 'plain')) + '_' + (look.head || '');
+    const key = 'dhero4_' + (look.pose || 'idle') + '_' + (look.body || 'anime') + '_' + (look.key || look.cls) + '_' + (look.costume || (look.armor ? look.armor + look.r : 'plain')) + '_' + (look.head || '');
     if (!this.textures.exists(key)) this.canvasTex(key, HERO_W, HERO_H, c => { look.body === 'warrior' ? paintHeroWarrior(c, look) : paintHeroAnime(c, look); heroLightPass(c); }, 'rgba(10,6,20,.8)', HRES, true);
     return key;
   }
@@ -5199,7 +5237,7 @@ class World extends Phaser.Scene {
     }
     if (outline) {
       const o = document.createElement('canvas'); o.width = cv.width; o.height = cv.height;
-      const oc = o.getContext('2d'), d = res;
+      const oc = o.getContext('2d'), d = res * (key.startsWith('dhero') ? 1.35 : 1);
       for (const [dx, dy] of [[-d, 0], [d, 0], [0, -d], [0, d], [-d * .75, -d * .75], [d * .75, -d * .75], [-d * .75, d * .75], [d * .75, d * .75]]) oc.drawImage(cv, dx, dy);
       oc.globalCompositeOperation = 'source-in'; oc.fillStyle = outline; oc.fillRect(0, 0, o.width, o.height);
       oc.globalCompositeOperation = 'source-over'; oc.drawImage(cv, 0, 0);
@@ -5214,8 +5252,8 @@ class World extends Phaser.Scene {
     return key;
   }
   weaponTexKey(base, r) {
-    const key = 'aw4_' + base + r;
-    if (!this.textures.exists(key)) this.canvasTex(key, HERO_W, HERO_H, c => { const G = WGEO[base]; paintWeapon2D(c, base, r); paintGripHand(c, (G.h[0] + G.h[2]) / 2, (G.h[1] + G.h[3]) / 2 - 1.5); }, null, 4);
+    const key = 'aw5_' + base + r;
+    if (!this.textures.exists(key)) this.canvasTex(key, HERO_W, HERO_H, c => { const G = WGEO[base]; paintWeapon2D(c, base, r); weaponPolish(c, r); paintGripHand(c, (G.h[0] + G.h[2]) / 2, (G.h[1] + G.h[3]) / 2 - 1.5); }, null, 4);
     const gk = 'awg2_' + base;
     if (!this.textures.exists(gk)) {
       const R2 = 2, sil = document.createElement('canvas'); sil.width = HERO_W * R2; sil.height = HERO_H * R2;
@@ -5710,6 +5748,7 @@ class World extends Phaser.Scene {
 
   /* ---------- quests ---------- */
   updateQuestHud() {
+    safeRun('qRender', () => qRender(this)); { const m = this.npcs.find(n => n.id === 'master'); if (m) m.mark.setText(''); } return;
     const s = save.q, q = QUESTS[s.i];
     setText($('qTitle'), q.title);
     let t;
@@ -5726,7 +5765,7 @@ class World extends Phaser.Scene {
     if (s.state !== 'active') return;
     if (q.kind !== 'any' && q.kind !== m.kind) return;
     s.n = Math.min(q.need, s.n + 1);
-    if (s.n >= q.need) { s.state = 'ready'; log('Задание «' + q.title + '» выполнено. Вернитесь к мастеру.', 'good'); }
+    if (s.n >= q.need) { qAutoComplete(this); return; }
     else log(q.what + ': ' + s.n + ' / ' + q.need, 'info');
     persist(); this.updateQuestHud();
   }
@@ -6211,7 +6250,7 @@ class World extends Phaser.Scene {
     if (m.pvp) return;
     sfx(m.boss ? 'boom' : 'kill'); sfx('coin');
     m.gold = Math.round(m.gold * evMul('gold') * (terrMine(this.zoneId) ? 1.15 : 1) * (save.eq.pet && (save.eq.pet.plv || 1) >= 20 ? 1.1 : 1));
-    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); bestiaryKill(this, m); invKill(this, m); safeRun('ghKill', () => ghKill(this, m)); safeRun('arenaKill', () => arenaKill(this, m)); safeRun('weKill', () => weKill(this, m)); if (m.kind === 'stormoni') { stat('storm'); }
+    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); bestiaryKill(this, m); invKill(this, m); safeRun('ghKill', () => ghKill(this, m)); safeRun('arenaKill', () => arenaKill(this, m)); safeRun('weKill', () => weKill(this, m)); safeRun('huntKill', () => huntKill(this, m)); if (m.kind === 'stormoni') { stat('storm'); }
     stat('kills'); stat('goldEarned', m.gold); if (inParty()) stat('partyKills'); if (eventsNow().length) stat('eventKills');
     if (m.boss) { stat('bosses'); save.stats.bossKinds[m.kind] = (save.stats.bossKinds[m.kind] || 0) + 1; }
     save.gold += m.gold;
@@ -6910,7 +6949,7 @@ class World extends Phaser.Scene {
     netUpdate(this, dt);
     netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); safeRun('bgTick', () => bgTick(this), 1); safeRun('towerTick', () => towerTick(this), 1); safeRun('htag', () => heroTagTick(this), 1); safeRun('arenaTick', () => arenaTick(this), 1); safeRun('autoRes', () => autoRespawn(this), 1); safeRun('aura', () => awkAura(this), 1);
     if (performance.now() > (this.achT || 0)) { this.achT = performance.now() + 2000; checkAch(this); evHud(); }
-    if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); safeRun('dgTimer', () => dgTimerHud(this), 1); safeRun('path', () => pathTick(this), 1); safeRun('inv', () => invTick(this), 1); safeRun('gh', () => ghTick(this), 1); safeRun('awk', () => awkTick(this), 1); safeRun('we', () => weTick(this), 1); }
+    if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); safeRun('dgTimer', () => dgTimerHud(this), 1); safeRun('path', () => pathTick(this), 1); safeRun('inv', () => invTick(this), 1); safeRun('gh', () => ghTick(this), 1); safeRun('awk', () => awkTick(this), 1); safeRun('we', () => weTick(this), 1); safeRun('quest', () => { if (save.q.state === 'ready') qAutoComplete(this); qAutoTick(this); qRender(this); }, 1); }
     if (this.zone.dungeon) this.updateDungeon();
     for (const n of this.npcs) this.placeUnit(n, Math.sin(this.now * 1.6 + n.off) * .8);
 
@@ -7284,7 +7323,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '51', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '52', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -9651,7 +9690,7 @@ function renderHolidayTab(body, G) {
 const TUT = [
   { t: 'Добро пожаловать в долину Кумо!', s: 'Нажмите на землю, чтобы идти. На телефоне — просто коснитесь экрана.', done: () => TUT_EV.moved },
   { t: 'Первый бой', s: 'Нажмите на демона — герой сам подойдёт и будет атаковать. Кнопка «Цель» выбирает ближайшего врага.', done: () => save.stats.kills >= 1 },
-  { t: 'Мастер Гэнсай', s: 'Над мастером в центре деревни горит «!». Подойдите к нему и возьмите задание.', done: () => save.q && (save.q.state !== 'avail' || save.q.i > 0) },
+  { t: 'Задания', s: 'Задания появляются сами — слева, под карточкой героя. Нажмите «➜» у задания, и герой сам пойдёт к цели.', done: () => save.q && (save.q.state !== 'avail' || save.q.i > 0) },
   { t: 'Снаряжение', s: 'Откройте «Сумку» (I или в меню) и наденьте найденные вещи. Лучшие вещи — в окне «Герой».', done: () => TUT_EV.bag },
   { t: 'Техники', s: 'Откройте «Навыки» (K) и изучите первую технику. Потом жмите её кнопку на панели внизу.', done: () => TUT_EV.cast },
   { t: 'Дневник', s: 'В «Дневнике» (J) — задания дня, награда за вход, достижения и титулы. Загляните туда.', done: () => TUT_EV.diary },
@@ -11286,6 +11325,98 @@ function helpPanel() {
 
 
 { const _p2 = renderPathTab; renderPathTab = (b, G) => { _p2(b, G); petStarSection(b, G); }; }
+
+/* ---------- quest tracker: no NPC needed, quests appear and update by level, click to auto-path ---------- */
+let QNAV = null; // { kind, zone, key }
+const zoneOfKind = kind => { for (const [id, z] of Object.entries(ZONES)) { if (z.dungeon || z.arena) continue; if ((z.boss && z.boss.kind === kind) || (z.mobs || []).some(m => m[0] === kind)) return id; } if (kind === 'boss') return 'village'; return null; };
+function zonePath(from, to) {
+  if (from === to) return [from]; const prev = { [from]: null }, q = [from];
+  while (q.length) { const z = q.shift(); for (const p of (ZONES[z] && ZONES[z].portals) || []) { if (!p.to || p.gate || prev[p.to] !== undefined || !ZONES[p.to]) continue; if (p.minLv && save.lv < p.minLv) continue; prev[p.to] = z; if (p.to === to) { const path = [to]; let c = z; while (c) { path.unshift(c); c = prev[c]; } return path; } q.push(p.to); } }
+  return null;
+}
+function huntPick() {
+  const lv = save.lv, cand = [];
+  for (const [id, z] of Object.entries(ZONES)) { if (z.dungeon || z.arena || !z.mobs || !z.mobs.length) continue; for (const [kind, a, b, far] of z.mobs) if (MOBS[kind] && !MOBS[kind].boss && a <= lv + 1 && b >= lv - 4) cand.push({ kind, zone: id, lvl: (a + b) / 2, far }); }
+  if (!cand.length) { for (const [id, z] of Object.entries(ZONES)) if (!z.dungeon && !z.arena && z.mobs && z.mobs.length) for (const [kind, a, b] of z.mobs) if (MOBS[kind] && a <= lv + 1) cand.push({ kind, zone: id, lvl: (a + b) / 2 }); }
+  cand.sort((x, y) => y.lvl - x.lvl); const top = cand.slice(0, 3), c = top[ri(0, Math.max(0, top.length - 1))] || { kind: 'shade', zone: 'village' };
+  save.hunt = { kind: c.kind, zone: c.zone, need: 12 + Math.min(8, Math.floor(lv / 8)), n: 0, lv };
+}
+const huntReward = () => ({ xp: Math.round(xpNeed(save.lv) * .3), gold: 30 + save.lv * 18 });
+function qAutoTick(S) {
+  const s = save.q, q = QUESTS[s.i];
+  if (q && s.state === 'avail' && save.lv >= q.minLv) { s.state = 'active'; s.n = 0; persist(); log('Новое задание: «' + q.title + '». ' + q.text, 'good'); if (!q.repeat) banner(q.title, 'Новое задание'); }
+  if (!save.hunt || save.lv - (save.hunt.lv || 0) >= 4) huntPick();
+  qNavTick(S);
+}
+function qAutoComplete(S) {
+  const s = save.q, q = QUESTS[s.i], r = questReward(q);
+  if (r.item) S.give(genItem(Math.max(save.lv, q.minLv), r.item[1], r.item[0]));
+  if (r.costume) S.give(costume(r.costume));
+  if (r.myth) { const it = mythDrop(Math.max(save.lv, q.minLv)); if (S.give(it)) banner(it.name, 'Мифическая добыча'); }
+  if (r.rice) S.give(rice(r.rice));
+  save.gold += r.gold; S.gainXp(r.xp);
+  banner('Задание выполнено', q.title + ' · +' + r.xp + ' опыта, +' + r.gold + ' мон'); log('«' + q.title + '» выполнено. ' + (q.done || '') + ' Награда: ' + r.gold + ' мон, ' + r.xp + ' опыта.', 'xp'); sfx('chime');
+  if (!q.repeat) s.i = Math.min(s.i + 1, QUESTS.length - 1);
+  s.state = 'avail'; s.n = 0; if (QNAV && QNAV.key === 'main') QNAV = null;
+  persist(); S.renderInv(); qAutoTick(S); qRender(S);
+}
+function huntKill(S, m) {
+  const H = save.hunt; if (!H || m.kind !== H.kind) return;
+  H.n = Math.min(H.need, H.n + 1);
+  if (H.n >= H.need) { const r = huntReward(); save.gold += r.gold; S.gainXp(r.xp); banner('Охота завершена', MOBS[H.kind].name + ' · +' + r.xp + ' опыта'); log('Охота выполнена: +' + r.gold + ' мон, ' + r.xp + ' опыта. Новая охота уже в списке заданий.', 'xp'); if (QNAV && QNAV.key === 'hunt') QNAV = null; huntPick(); }
+  persist(); qRender(S);
+}
+function qNav(key, kind, zone) {
+  if (QNAV && QNAV.key === key) { QNAV = null; log('Автопуть отменён.', 'info'); qRender(GAME); return; }
+  zone = zone || zoneOfKind(kind);
+  if (!zone) { log('Цель не найдена на картах.', 'bad'); return; }
+  if (!zonePath(GAME.zoneId, zone)) { log('Дорога туда пока закрыта — нужен уровень повыше.', 'bad'); return; }
+  QNAV = { key, kind, zone }; GAME.hero.target = null; GAME.hero.talk = null; log('Автопуть: ' + (MOBS[kind] ? MOBS[kind].name : 'цель') + ' · ' + ZONES[zone].name + '. Нажмите ещё раз, чтобы отменить.', 'info'); qRender(GAME);
+}
+function qNavTick(S) {
+  const N = QNAV, h = S.hero; if (!N || !h || !h.alive || S.travelling || S.zone.dungeon || S.zone.arena) return;
+  if (h.target && h.target.alive) return;
+  if (S.zoneId !== N.zone) {
+    if (h.talk && h.talk.portal) return;
+    const path = zonePath(S.zoneId, N.zone); if (!path || path.length < 2) { QNAV = null; return; }
+    const po = S.portals.find(p => p.to === path[1]); if (po) { h.talk = po; h.target = null; h.dest = null; }
+    return;
+  }
+  let best = null, bd = 1e9; for (const m of S.mobs) if (m.alive && m.kind === N.kind && !m.passive) { const d = dist(m, h); if (d < bd) { bd = d; best = m; } }
+  if (best) { h.target = best; h.dest = null; h.talk = null; return; }
+  const z = S.zone; if (h.dest && !h.qnavDest) return;
+  if (z.boss && z.boss.kind === N.kind) { h.dest = { x: z.boss.x, y: z.boss.y }; h.qnavDest = true; return; }
+  if (!h.dest || Math.hypot(h.dest.x - h.x, h.dest.y - h.y) < 1.5) for (let k = 0; k < 20; k++) { const a = rand(0, 6.28), r = rand(10, 22), x = Phaser.Math.Clamp(h.x + Math.cos(a) * r, 2, N_ZONE() - 2), y = Phaser.Math.Clamp(h.y + Math.sin(a) * r, 2, N_ZONE() - 2); if (S.walkable(x, y)) { h.dest = { x, y }; h.qnavDest = true; break; } }
+}
+const N_ZONE = () => N;
+function qRender(S) {
+  const box = $('quest'); if (!box || !S) return;
+  const s = save.q, q = QUESTS[s.i], H = save.hunt;
+  const sig = JSON.stringify([s.i, s.n, s.state, save.lv, H && [H.kind, H.n], QNAV && QNAV.key, save.daily && save.daily.list && save.daily.list.map(d => dailyProg(d) + (d.claimed ? 'c' : ''))]);
+  if (box.dataset.sig === sig) return; box.dataset.sig = sig;
+  box.innerHTML = ''; box.classList.add('qtrack');
+  const head = mk('div', 'qlabel', 'Задания'); box.appendChild(head);
+  const row = (tag, cls, title, prog, frac, key, kind, zone, onClick) => {
+    const r = mk('div', 'qrow' + (QNAV && QNAV.key === key ? ' nav' : '')); r.appendChild(mk('span', 'qtag ' + cls, tag));
+    const t = mk('div', 'qbody'); t.append(mk('div', 'qt', title), mk('div', 'qp', prog));
+    if (frac != null) { const b = mk('div', 'qbar'), i = mk('i'); i.style.width = Math.round(Math.min(1, frac) * 100) + '%'; b.appendChild(i); t.appendChild(b); }
+    r.appendChild(t);
+    if (kind) { const go = mk('button', 'qgo', QNAV && QNAV.key === key ? '■' : '➜'); go.type = 'button'; go.title = QNAV && QNAV.key === key ? 'Остановить автопуть' : 'Идти к цели'; go.onclick = e => { e.stopPropagation(); qNav(key, kind, zone); }; r.appendChild(go); }
+    if (onClick) { r.style.cursor = 'pointer'; r.onclick = onClick; }
+    box.appendChild(r);
+  };
+  if (q && !q.repeat) {
+    if (save.lv < q.minLv) row('Сюжет', 't-main', q.title, 'Откроется на ' + q.minLv + ' уровне', save.lv / q.minLv, null);
+    else row('Сюжет', 't-main', q.title, q.what + ': ' + s.n + ' / ' + q.need + (zoneOfKind(q.kind) && ZONES[zoneOfKind(q.kind)] ? ' · ' + ZONES[zoneOfKind(q.kind)].name : ''), s.n / q.need, 'main', q.kind);
+  }
+  if (H && MOBS[H.kind]) row('Охота', 't-hunt', MOBS[H.kind].name, H.n + ' / ' + H.need + ' · ' + (ZONES[H.zone] ? ZONES[H.zone].name : ''), H.n / H.need, 'hunt', H.kind, H.zone);
+  if (save.daily && save.daily.list) {
+    const open = save.daily.list.filter(d => !d.claimed).slice(0, 3);
+    for (const d of open) { const def = dailyDef(d.id); if (!def) continue; const p = dailyProg(d), done = p >= def.need; row('День', 't-day', def.name, done ? 'Готово — заберите награду в «Дневнике»' : p + ' / ' + def.need, p / def.need, null, null, null, () => openDiary('daily')); }
+  }
+}
+
+for (const w of WORLD_QUESTS) if (!QUESTS.includes(w)) QUESTS.splice(QUESTS.length - 1, 0, w);
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
