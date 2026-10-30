@@ -2652,7 +2652,7 @@ function paintHeroAnime(ctx, look, part) {
   const o = outfitFor(look), cls = look.cls || 'sword', hs = look.head || null;
   const acc = hs && HEAD_ACC.includes(o.acc) ? null : o.acc;
   const hair = look.hair || (hs === 'hunter' ? [0xd4d8e2, 0xffffff] : hs === 'crown' ? [0x8a2a1a, 0xffb060] : AHAIR[cls]), band = look.band || ABAND[cls];
-  const noBand = !!hs || !!look.noBand;
+  const noBand = !!hs || !!look.noBand || !!look.fem;
   const doBack = !part || part === 'back', doBody = !part || part === 'body', doHead = !part || part === 'head';
   const coat = o.coat, inner = o.plates ? shade(o.coat, .55) : (o.inner || 0x2c3650);
   const pants = APANTS[look.costume] || (!look.armor && APANTS['base_' + look.key]) || (o.plates ? 0x2a2420 : 0x3a3428);
@@ -2661,7 +2661,13 @@ function paintHeroAnime(ctx, look, part) {
   // ---- behind: hair tail, band tails, scarf tail
   const covered = acc === 'kasa' || acc === 'ninja' || acc === 'kabuto' || hs === 'reaper';
   if (doBack) {
-  if (look.fem && !covered && hs !== 'hunter') cel(ctx, P([[20, 11], [8.5, 36, 11.5, 72], [21, 68.5], [32, 72], [43, 68.5], [52.5, 72], [55.5, 36, 44, 11]]), hair[0], P([[36, 11], [55.5, 36, 52.5, 72], [43, 68.5]]), P([[22, 14], [14, 36, 15, 60], [17, 58], [18, 36, 25, 16]]), .8);
+  if (look.fem && !covered && hs !== 'hunter') {
+    const st = look.key === 'warrior' ? 'pony' : look.key === 'archer' ? 'twin' : 'long';
+    if (st === 'long') cel(ctx, P([[20, 11], [8.5, 36, 11.5, 72], [21, 68.5], [32, 72], [43, 68.5], [52.5, 72], [55.5, 36, 44, 11]]), hair[0], P([[36, 11], [55.5, 36, 52.5, 72], [43, 68.5]]), P([[22, 14], [14, 36, 15, 60], [17, 58], [18, 36, 25, 16]]), .8);
+    if (st === 'pony') { cel(ctx, P([[21, 13], [15, 26, 18, 40], [24, 36], [40, 36], [46, 40], [49, 26, 43, 13]]), hair[0], P([[36, 13], [49, 26, 46, 40], [40, 36]]), null, .8);
+      cel(ctx, P([[34, 3], [52, 6, 50, 30], [55, 52, 48, 62], [45, 52, 44, 36], [44, 18, 32, 8]]), hair[0], P([[44, 10], [52, 6, 50, 30], [55, 52, 48, 62], [47, 40]]), P([[36, 5], [46, 9, 47, 24], [45, 20, 37, 8]]), .8); }
+    if (st === 'twin') for (const sd of [-1, 1]) { const x0 = 32 + sd * 11; cel(ctx, P([[x0, 10], [32 + sd * 24, 22, 32 + sd * 20, 46], [32 + sd * 23, 60, 32 + sd * 17, 64], [32 + sd * 16, 52, 32 + sd * 14, 40], [32 + sd * 13, 22, x0 - sd * 2, 13]]), hair[0], sd > 0 ? P([[x0, 10], [56, 22, 52, 46], [55, 60, 49, 64], [48, 50]]) : null, sd < 0 ? P([[x0, 10], [12, 20, 13, 36], [16, 24, 21, 14]]) : null, .8); }
+  }
   if (hs === 'hunter') cel(ctx, P([[22, 10], [16, 26, 17, 52], [23, 50], [25, 30], [39, 30], [41, 50], [47, 52], [48, 26, 42, 10]]), hair[0], P([[38, 10], [48, 26, 47, 52], [41, 50], [39, 30]]), null, .8);
   if (acc === 'ribbon') {
     cel(ctx, P([[23, 13], [19, 18, 17, 40], [21, 40], [22, 24, 25, 15]]), 0xf6f2ea, P([[21, 26], [21, 40], [17.6, 40]]), null, .85);
@@ -2696,6 +2702,12 @@ function paintHeroAnime(ctx, look, part) {
   const drawL = () => { ctx.save(); legT(ctx, 26.5, 56, pz[0], pz[2]); cel(ctx, legL, pants, P([[27, 56], [32, 56], [31.5, 82], [26, 82]]), P([[21, 58], [23.5, 58], [19.5, 81], [17.4, 81]])); for (const pl of [[[24, 58], [21.6, 80]], [[28.4, 58], [27.6, 80]]]) strokeLine(ctx, pl, 'rgba(0,0,0,.28)', .55); strokeLine(ctx, [[18.4, 80.2], [31.2, 80.6]], 'rgba(255,255,255,.12)', .6); foot(18.5, 30); ctx.restore(); };
   const drawR = () => { ctx.save(); legT(ctx, 37.5, 56, pz[1], pz[3]); cel(ctx, legR, pants, P([[38, 56], [43, 56], [47, 82], [40, 82]]), null); for (const pl of [[[35.6, 58], [36.4, 80]], [[40, 58], [42.6, 80]]]) strokeLine(ctx, pl, 'rgba(0,0,0,.28)', .55); strokeLine(ctx, [[32.8, 80.6], [46.6, 80.2]], 'rgba(255,255,255,.1)', .6); foot(34, 45.5); ctx.restore(); };
   if (pz[0] < 0) { drawL(); drawR(); } else { drawR(); drawL(); }
+  if (look.fem) {
+    const sk = look.armor || look.costume ? shade(coat, 1.15) : ({ warrior: 0x9a2a3a, mage: 0x5a3a9a, archer: 0x2f6a4a })[look.key] || shade(coat, 1.15), sw = (pz[0] - pz[1]) * 6;
+    cel(ctx, P([[21.5, 55], [42.5, 55], [49 + sw, 79], [41, 81.5], [32, 80.5], [23, 81.5], [15 + sw, 79]]), sk, P([[34, 55], [42.5, 55], [49 + sw, 79], [41, 81.5], [35, 80.8]]), P([[22, 56], [26, 56], [19 + sw, 79], [16.5 + sw, 78.6]]), .78);
+    for (const [x0, x1] of [[26, 22], [30, 28.4], [34, 35.6], [38, 41.8]]) strokeLine(ctx, [[x0, 57], [x1 + sw * .6, 80]], 'rgba(0,0,0,.26)', .5);
+    strokeLine(ctx, [[15.4 + sw, 78.9], [23, 81.4], [32, 80.4], [41, 81.4], [48.6 + sw, 78.9]], o.trim ? cssc(o.trim) : 'rgba(255,240,210,.5)', .7);
+  }
   // scabbard on the left hip
   fillPath(ctx, k => poly2(k, [[23.4, 53], [25.6, 54.4], [11.4, 79.6], [9.4, 78.4]]), lin(ctx, 9, 0, 26, 0, [[0, '#0e0a12'], [.5, '#3a1a24'], [1, '#120a10']]), INK, .5);
   strokeLine(ctx, [[23.6, 54], [10.6, 78.6]], 'rgba(255,255,255,.18)', .4);
@@ -2716,6 +2728,10 @@ function paintHeroAnime(ctx, look, part) {
   // sash
   cel(ctx, P([[21, 52], [43, 52], [43, 57], [21, 57]]), o.sash, P([[34, 52], [43, 52], [43, 57], [34, 57]]), P([[21, 52], [43, 52], [43, 53.2], [21, 53.2]]));
   cel(ctx, P([[29, 55], [26.5, 62], [29.5, 62.5], [31, 56]]), shade(o.sash, .85));
+  if (look.fem) { cel(ctx, P([[21, 49.5], [43, 49.5], [43, 58.5], [21, 58.5]]), o.sash, P([[34, 49.5], [43, 49.5], [43, 58.5], [34, 58.5]]), P([[21, 49.5], [43, 49.5], [43, 50.8], [21, 50.8]]));
+  if (look.fem && !look.armor) { const bc = '#e0507a'; fillPath(ctx, c => { c.moveTo(32, 38.6); c.lineTo(26.6, 35.6); c.lineTo(26.8, 41.8); c.closePath(); c.moveTo(32, 38.6); c.lineTo(37.4, 35.6); c.lineTo(37.2, 41.8); c.closePath(); }, bc, INK, .5); fillPath(ctx, c => { c.moveTo(31.2, 39); c.lineTo(29.4, 45.4); c.lineTo(31, 44.8); c.lineTo(32, 39.4); c.lineTo(33, 44.8); c.lineTo(34.6, 45.4); c.lineTo(32.8, 39); c.closePath(); }, bc, INK, .45); fillPath(ctx, c => c.ellipse(32, 38.6, 1.4, 1.5, 0, 0, 6.29), bc, INK, .5); }
+    for (const sd of [-1, 1]) cel(ctx, P([[18.5, 54], [18.5 + sd * 0 - 6, 49 + (sd > 0 ? 0 : 10)], [12.6, sd > 0 ? 52 : 57], [18.5, 54]]), shade(o.sash, 1.15));
+    cel(ctx, P([[17, 51.5], [20.4, 51.5], [20.4, 56.5], [17, 56.5]]), shade(o.sash, .8)); }
   // obi-jime cord with a knot and two tassels
   { const cord = o.trim ? o.trim : 0xe0b04f;
     strokeLine(ctx, [[21.2, 54.6], [32, 55.2], [42.8, 54.6]], sc(cord, .55), 1.1); strokeLine(ctx, [[21.2, 54.5], [32, 55.1], [42.8, 54.5]], cssc(cord), .6);
@@ -2793,9 +2809,14 @@ function paintHeroAnime(ctx, look, part) {
   }
   if (doHead) paintAnimeHead(ctx, look, o, cls, acc, hs, hair, band, covered, noBand);
   if (doHead && look.fem) {
-    if (!covered && hs !== 'hunter') { cel(ctx, P([[24.8, 12.2], [20.6, 21, 21.6, 37], [24.2, 35.4], [23.8, 22, 26.6, 13.6]]), hair[0]); cel(ctx, P([[39.2, 12.2], [43.4, 21, 42.4, 37], [39.8, 35.4], [40.2, 22, 37.4, 13.6]]), hair[0]);
+    if ((!covered || acc === 'kabuto') && hs !== 'hunter') { cel(ctx, P([[24.8, 12.2], [20.6, 21, 21.6, 37], [24.2, 35.4], [23.8, 22, 26.6, 13.6]]), hair[0]); cel(ctx, P([[39.2, 12.2], [43.4, 21, 42.4, 37], [39.8, 35.4], [40.2, 22, 37.4, 13.6]]), hair[0]);
+      cel(ctx, P([[22.4, 16.4], [22, 8.4, 32, 7.2], [42, 8.4, 41.6, 16.4], [39.8, 13.6], [39.8, 16.2, 37.2, 17.8], [36.2, 13.2], [35.6, 16.6, 32.8, 18.2], [31.8, 12.8], [30.6, 16.4, 28, 17.6], [27.2, 13.4], [26, 15.8, 23.2, 17.4]]), hair[0], P([[35, 8], [42, 8.4, 41.6, 16.4], [39.8, 13.6], [39.8, 16.2, 37.2, 17.8], [36.2, 13.2]]), P([[25.6, 10.8], [32, 8.2, 38.4, 10.8], [38, 12], [32, 9.6, 26, 12]]), .78);
+      for (const [a, b, c2, d] of [[33, 9, 31.4, 15.6], [29, 9.6, 27.8, 15.2], [37, 9.6, 36.6, 14.4]]) strokeLine(ctx, [[a, b], [c2, d]], cssc(shade(hair[0], .62)), .35);
+      const st = look.key === 'warrior' ? 'pony' : look.key === 'archer' ? 'twin' : 'long';
+      if (st === 'long') { sakura(ctx, 40.6, 11.2, 2.8, '#ffc1d4'); sakura(ctx, 38, 13.2, 1.9, '#fff0f5'); }
+      if (st === 'pony') { fillPath(ctx, c => c.ellipse(41.8, 8.4, 2.6, 1.6, -.6, 0, 6.29), cssc(band), INK, .5); fillPath(ctx, c => { c.moveTo(42.6, 9); c.lineTo(47.6, 13.6); c.lineTo(45.8, 14.6); c.closePath(); }, cssc(band), INK, .4); }
+      if (st === 'twin') for (const sd of [-1, 1]) { const x = 32 + sd * 11.2; fillPath(ctx, c => { c.moveTo(x, 11.4); c.lineTo(x + sd * 3.6, 8.4); c.lineTo(x + sd * 3.6, 14.2); c.closePath(); c.moveTo(x, 11.4); c.lineTo(x - sd * 2.6, 8.8); c.lineTo(x - sd * 2.6, 13.8); c.closePath(); }, cssc(band), INK, .45); }
     for (const bx of [27.2, 36.8]) fillPath(ctx, c => c.ellipse(bx, 25.2, 1.6, .8, 0, 0, 6.29), 'rgba(255,120,140,.38)', null); }
-    if (acc !== 'ninja' && !(cls === 'dancer' && !look.noMask && !hs && !look.npc)) fillPath(ctx, c => c.ellipse(32, 27.5, 1.25, .5, 0, 0, 6.29), '#d8505e', null);
   }
 }
 function paintAnimeHead(ctx, look, o, cls, acc, hs, hair, band, covered, noBand) {
@@ -2806,7 +2827,7 @@ function paintAnimeHead(ctx, look, o, cls, acc, hs, hair, band, covered, noBand)
   if (look.beard) { fillPath(ctx, c => { c.moveTo(26, 25); c.quadraticCurveTo(32, 29, 38, 25); c.quadraticCurveTo(37, 34, 32, 38); c.quadraticCurveTo(27, 34, 26, 25); c.closePath(); }, lin(ctx, 0, 25, 0, 38, [[0, '#ffffff'], [1, '#c8c8d0']]), INK, .5); strokeLine(ctx, [[28, 25.6], [32, 26.6], [36, 25.6]], '#e8e8ee', 1.2); }
   if (acc !== 'kasa' && acc !== 'ninja' && hs !== 'reaper') {
     const hcol = hair[0];
-    paintHair2(ctx, cls, hair, acc !== 'kabuto');
+    paintHair2(ctx, cls, hair, acc !== 'kabuto' && !look.fem);
     if (cls === 'guard' && acc !== 'kabuto') { cel(ctx, P([[29, 3], [31, -1], [34, -1], [35.5, 3]]), hcol, null, null); }
     if (!covered && acc !== 'ribbon' && !noBand) cel(ctx, P([[23.2, 12.6], [32, 9.4, 41, 12], [40.8, 14.4], [32, 12, 23.4, 15.2]]), band, P([[34, 10], [41, 12], [40.8, 14.4], [34, 12.4]]), P([[23.2, 12.6], [28, 10.6], [28, 11.6], [23.3, 13.6]]));
     if (!covered && acc !== 'ribbon' && !noBand) cel(ctx, P([[22, 12.2], [25.2, 12.4], [25.4, 15.6], [22.2, 15.4]]), shade(band, .9));
@@ -3343,13 +3364,14 @@ function paintFace2(ctx, cls, hair, hs, acc, masked, fem) {
   for (const [ex, fl] of [[28.3, -1], [35.7, 1]]) {
     const white = c => { c.moveTo(ex - 3, 20.4); c.quadraticCurveTo(ex - .2, 17.8, ex + 3, 19.8); c.quadraticCurveTo(ex + 2.8, 22.8, ex + 1.6, 23.6); c.quadraticCurveTo(ex - .4, 24.2, ex - 2.2, 23.4); c.quadraticCurveTo(ex - 3.1, 22.2, ex - 3, 20.4); c.closePath(); };
     if (fl < 0) { ctx.save(); ctx.translate(2 * ex, 0); ctx.scale(-1, 1); }
+    if (fem) { ctx.save(); ctx.translate(ex, 21.8); ctx.scale(1.14, 1.22); ctx.translate(-ex, -21.8); }
     fillPath(ctx, white, '#fbf8f2', null);
     ctx.save(); ctx.beginPath(); white(ctx); ctx.clip();
     fillPath(ctx, c => c.ellipse(ex + .25, 21.2, 2, 2.6, 0, 0, 6.29), lin(ctx, 0, 18.6, 0, 23.8, [[0, sc(ir[0], .45)], [.5, cssc(ir[0])], [1, cssc(ir[1])]]), null);
     ctx.lineWidth = .4; ctx.strokeStyle = sc(ir[0], .4); ctx.beginPath(); ctx.ellipse(ex + .25, 21.2, 2, 2.6, 0, 0, 6.29); ctx.stroke();
     fillPath(ctx, c => c.ellipse(ex + .3, 21, .85, 1.25, 0, 0, 6.29), '#0c060c', null);
     fillPath(ctx, c => c.ellipse(ex + .3, 22.7, 1.5, .75, 0, 0, 6.29), 'rgba(255,255,255,.32)', null);
-    fillPath(ctx, c => c.rect(ex - 3, 18, 6.2, 1.6), 'rgba(40,20,40,.35)', null);
+    fillPath(ctx, c => c.rect(ex - 3, 18, 6.2, 1.6), fem ? 'rgba(40,20,40,.18)' : 'rgba(40,20,40,.35)', null);
     ctx.restore();
     fillPath(ctx, c => c.ellipse(ex - .6, 20.2, .78, .62, -.4, 0, 6.29), '#ffffff', null);
     fillPath(ctx, c => c.arc(ex + 1.1, 22.6, .32, 0, 6.29), '#ffffff', null);
@@ -3357,15 +3379,16 @@ function paintFace2(ctx, cls, hair, hs, acc, masked, fem) {
     // upper lid with lash wing, lower lid
     fillPath(ctx, c => { c.moveTo(ex - 3.3, 20.6); c.quadraticCurveTo(ex - .4, 17.2, ex + 3.2, 19.4); c.lineTo(ex + 4.4, 18.6); c.lineTo(ex + 3.6, 20.2); c.quadraticCurveTo(ex - .2, 18.4, ex - 3.1, 21); c.closePath(); }, '#1a0c12', null);
     strokeLine(ctx, [[ex - 1.8, 23.8], [ex + .6, 24.1], [ex + 2, 23.6]], 'rgba(70,30,30,.55)', .4);
-    if (fem) { strokeLine(ctx, [[ex + 2.6, 19.4], [ex + 4.8, 18.2]], '#1a0c12', .55); strokeLine(ctx, [[ex + 2.2, 19.0], [ex + 4.0, 17.4]], '#1a0c12', .4); }
+    if (fem) { fillPath(ctx, c => { c.moveTo(ex + 2.6, 19.2); c.quadraticCurveTo(ex + 4.4, 18.6, ex + 5.4, 17.2); c.quadraticCurveTo(ex + 5, 19.2, ex + 3.4, 20.4); c.closePath(); }, '#1a0c12', null); fillPath(ctx, c => { c.moveTo(ex + 3.2, 20); c.quadraticCurveTo(ex + 4.6, 20, ex + 5.4, 19.4); c.quadraticCurveTo(ex + 4.6, 20.8, ex + 3.4, 20.8); c.closePath(); }, '#1a0c12', null); strokeLine(ctx, [[ex + 1.8, 23.6], [ex + 2.6, 24.1]], '#2a1418', .3); ctx.restore(); }
     // brow
-    fillPath(ctx, c => { c.moveTo(ex - 3, 16.6); c.quadraticCurveTo(ex, 15, ex + 3.4, 15.8); c.quadraticCurveTo(ex, 15.8, ex - 3, 17.2); c.closePath(); }, cssc(cls === 'guard' ? shade(hair[0], .55) : shade(hair[0], 1.1)), null);
+    if (!fem) fillPath(ctx, c => { c.moveTo(ex - 3, 16.6); c.quadraticCurveTo(ex, 15, ex + 3.4, 15.8); c.quadraticCurveTo(ex, 15.8, ex - 3, 17.2); c.closePath(); }, cssc(cls === 'guard' ? shade(hair[0], .55) : shade(hair[0], 1.1)), null);
     if (fl < 0) ctx.restore();
   }
   // nose, cheeks, mouth
   strokeLine(ctx, [[32.6, 24], [33, 25.4], [32.2, 25.7]], 'rgba(170,110,80,.7)', .45);
   for (const bx of [26.2, 37.8]) fillPath(ctx, c => c.ellipse(bx, 25.4, 2.1, .9, 0, 0, 6.29), 'rgba(255,120,120,.25)', null);
-  if (!masked) {
+  if (!masked && fem) { fillPath(ctx, c => { c.moveTo(30.8, 27.7); c.quadraticCurveTo(32, 27.1, 33.2, 27.7); c.quadraticCurveTo(32, 29.1, 30.8, 27.7); c.closePath(); }, '#e0606e', null); strokeLine(ctx, [[31.4, 27.9], [32.6, 27.9]], 'rgba(255,220,220,.6)', .3); }
+  else if (!masked) {
     strokeLine(ctx, [[30.6, 27.6], [32, 28.1], [33.5, 27.5]], '#8a3a3a', .6);
     strokeLine(ctx, [[31.3, 28.7], [32.7, 28.7]], 'rgba(160,80,80,.4)', .4);
   }
@@ -4574,7 +4597,7 @@ class World extends Phaser.Scene {
     this.map = genMap(this.zone);
     this.now = 0;
     this.mobs = []; this.npcs = []; this.portals = []; this.pet = null;
-    this.nextSpawn = 0; this.bossAt = 0; this.sparkT = 0;
+    this.nextSpawn = 0; this.bossAt = 0; this.sparkT = 0; this.autoT = 0; this.autoResT = 0; this.dustT = 0; this.gTrimT = 0; this.miniT = 0; this.mountFrameT = 0; this.mountFxT = 0; this.herbT = 0; this.holBossT = 0;
     this.selItem = null; this.dlgNpc = null;
     this.stock = null; this.stockLv = 0;
     this.travelling = false;
@@ -7335,7 +7358,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '54', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '55', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
