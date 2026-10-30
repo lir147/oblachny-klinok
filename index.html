@@ -271,6 +271,14 @@ html.mob #mobMenu .skill em{font-size:10.5px}
 .srow{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px;border:1px solid #232d47;border-radius:6px;background:#0f1528}
 .srow .cell{width:40px}
 .srow.noic{grid-template-columns:minmax(0,1fr) auto}
+.autho{z-index:100001;background:radial-gradient(circle at 50% 30%,#2a1e48,#06040c) !important}
+.authcard{width:min(420px,calc(100vw - 32px));display:grid;gap:10px}
+.authbody{display:grid;gap:8px}.authbody .btn{justify-self:stretch}
+.storewrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.storegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px;max-height:280px;overflow:auto;padding:4px;border:1px solid #2a3350;border-radius:6px;background:#0b1020}
+.storegrid .cell{width:42px;height:42px}
+@media (max-width:640px){.storewrap{grid-template-columns:1fr}}
+
 #chatP #log,html.mob #chatP #log{display:flex !important;flex-direction:column;justify-content:flex-end;max-height:none !important;overflow:visible !important;gap:2px}
 #log>div{flex:0 0 auto;line-height:1.3}
 .boxp{position:absolute;top:calc(env(safe-area-inset-top,0px) + 80px);right:16px;width:min(460px,calc(100vw - 32px));max-height:70vh;display:grid;grid-template-rows:auto auto 1fr;gap:6px;pointer-events:auto;z-index:5}
@@ -4207,6 +4215,9 @@ Object.assign(MOBS, {
 ZONES.r_eclipse = { name: 'Цитадель Затмения', seed: 111, tiles: 'a', bg: '#0c0612', deco: 'ash', ambient: 'none', ponds: [], mobs: [['lavaoni', 34, 36, 0], ['ashronin', 34, 36, 1]], portals: [{ to: 'village', x: 14.5, y: 27 }], raid: true,
   dungeon: { minLv: 30, lv: 36, raid: true, waves: [[['ashronin', 5], ['lavaoni', 4]], [['skywraith', 5], ['jadeguard', 3]]], boss: 'eclipseqn', gold: 15000,
     looks: [['wings', 'celestial', .25], ['costume', 'seraphknight', .2], ['mount', 'skydragon', .08], ['wings', 'void', .2]] } };
+ZONES.r_abyss = { name: 'Бездна Левиафана', seed: 277, tiles: 'w', bg: '#04101e', deco: 'sea', ambient: 'none', ponds: [], mobs: [['kappaking', 46, 48, 0], ['deepshade', 46, 48, 1]], portals: [{ to: 'village', x: 14.5, y: 27 }], raid: true,
+  dungeon: { minLv: 45, lv: 50, raid: true, mech: 'Рейд для отряда до 4 человек: волна-линия от Левиафана, тотемы прилива лечат босса (разбейте их), водоворот — спасение только рядом с боссом.', waves: [[['kappaking', 5], ['coralgolem', 3]], [['deepshade', 6], ['tidespawn', 4]]], boss: 'leviathan', gold: 30000,
+    looks: [['wings', 'azure', .25], ['costume', 'abyss', .2], ['mount', 'skydragon', .06]] } };
 /* ---------- three more lands: the sea palace, the spirit city, the fire mountain ---------- */
 Object.assign(MOBS, {
   kappaking: { name: 'Морской каппа', key: 'kappa', tint: 0x6ad8ff },
@@ -4276,7 +4287,7 @@ for (const z of Object.values(ZONES)) z.size = z.dungeon || z.arena ? 44 : 150;
     }
   }
 }
-const DUNGEON_IDS = ['d_nest', 'd_moon', 'd_ice', 'r_eclipse'];
+const DUNGEON_IDS = ['d_nest', 'd_moon', 'd_ice', 'r_eclipse', 'r_abyss'];
 const ALLY_DEFS = {
   tank: { name: 'Страж Ивао', look: { cls: 'guard', costume: 'allytank', npc: true, noBand: true, hair: [0x3a2a20, 0x8a6a4a] }, weapon: ['kanabo', 1], hp: 1.4, atk: .45, def: 14, range: 1.05, cd: 1.2 },
   heal: { name: 'Жрица Юки', look: { cls: 'dancer', costume: 'allyheal', npc: true, noBand: true, hair: [0xe8e4f0, 0xffffff] }, weapon: ['bo', 2], hp: .85, atk: .3, def: 4, range: 4, cd: 1.6 },
@@ -4420,7 +4431,8 @@ const lookBonus = () => (save.ward.lv - 1) * .015 + save.coll.length * .006;
 if (!save.qv) { if (save.q.i >= 3) save.q = { i: 3, n: 0, state: 'avail' }; save.qv = 3; }
 save.inv.forEach(fixItem); Object.values(save.eq).forEach(fixItem);
 if (!ZONES[save.zone]) save.zone = 'village';
-const persist = () => { if (typeof NO_PERSIST !== 'undefined' && NO_PERSIST) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+let CLOUD_DIRTY = 0;
+const persist = () => { if (typeof NO_PERSIST !== 'undefined' && NO_PERSIST) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} CLOUD_DIRTY = CLOUD_DIRTY || Date.now(); };
 
 const heroBase = lv => ({ maxHp: Math.round(100 + (lv - 1) * 22), maxMp: Math.round(50 + (lv - 1) * 6), atk: 10 + (lv - 1) * 3.5 });
 const xpNeed = lv => Math.round(40 * Math.pow(lv, 1.5));
@@ -5892,8 +5904,8 @@ class World extends Phaser.Scene {
   spawnMob(kind, x, y, lv, quiet) {
     const def = MOBS[kind], boss = !!def.boss;
     const m = { kind, x, y, hx: x, hy: y, lv, name: def.name, alive: true, boss, lungeT: -9, stunUntil: 0, hover: def.hover,
-      maxHp: Math.round((28 + lv * 16) * (boss ? 4 : 1)), atk: (3 + lv * 2.2) * (boss ? 1.4 : 1),
-      xp: Math.round((8 + lv * 7) * (boss ? 5 : 1)), gold: Math.round((lv * 3 + ri(0, 4)) * (boss ? 8 : 1)),
+      maxHp: Math.round((28 + lv * 16) * (boss ? 4 * 1.6 : 2.2)), atk: (3 + lv * 2.2) * (boss ? 1.4 : 1),
+      xp: Math.round((8 + lv * 7) * (boss ? 5 : 1) * 1.3), gold: Math.round((lv * 3 + ri(0, 4)) * (boss ? 8 : 1)),
       aggro: boss ? 5 : 3.6, speed: def.speed || (boss ? 1.9 : 2.2), nextAtk: 0, angry: false, wp: { x, y }, wpT: 0, off: Math.random() * 6 };
     m.hp = m.maxHp;
     m.shadow = this.add.image(0, 0, 'shadow').setScale((boss ? 2.2 : 1.1) * WK);
@@ -6121,17 +6133,18 @@ class World extends Phaser.Scene {
   heroAttack(m) {
     const h = this.hero;
     h.nextAtk = this.now + h.aspd * (this.now < h.hasteUntil ? .6 : 1);
-    let dmg = h.atk * rand(.85, 1.15); const crit = Math.random() * 100 < h.crit; if (crit) dmg *= 1.8 + ((specDef() || {}).critDmg || 0);
+    let dmg = h.atk * rand(.85, 1.15); const crit = Math.random() * 100 < h.crit; if (crit) dmg *= 1.8 + ((specDef() || {}).critDmg || 0) + (awkW() >= 4 ? .3 : 0);
+    dmg = awkDmg(this, m, dmg);
     sfx(save.cls === 'mage' ? 'zap' : save.cls === 'archer' ? 'bow' : 'swing');
     if (save.cls === 'mage' || save.cls === 'archer') {
       h.pose = { type: 'raise', t0: this.now, dur: .28, dir: 1 }; h.poseUntil = this.now + .3;
-      this.shoot(h, m, save.cls === 'mage' ? 'bolt' : 'arrow', () => { if (m.alive) this.hurtMob(m, Math.round(dmg), crit); });
+      this.shoot(h, m, save.cls === 'mage' ? 'bolt' : 'arrow', () => { if (m.alive) { this.hurtMob(m, Math.round(dmg), crit); awkHit(this, m, dmg); } });
       return;
     }
     this.lunge(h, m);
     h.pose = { type: 'slash', t0: this.now, dur: .24, dir: Math.random() < .5 ? 1 : -1 }; h.poseUntil = this.now + .3;
     const t = h.wTier; this.slash(m, t ? tierColor(t, this.now) : 0xe8f1ff);
-    this.hurtMob(m, Math.round(dmg), crit);
+    this.hurtMob(m, Math.round(dmg), crit); awkHit(this, m, dmg);
     if (this.now < (h.doubleUntil || 0)) this.time.delayedCall(130, () => { if (m.alive && h.alive) { this.slash(m, 0xc18cff); this.hurtMob(m, Math.round(dmg * .7), crit); } });
   }
 
@@ -6173,7 +6186,7 @@ class World extends Phaser.Scene {
     if (m.pvp) return;
     sfx(m.boss ? 'boom' : 'kill'); sfx('coin');
     m.gold = Math.round(m.gold * evMul('gold') * (terrMine(this.zoneId) ? 1.15 : 1) * (save.eq.pet && (save.eq.pet.plv || 1) >= 20 ? 1.1 : 1));
-    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); bestiaryKill(this, m); invKill(this, m); safeRun('ghKill', () => ghKill(this, m)); safeRun('arenaKill', () => arenaKill(this, m)); if (m.kind === 'stormoni') { stat('storm'); }
+    if (!m.remote) terrKill(this.zoneId); holidayKill(this, m); petGain(this); bestiaryKill(this, m); invKill(this, m); safeRun('ghKill', () => ghKill(this, m)); safeRun('arenaKill', () => arenaKill(this, m)); safeRun('weKill', () => weKill(this, m)); if (m.kind === 'stormoni') { stat('storm'); }
     stat('kills'); stat('goldEarned', m.gold); if (inParty()) stat('partyKills'); if (eventsNow().length) stat('eventKills');
     if (m.boss) { stat('bosses'); save.stats.bossKinds[m.kind] = (save.stats.bossKinds[m.kind] || 0) + 1; }
     save.gold += m.gold;
@@ -6588,7 +6601,7 @@ class World extends Phaser.Scene {
       { const top = recTop(id + '_' + DG_DIFF); if (top.length) info.appendChild(mk('div', 'ss rec', 'Рекорды: ' + top.slice(0, 3).map(r => mmssLong(r.t) + ' ' + cleanText(r.n)).join(' · '))); }
       info.append(mk('div', 'sn r2', z.name), mk('div', 'ss', 'С ' + d.minLv + ' ур. · враги ' + d.lv + ' ур. · ' + d.gold + ' мон, эпическое снаряжение, шанс на редкие облики' + (save.dgDone[id] ? ' · пройдено ' + save.dgDone[id] + ' раз' : '')));
       const lead = inParty() && PARTY.lead === save.pid;
-      if (d.raid) { info.appendChild(mk('div', 'ss', 'Рейд для отряда от 2 человек: огненные круги, щит из кристаллов, метка затмения. Войти может лидер отряда.')); r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Начать рейд' : 'Нужен отряд', () => { this.closeDlg(); this.travel({ to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id, diff: DG_DIFF } }); }, 'main', save.lv < d.minLv || !lead)); list.appendChild(r); continue; }
+      if (d.raid) { info.appendChild(mk('div', 'ss', (d.mech || 'Рейд для отряда от 2 человек: огненные круги, щит из кристаллов, метка затмения.') + ' Войти может лидер отряда.')); r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Начать рейд' : 'Нужен отряд', () => { this.closeDlg(); this.travel({ to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id, diff: DG_DIFF } }); }, 'main', save.lv < d.minLv || !lead)); list.appendChild(r); continue; }
       r.append(ic, info, btn(save.lv < d.minLv ? 'С ' + d.minLv + ' ур.' : lead ? 'Войти с друзьями' : 'Войти с отрядом', () => { this.closeDlg(); this.travel(lead ? { to: id, extra: { dgInst: 'dg:' + PARTY.id + ':' + id, diff: DG_DIFF } } : { to: id, extra: { diff: DG_DIFF } }); }, 'main', save.lv < d.minLv));
       list.appendChild(r);
     }
@@ -6711,7 +6724,7 @@ class World extends Phaser.Scene {
     const cfg = this.zone.dungeon;
     stat('dg'); save.stats.dgKinds[this.zoneId] = (save.stats.dgKinds[this.zoneId] || 0) + 1;
     const dI = dgRecord(this), D = DIFF[dI]; save.gold += Math.round(cfg.gold * (D.rew - 1)); gemDrop(this, 1 + dI * 2, D.gems); if (Math.random() < D.myth) { const it = mythDrop(cfg.lv + 2 + D.lv); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); }
-    if (cfg.raid) { stat('raids'); gemDrop(this, 3, 2); if (Math.random() < .15) { const it = mythDrop(cfg.lv + 2); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); } }
+    if (cfg.raid) { stat('raids'); shardGive(this.zoneId === 'r_abyss' ? 4 : 2, 'рейд'); gemDrop(this, 3, 2); if (Math.random() < .15) { const it = mythDrop(cfg.lv + 2); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); } }
     {
       save.gold += cfg.gold; save.dgDone[this.zoneId] = (save.dgDone[this.zoneId] || 0) + 1;
       const sealN = SEAL_PER[this.zoneId] || 15; save.seals += sealN; save.mats.ore += 10; save.mats.ess += 4; save.mats.star += 1; if (save.guild) guildXp(50);
@@ -6839,6 +6852,7 @@ class World extends Phaser.Scene {
       if (!m.alive) continue;
       if (m.remote) { netRemoteMob(this, m, dt); continue; }
       if (m.pvp) { pvpProxyTick(this, m); continue; }
+      if (m.passive) { this.placeUnit(m, 0); continue; }
       m.moving = false;
       const stunned = this.now < m.stunUntil;
       if (stunned) { if (!m.stunTint) { m.spr.setTint(0x8899ff); m.stunTint = true; } }
@@ -6866,15 +6880,15 @@ class World extends Phaser.Scene {
     if (this.allies.length) this.updateAllies(dt);
     if (this.pet) this.updatePet(dt);
     netUpdate(this, dt);
-    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); safeRun('bgTick', () => bgTick(this), 1); safeRun('towerTick', () => towerTick(this), 1); safeRun('htag', () => heroTagTick(this), 1); safeRun('arenaTick', () => arenaTick(this), 1); safeRun('autoRes', () => autoRespawn(this), 1);
+    netMobTick(this); sbTickAll(this); lifeTick(this, dt); liveTick(this); raidTick(this); safeRun('bgTick', () => bgTick(this), 1); safeRun('towerTick', () => towerTick(this), 1); safeRun('htag', () => heroTagTick(this), 1); safeRun('arenaTick', () => arenaTick(this), 1); safeRun('autoRes', () => autoRespawn(this), 1); safeRun('aura', () => awkAura(this), 1);
     if (performance.now() > (this.achT || 0)) { this.achT = performance.now() + 2000; checkAch(this); evHud(); }
-    if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); safeRun('dgTimer', () => dgTimerHud(this), 1); safeRun('path', () => pathTick(this), 1); safeRun('inv', () => invTick(this), 1); safeRun('gh', () => ghTick(this), 1); }
+    if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); safeRun('dgTimer', () => dgTimerHud(this), 1); safeRun('path', () => pathTick(this), 1); safeRun('inv', () => invTick(this), 1); safeRun('gh', () => ghTick(this), 1); safeRun('awk', () => awkTick(this), 1); safeRun('we', () => weTick(this), 1); }
     if (this.zone.dungeon) this.updateDungeon();
     for (const n of this.npcs) this.placeUnit(n, Math.sin(this.now * 1.6 + n.off) * .8);
 
     if (!this.zone.dungeon && this.zone.mobs.length && this.now > this.nextSpawn) {
       this.nextSpawn = this.now + (N > 60 ? .7 : 1.4);
-      if (N > 60) for (const m of this.mobs) if (m.alive && !m.boss && !m.angry && h.target !== m && dist(m, h) > 46) { m.alive = false; m.spr.destroy(); m.shadow.destroy(); m.bar.destroy(); m.label.destroy(); m.gone = true; }
+      if (N > 60) for (const m of this.mobs) if (m.alive && !m.boss && !m.angry && !m.passive && h.target !== m && dist(m, h) > 46) { m.alive = false; m.spr.destroy(); m.shadow.destroy(); m.bar.destroy(); m.label.destroy(); m.gone = true; }
       { const alive = this.mobs.filter(m => m.alive && !m.boss).length; if (alive < 32) for (let k = 0; k < (N > 60 && alive < 18 ? 3 : 1); k++) this.trySpawn(false); }
     }
     const zb = this.zone.boss;
@@ -7242,7 +7256,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '49', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '50', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -8346,7 +8360,7 @@ function netMobTick(S) {
   if (!mates.length) { if (S.msLast) { netSend('g/' + PARTY.id, { t: 'ms', f: save.pid, id: PARTY.id, i: S.inst, m: [] }); S.msLast = 0; } return; }
   const arr = [], h = S.hero, full = rtn > (S.msFullT || 0); if (full) { S.msFullT = rtn + 2; if (!S.msSig) S.msSig = new Map(); S.msSig.clear(); } if (!S.msSig) S.msSig = new Map();
   for (const m of S.mobs) {
-    if (!m.alive || m.remote || m.sb || m.pvp || !m.nid) continue;
+    if (!m.alive || m.remote || m.sb || m.pvp || m.local || !m.nid) continue;
     if (Math.hypot(h.x - m.x, h.y - m.y) > 28 && !mates.some(p => Math.hypot(p.x - m.x, p.y - m.y) < 28)) continue;
     const row = [m.nid, m.kind, m.lv, Math.round(m.x * 5) / 5, Math.round(m.y * 5) / 5, Math.max(0, Math.round(m.hp)), m.maxHp], sig = row.join();
     if (!full && S.msSig.get(m.nid) === sig) continue; S.msSig.set(m.nid, sig);
@@ -8956,6 +8970,7 @@ const WB = makeShared({ topic: 'wb', kind: 'wbking', max: 150000, off: { x: 13, 
       if (save.mats) { save.mats.ore += 20; save.mats.ess += 8; save.mats.star += 2; }
       S.give(genItem(lv + 2, 2)); S.give(scroll(3)); S.gainXp(Math.round(xpNeed(lv) * .35)); gemDrop(S, 3, 1);
       if (R.me === 1) S.give(genItem(lv + 2, 2));
+      if (R.me <= 3) shardGive(R.me === 1 ? 2 : 1, 'мировой босс');
       if (Math.random() < (R.me === 1 ? 1 : R.me <= 3 ? .5 : .12)) { const it = mythDrop(lv + 2); if (S.give(it)) banner(it.name, 'Мифическая добыча!'); }
       if (save.guild) guildXp(80);
     } else { save.gold += 1000 + lv * 60; S.give(scroll(1)); if (Math.random() < .03) { const it = mythDrop(lv + 2); if (S.give(it)) banner(it.name, 'Мифическая добыча!'); } }
@@ -9142,7 +9157,7 @@ async function cloudFetch(key) {
     }, topic);
   });
 }
-setInterval(() => { if (save.cloud || save.acct) cloudUpload(false); }, 3 * 60000);
+setInterval(() => { if ((save.cloud || save.acct) && CLOUD_DIRTY && Date.now() - (save.cloudT || 0) > 20000) { CLOUD_DIRTY = 0; cloudUpload(false); } }, 5000);
 function renderSaveTab(body) {
   const note = t => body.appendChild(mk('div', 'ds', t));
   acctSection(body);
@@ -9179,14 +9194,15 @@ function copyText(t) { try { navigator.clipboard.writeText(t).then(() => log('С
 const RAID_ID = 'r_eclipse';
 function raidMates(S) { return partyMatesHere(S); }
 // telegraphed fire circles: everyone sees them, everyone checks only themselves
-function raidCircles(S, pts, delay) {
+function raidCircles(S, pts, delay, col) {
+  const W = col === 'w', c1 = W ? 0x2a6aff : 0xff3a1a, c2 = W ? 0x6ac0ff : 0xff6a3a, c3 = W ? 0x9ae0ff : 0xffaa3a;
   sfx('circle');
   for (const [x, y, r] of pts) {
     const p = iso(x, y), g = S.add.graphics().setDepth(p.y - 3).setPosition(p.x, p.y);
     const rx = r * HW * 1.414, ry = r * HH * 1.414, t0 = performance.now();
     const ev = S.time.addEvent({ delay: 50, loop: true, callback: () => {
       const k = Math.min(1, (performance.now() - t0) / (delay * 1000));
-      g.clear(); g.fillStyle(0xff3a1a, .12 + .18 * k).fillEllipse(0, 0, rx * 2, ry * 2); g.lineStyle(2, 0xff6a3a, .9).strokeEllipse(0, 0, rx * 2, ry * 2); g.fillStyle(0xffaa3a, .35).fillEllipse(0, 0, rx * 2 * k, ry * 2 * k);
+      g.clear(); g.fillStyle(c1, .12 + .18 * k).fillEllipse(0, 0, rx * 2, ry * 2); g.lineStyle(2, c2, .9).strokeEllipse(0, 0, rx * 2, ry * 2); g.fillStyle(c3, .35).fillEllipse(0, 0, rx * 2 * k, ry * 2 * k);
     } });
     setTimeout(() => {
       ev.remove(); g.destroy(); if (!S.scene.isActive()) return;
@@ -9216,13 +9232,17 @@ function raidMark(S, pid, delay) {
 }
 function raidMech(S, d) {
   if (d.i !== S.inst || !S.zone.raid) return;
-  if (d.k === 'circ' && Array.isArray(d.p)) raidCircles(S, d.p.slice(0, 10), Math.max(1, Math.min(4, +d.d || 2)));
+  if (d.k === 'circ' && Array.isArray(d.p)) raidCircles(S, d.p.slice(0, 10), Math.max(1, Math.min(4, +d.d || 2)), d.c);
+  else if (d.k === 'donut') abyssDonut(S, +d.x, +d.y, Math.max(2, Math.min(6, +d.d || 3.5)));
+  else if (d.k === 'tide') { banner(d.on ? 'Прилив' : 'Тотемы разбиты', d.on ? 'Левиафан ушёл под щит: разбейте тотемы прилива — они его лечат' : 'Левиафан снова уязвим'); sfx('roar', { vol: .5 }); }
+  else if (d.k === 'abyssrage') { banner('Ярость Бездны', 'Волны чаще, водоворот ближе'); sfx('roar'); }
   else if (d.k === 'mark' && d.pid) raidMark(S, String(d.pid), Math.max(2, Math.min(8, +d.d || 5)));
   else if (d.k === 'shield') { banner(d.on ? 'Щит затмения' : 'Щит разбит', d.on ? 'Разбейте четыре кристалла вокруг Императрицы' : 'Императрица уязвима!'); for (const m of S.mobs) if (m.remote && m.kind === 'eclipseqn') { m.rshield = !!d.on; m.spr.setTint(d.on ? 0x8a8aff : 0xc080ff); m.spr.baseTint = d.on ? 0x8a8aff : 0xc080ff; } sfx(d.on ? 'ice' : 'boom'); }
   else if (d.k === 'enrage') { banner('Императрица в ярости', 'Держитесь вместе и уходите из кругов'); sfx('roar'); }
 }
 function raidTick(S) {
   if (!S.zone.raid || !S.dgHost || !S.dg || S.dg.state !== 'boss') return;
+  if (S.zoneId === 'r_abyss') { const lb = S.mobs.find(m => m.alive && !m.remote && m.kind === 'leviathan'); if (lb) abyssTick(S, lb); return; }
   const boss = S.mobs.find(m => m.alive && !m.remote && m.kind === 'eclipseqn'); if (!boss) return;
   const R = S.raid || (S.raid = { next: performance.now() + 6000, phase: 1, markT: 0 });
   const tell = o => { if (PARTY) netSend('g/' + PARTY.id, Object.assign({ t: 'rmech', f: save.pid, id: PARTY.id, i: S.inst }, o)); raidMech(S, Object.assign({ i: S.inst }, o)); };
@@ -9978,7 +9998,7 @@ function towerReward(S, f) {
   if (f > save.tower.best) {
     save.tower.best = f; msg += ' Новый рекорд!';
     if (f % 5 === 0) gemDrop(S, Math.min(5, 1 + Math.floor(f / 10)), 1);
-    if (f % 10 === 0) { S.give(scroll(2)); save.mats.star = (save.mats.star || 0) + 2; msg += ' Свитки и звёздные кристаллы за рубеж.'; }
+    if (f % 10 === 0) { S.give(scroll(2)); save.mats.star = (save.mats.star || 0) + 2; shardGive(2, 'Башня'); msg += ' Свитки и звёздные кристаллы за рубеж.'; }
     if (f === 25 && !save.gotShadowDrake) { save.gotShadowDrake = true; const pt = petItem('shadowdrake', save.lv); if (S.give(pt)) banner(pt.name, 'Награда 25 этажа Башни'); }
     for (const [need, id] of [[20, 'towerclimb'], [50, 'towermaster']]) if (f >= need && !save.titles.includes(id)) { save.titles.push(id); banner('Титул «' + TITLES[id] + '»', 'Башня испытаний'); }
     LB.pubT = 0;
@@ -10680,7 +10700,7 @@ function ghSubscribe() {
 }
 function ghGuardReward(evId) {
   const S = GAME; if (!S || S.zoneId !== GH_ID || GH.done === evId) return; GH.done = evId;
-  const x = Math.round(xpNeed(save.lv) * .18); S.gainXp(x); guildXp(25); save.gold += 300 + save.lv * 20;
+  const x = Math.round(xpNeed(save.lv) * .18); S.gainXp(x); guildXp(25); save.gold += 300 + save.lv * 20; if (Math.random() < .3) shardGive(1, 'страж гильдии');
   if (Math.random() < .1 && !save.inv.some(i => i && i.base === 'jadeloong') && !(save.eq.pet && save.eq.pet.base === 'jadeloong')) { const pt = petItem('jadeloong', save.lv); if (S.give(pt)) banner(pt.name, 'Добыча стража гильдии'); }
   banner('Страж повержен', '+' + x + ' опыта всем в зале'); log('Страж гильдии повержен! +' + x + ' опыта, монеты и 25 очков гильдии.', 'good'); persist();
 }
@@ -10765,6 +10785,7 @@ function eventsList() {
   try { for (const B of SHARED) { const st = B.cfg.state(); out.push([B.cfg.label + ': ' + MOBS[B.cfg.kind].name, st.phase === 'live' ? 'идёт сейчас · ' + B.cfg.where : st.phase === 'soon' ? 'скоро · ' + B.cfg.where : st.starts ? 'через ' + mm(st.starts - now) : '—', st.phase === 'live']); } } catch (e) {}
   { const st = invState(); out.push(['Вторжение на деревню Кумо', st.phase === 'live' ? 'идёт · осталось ' + mm(st.ends - now) : 'через ' + mm(st.start - now), st.phase === 'live']); }
   { const st = ghState(); out.push(['Зал гильдии: ' + (st.live ? GH_EV[st.type].n : GH_EV[st.nextType].n), save.guild ? (st.live ? 'идёт · осталось ' + mm(st.ends - now) : 'через ' + mm(st.next - now)) : 'только для гильдий', st.live && !!save.guild]); }
+  { const w = weState(); out.push(['Мировое событие: ' + WE_TYPES[w.type].n + ' · ' + ZONES[w.zone].name, w.live ? 'идёт · осталось ' + mm(w.ends - now) + ' · ' + WE_TYPES[w.type].d : 'следующее через ' + mm(w.next - now), w.live]); }
   { const H = HOLIDAYS[holidayNow()]; out.push(['Праздник', H ? H.name + ' — вкладка «Праздник» в Дневнике' : 'сейчас нет', !!H]); }
   try { for (const e of eventsNow()) out.push([e.name || 'Событие', 'идёт сейчас' + (e.short ? ' · ' + e.short : ''), true]); } catch (e) {}
   return out;
@@ -10775,7 +10796,7 @@ function eventsPanel() {
   const head = mk('div', 'phead'); head.append(mk('b', '', 'События'), mk('span', '', 'расписание и то, что идёт сейчас'));
   const x = mk('button', 'x', '×'); x.type = 'button'; x.onclick = () => p.remove(); head.appendChild(x);
   const body = mk('div', 'evbody'); p.append(head, body); document.querySelector('.hud').appendChild(p);
-  const draw = () => { if (!p.isConnected) return; body.innerHTML = ''; for (const [n, s, live] of eventsList()) { const r = mk('div', 'evrow' + (live ? ' live' : '')); r.append(mk('b', '', n), mk('span', '', s)); body.appendChild(r); } setTimeout(draw, 1000); };
+  const draw = () => { if (!p.isConnected) return; body.innerHTML = ''; for (const [n, s, live] of eventsList()) { const r = mk('div', 'evrow' + (live ? ' live' : '')); r.append(mk('b', '', n), mk('span', '', s)); body.appendChild(r); } { const w = weState(); if (w.live && w.type === 'merchant' && GAME && GAME.zoneId === w.zone) body.appendChild(btn('Торговать с бродячим торговцем', () => weShop(), 'main')); } setTimeout(draw, 3000); };
   draw(); if (typeof bringFront === 'function') bringFront(p);
 }
 /* pets of other players */
@@ -10889,7 +10910,7 @@ function autoRespawn(S) {
 const MYTH_ARMOR = ['Доспех Пожирателя лун', 'Хаори Звёздного пепла', 'Латы Кровавой луны', 'Облачение Небесного грома', 'Кираса Бездонной ночи'];
 function mythStats(it) {
   if (!it || !it.myth) return;
-  const lv = Math.max(save.lv, it.mlv || it.lv || 1), k = RAR[4].k; it.mlv = lv; it.lv = lv;
+  const lv = Math.max(save.lv, it.mlv || it.lv || 1), k = RAR[4].k * awkMul(it); it.mlv = lv; it.lv = lv;
   if (it.slot === 'weapon') { const cls = WEAPON_CLASS[it.base]; it.st = { atk: Math.round((3 + lv * 1.6) * k * 2.4), hp: Math.round((20 + lv * 6) * 2.2), crit: 14 }; if (cls === 'mage') it.st.ki = Math.round((14 + lv * 3.2) * 1.6); }
   else if (it.slot === 'armor') it.st = { hp: Math.round((15 + lv * 8) * k * 2.2), def: Math.round((2 + lv * 1.2) * k * 2.2), atk: Math.round((2 + lv * .5) * k), crit: 6 };
 }
@@ -10931,6 +10952,195 @@ function boxPanel(open) {
   const b = mk('button', 'skill', ''); b.id = 'skBox'; b.type = 'button'; b.setAttribute('aria-label', 'Почта'); b.innerHTML = '<span class="ic">✉</span><em>Почта</em>';
   b.addEventListener('click', () => boxPanel()); bar.insertBefore(b, $('skFb')); boxBadge();
 })();
+
+/* ---------- sign in / sign up before playing ---------- */
+let AUTH_SKIP = false;
+async function loginClaimTopic(login) { const h = new Uint8Array(await crypto.subtle.digest('SHA-256', MQ_TE.encode('okl-login:' + String(login).trim().toLowerCase()))); return NET_NS + 'acct/' + Array.from(h.slice(0, 12), b => b.toString(16).padStart(2, '0')).join(''); }
+function loginTaken(topic) { return new Promise(res => { const tm = setTimeout(() => { if (ROOM.unlisten) ROOM.unlisten(topic); res(false); }, 4000); ROOM.listen(topic, d => { clearTimeout(tm); if (ROOM.unlisten) ROOM.unlisten(topic); res(!!(d && d.t)); }, topic); }); }
+async function authRegister(login, pass, pass2, st) {
+  login = String(login || '').trim();
+  if (!/^[A-Za-zА-Яа-яЁё0-9_.-]{3,20}$/.test(login)) { setText(st, 'Логин: 3–20 букв или цифр, без пробелов.'); return; }
+  if (String(pass).length < 6) { setText(st, 'Пароль — от 6 символов.'); return; }
+  if (pass !== pass2) { setText(st, 'Пароли не совпадают.'); return; }
+  setText(st, 'Подключаемся…');
+  if (!await waitOnline(15000)) { setText(st, 'Нет связи с игровым сервером. Попробуйте ещё раз через минуту.'); authOffline(); return; }
+  const ct = await loginClaimTopic(login);
+  if (await loginTaken(ct)) { setText(st, 'Логин «' + login + '» уже занят. Придумайте другой или войдите.'); return; }
+  await acctRegister(login, pass, st);
+  if (save.acct && save.acct.t) { ROOM.send(ct, JSON.stringify({ t: Date.now() }), true); authDone(); }
+}
+async function authLogin(login, pass, st) { await acctLogin(login, pass, st); }
+function authDone() { const o = $('authO'); if (o) o.remove(); if (!save.cls && typeof chooseClassUI === 'function') {} }
+function authOffline() { const b = $('authSkip'); if (b) b.hidden = false; }
+function authScreen() {
+  if ((save.acct && save.acct.t) || AUTH_SKIP || $('authO')) return;
+  const o = mk('div', 'overlay autho'); o.id = 'authO';
+  const card = mk('div', 'card authcard');
+  card.appendChild(mk('h2', '', 'Облачный клинок'));
+  card.appendChild(mk('p', 'ds', save.cls ? 'Привяжите героя «' + save.name + '» (' + save.lv + ' ур.) к аккаунту — тогда его можно открыть на любом устройстве. Или войдите в существующий аккаунт.' : 'Войдите в аккаунт или зарегистрируйтесь, чтобы начать. Прогресс сохраняется на сервере, и героя можно открыть на любом телефоне или компьютере.'));
+  const tabs = mk('div', 'tabs'), tl = mk('button', 'tab', 'Вход'), tr = mk('button', 'tab on', 'Регистрация'); tl.type = tr.type = 'button'; tabs.append(tr, tl); card.appendChild(tabs);
+  const body = mk('div', 'authbody'); card.appendChild(body);
+  const field = (ph, type, ac) => { const i = mk('input'); i.type = type || 'text'; i.placeholder = ph; i.className = 'admin-in'; if (ac) i.autocomplete = ac; i.maxLength = type === 'password' ? 64 : 20; i.addEventListener('keydown', e => e.stopPropagation()); return i; };
+  const showReg = () => { tr.className = 'tab on'; tl.className = 'tab'; body.innerHTML = ''; const l = field('Логин', 'text', 'username'), p = field('Пароль (от 6 символов)', 'password', 'new-password'), p2 = field('Повторите пароль', 'password', 'new-password'), st = mk('div', 'ds', ''); body.append(l, p, p2, btn(save.cls ? 'Создать аккаунт для героя' : 'Зарегистрироваться', () => authRegister(l.value, p.value, p2.value, st), 'main'), st); };
+  const showLog = () => { tl.className = 'tab on'; tr.className = 'tab'; body.innerHTML = ''; const l = field('Логин', 'text', 'username'), p = field('Пароль', 'password', 'current-password'), st = mk('div', 'ds', ''); body.append(l, p, btn('Войти', () => authLogin(l.value, p.value, st), 'main'), st); if (save.cls) body.appendChild(mk('div', 'ds', 'Внимание: герой в этом браузере будет заменён героем из аккаунта.')); };
+  tr.onclick = showReg; tl.onclick = showLog; showReg();
+  const skip = mk('button', 'btn mini', 'Играть без аккаунта (нет связи с сервером)'); skip.id = 'authSkip'; skip.type = 'button'; skip.hidden = true; skip.onclick = () => { AUTH_SKIP = true; o.remove(); log('Вы играете без аккаунта — прогресс хранится только в этом браузере. Аккаунт можно создать в «Мир» → «Сохранение».', 'info'); };
+  card.appendChild(skip); o.appendChild(card); document.body.appendChild(o);
+  setTimeout(() => { if (NET_STATE !== 'online') authOffline(); }, 15000);
+}
+setTimeout(authScreen, 300);
+{ const ap = document.querySelector('.acctpick'); if (ap) ap.remove(); }
+
+/* ---------- mythic awakening ★1–5 ---------- */
+const AWK_COST = [[3, 10000], [5, 20000], [8, 40000], [12, 70000], [20, 120000]];
+const AWK_W = ['+10% к силе', 'Вампиризм: 6% урона возвращается здоровьем', 'Пламя: 15% шанс удара +60% урона', 'Сокрушение: крит. урон +30%', 'Пробуждённый: +25% к силе, сияющая аура'];
+const AWK_A = ['+10% к силе', 'Восстановление: 2% здоровья каждые 5 секунд', 'Щит: каждые 20 секунд щит на 10% здоровья', 'Твердыня: щит усиливается до 20% здоровья', 'Пробуждённый: +25% к силе, сияющая аура'];
+const awkW = () => (save.eq.weapon && save.eq.weapon.myth && save.eq.weapon.aw) || 0;
+const awkA = () => (save.eq.armor && save.eq.armor.myth && save.eq.armor.aw) || 0;
+const awkMul = it => 1 + .1 * Math.min(4, it.aw || 0) + ((it.aw || 0) >= 5 ? .35 : 0);
+function shardGive(n, why) { if (!save.mats) return; save.mats.shard = (save.mats.shard || 0) + n; log('+' + n + ' осколк' + (n === 1 ? 'а' : 'ов') + ' пробуждения' + (why ? ' (' + why + ')' : '') + '. Всего: ' + save.mats.shard + '.', 'good'); }
+function awaken(G, it) {
+  if (!it || !it.myth) return; const n = it.aw || 0; if (n >= 5) return;
+  const [sh, gold] = AWK_COST[n];
+  if ((save.mats.shard || 0) < sh || save.gold < gold) { log('Нужно ' + sh + ' осколков пробуждения и ' + gold + ' мон.', 'bad'); return; }
+  save.mats.shard -= sh; save.gold -= gold; it.aw = n + 1; mythStats(it); G.recalc(); persist();
+  banner(it.name + ' ' + '★'.repeat(it.aw), (it.slot === 'weapon' ? AWK_W : AWK_A)[n]); sfx('myth'); renderDiary(); G.renderInv();
+}
+function awakenSection(body, G) {
+  body.appendChild(mk('div', 'label', 'Пробуждение мифики'));
+  body.appendChild(mk('div', 'ds', 'Мифическое оружие и доспех можно пробудить до ★5. Осколки пробуждения дают рейды, мировой босс, Башня (каждый 10 этаж), страж гильдии, метеоритные сундуки и бродячий торговец. У вас осколков: ' + (save.mats.shard || 0) + '.'));
+  const items = ['weapon', 'armor'].map(s => save.eq[s]).filter(it => it && it.myth);
+  if (!items.length) body.appendChild(mk('div', 'ss', 'Наденьте мифическое оружие или доспех.'));
+  for (const it of items) {
+    const n = it.aw || 0, r = mk('div', 'srow'), info = mk('div'); info.style.minWidth = '0';
+    const list = it.slot === 'weapon' ? AWK_W : AWK_A;
+    info.append(mk('div', 'sn r4', it.name + ' ' + (n ? '★'.repeat(n) : '') + '☆'.repeat(5 - n)), mk('div', 'ss', list.map((t, i) => (i < n ? '✔ ' : '★' + (i + 1) + ' ') + t).join(' · ')));
+    r.append(cellFor(it), info, btn(n >= 5 ? 'Максимум' : 'Пробудить ★' + (n + 1) + ' · ' + AWK_COST[n][0] + ' оск. + ' + AWK_COST[n][1] + ' мон', () => awaken(G, it), 'main', n >= 5 || (save.mats.shard || 0) < AWK_COST[Math.min(4, n)][0] || save.gold < AWK_COST[Math.min(4, n)][1]));
+    body.appendChild(r);
+  }
+}
+function awkHit(S, m, dmg) { const w = awkW(); if (w >= 2 && S.hero.alive) { const v = Math.round(dmg * .06); if (v > 0) S.hero.hp = Math.min(S.hero.maxHp, S.hero.hp + v); } }
+function awkDmg(S, m, dmg) { const w = awkW(); if (w >= 3 && Math.random() < .15) { S.floatText(m.x, m.y - .5, 'пламя!', '#ff8a3a', 14); return dmg * 1.6; } return dmg; }
+function awkTick(S) {
+  const h = S.hero, a = awkA(), now = performance.now(); if (!h || !h.alive) return;
+  if (a >= 2 && now > (S.awRegT || 0)) { S.awRegT = now + 5000; if (h.hp < h.maxHp) h.hp = Math.min(h.maxHp, h.hp + h.maxHp * .02); }
+  if (a >= 3 && now > (S.awShT || 0)) { S.awShT = now + 20000; h.shield = Math.round(h.maxHp * (a >= 4 ? .2 : .1)); h.shieldUntil = S.now + 20; S.floatText(h.x, h.y - .4, 'щит пробуждения', '#9ad8ff', 13); }
+}
+function awkAura(S) {
+  const on = awkW() >= 5 || awkA() >= 5, h = S.hero;
+  if (!on || !h || !h.spr) { if (S.awAura && S.awAura.scene) S.awAura.destroy(); S.awAura = null; return; }
+  if (!S.awAura || !S.awAura.scene) { S.awAura = S.add.image(0, 0, 'glow').setTint(0xff5ad0).setBlendMode(Phaser.BlendModes.ADD).setAlpha(.55); }
+  S.awAura.setPosition(h.spr.x, h.spr.y - 6).setDepth(h.spr.depth - .4).setScale(1.6 + Math.sin(S.now * 3) * .15, .7 + Math.sin(S.now * 3) * .05);
+}
+
+/* ---------- house storage ---------- */
+const STORE_MAX = 60;
+if (!Array.isArray(save.store)) save.store = [];
+function storeSection(body, G) {
+  body.appendChild(mk('div', 'label', 'Склад · ' + save.store.length + ' / ' + STORE_MAX));
+  const inV = G && G.zone.village;
+  body.appendChild(mk('div', 'ds', inV ? 'Нажмите на вещь в сумке, чтобы положить её на склад, и на вещь на складе, чтобы забрать.' : 'Склад стоит в доме — пользоваться им можно в деревне Кумо.'));
+  const wrap = mk('div', 'storewrap'), colB = mk('div', 'storecol'), colS = mk('div', 'storecol');
+  colB.appendChild(mk('div', 'ss', 'Сумка · ' + save.inv.length + ' / ' + BAG)); colS.appendChild(mk('div', 'ss', 'Склад'));
+  const gB = mk('div', 'storegrid'), gS = mk('div', 'storegrid');
+  save.inv.forEach((it, i) => { const c = cellFor(it, ''); c.title = itemName(it) + ' → на склад'; c.onclick = () => { if (!inV) return; if (save.store.length >= STORE_MAX) { log('Склад полон.', 'bad'); return; } save.store.push(save.inv.splice(i, 1)[0]); persist(); G.selItem = null; G.renderInv(); renderDiary(); }; gB.appendChild(c); });
+  save.store.forEach((it, i) => { const c = cellFor(it, ''); c.title = itemName(it) + ' → в сумку'; c.onclick = () => { if (!inV) return; if (save.inv.length >= BAG && !(it.kind && G.stack(it.kind))) { log('Сумка полна.', 'bad'); return; } const x = save.store.splice(i, 1)[0]; G.give(x, true); persist(); G.renderInv(); renderDiary(); }; gS.appendChild(c); });
+  if (!save.store.length) gS.appendChild(mk('div', 'ds', 'Пусто.'));
+  colB.appendChild(gB); colS.appendChild(gS); wrap.append(colB, colS); body.appendChild(wrap);
+}
+
+/* ---------- raid «Бездна Левиафана» for a party of up to 4 ---------- */
+function abyssTick(S, boss) {
+  const R = S.raid || (S.raid = { next: performance.now() + 5000, phase: 1, donutT: performance.now() + 20000, healT: 0 });
+  const tell = o => { if (PARTY) netSend('g/' + PARTY.id, Object.assign({ t: 'rmech', f: save.pid, id: PARTY.id, i: S.inst }, o)); raidMech(S, Object.assign({ i: S.inst }, o)); };
+  const k = boss.hp / boss.maxHp, now = performance.now(), who = [{ pid: save.pid, x: S.hero.x, y: S.hero.y }, ...raidMates(S).filter(u => !u.dead)];
+  if (R.phase === 1 && k < .65) {
+    R.phase = 2; boss.shield = true; boss.spr.setTint(0x3a6aff); boss.spr.baseTint = 0x3a6aff; tell({ k: 'tide', on: true });
+    R.tot = []; for (let i = 0; i < 3; i++) { const a = i * 2.09 + .3, x = boss.x + Math.cos(a) * 6, y = boss.y + Math.sin(a) * 6, t = S.spawnMob('tidetotem', S.mobWalkable(x, y) ? x : boss.x + Math.cos(a) * 3, S.mobWalkable(x, y) ? y : boss.y + Math.sin(a) * 3, boss.lv, true); t.maxHp = t.hp = Math.round(boss.maxHp * .05); t.atk = 0; t.passive = true; S.drawBar(t); R.tot.push(t); }
+    for (let i = 0; i < 2 + who.length; i++) { const a = Math.random() * 6.28, m = S.spawnMob('tidespawn', boss.x + Math.cos(a) * 4, boss.y + Math.sin(a) * 4, boss.lv - 2, true); m.angry = true; }
+  }
+  if (R.phase === 2) {
+    if (now > R.healT) { R.healT = now + 1000; const alive = R.tot.filter(t => t.alive).length; if (alive) { boss.hp = Math.min(boss.maxHp, boss.hp + boss.maxHp * .004 * alive); S.drawBar(boss); } }
+    if (R.tot.every(t => !t.alive)) { R.phase = 3; boss.shield = false; boss.spr.setTint(0x4ae0ff); boss.spr.baseTint = 0x4ae0ff; tell({ k: 'tide', on: false }); }
+  }
+  if (R.phase === 3 && k < .3 && !R.enraged) { R.enraged = true; boss.atk *= 1.4; tell({ k: 'abyssrage' }); }
+  if (now >= R.next) {
+    R.next = now + (R.enraged ? 6500 : 9500);
+    const t = who[Math.floor(Math.random() * who.length)], dx = t.x - boss.x, dy = t.y - boss.y, L = Math.hypot(dx, dy) || 1, pts = [];
+    for (let i = 1; i <= 7; i++) pts.push([Math.round((boss.x + dx / L * i * 1.8) * 10) / 10, Math.round((boss.y + dy / L * i * 1.8) * 10) / 10, 1.5]);
+    tell({ k: 'circ', p: pts, d: 1.8, c: 'w' });
+  }
+  if (R.phase >= 3 && now >= R.donutT) { R.donutT = now + (R.enraged ? 16000 : 22000); tell({ k: 'donut', x: Math.round(boss.x * 10) / 10, y: Math.round(boss.y * 10) / 10, d: 3.5 }); }
+}
+function abyssDonut(S, x, y, delay) {
+  banner('Водоворот', 'Бегите к Левиафану — спасение только рядом с ним!'); sfx('roar', { vol: .5 });
+  const g = S.add.graphics().setDepth(190001), t0 = performance.now(), p = iso(x, y), R = 3;
+  const ev = S.time.addEvent({ delay: 50, loop: true, callback: () => { const k = Math.min(1, (performance.now() - t0) / (delay * 1000)); g.clear().lineStyle(4, 0x4ac0ff, .9).strokeEllipse(p.x, p.y, R * HW * 2.83, R * HH * 2.83).fillStyle(0x1a6aff, .08 + .12 * k).fillRect(p.x - 2000, p.y - 2000, 4000, 4000).fillStyle(0x000000, 0); } });
+  setTimeout(() => { ev.remove(); g.destroy(); if (!S.scene.isActive()) return; const h = S.hero; S.burst(x, y, [0x4ac0ff, 0xffffff], 30, 90, 20); sfx('boom'); if (h.alive && Math.hypot(h.x - x, h.y - y) > R) { S.hurtHero(h.maxHp * .55 * (h.def + 60) / 60); log('Водоворот накрыл вас! Во время водоворота держитесь рядом с Левиафаном.', 'bad'); } }, delay * 1000);
+}
+
+/* ---------- world events on the open maps ---------- */
+const WE_SLOT = 20 * 60000, WE_LEN = 10 * 60000;
+const WE_TYPES = { meteor: { n: 'Метеоритный дождь', d: 'С неба упали сундуки — ищите их в центре земли.' }, merchant: { n: 'Бродячий торговец', d: 'Торговец редкостями стоит в центре земли. Откройте «События» → «Торговать».' }, rift: { n: 'Разлом демонов', d: 'В центре земли открылся разлом: волны демонов, за них — опыт и осколки.' } };
+let WE_TEST = ''; try { WE_TEST = new URLSearchParams(location.search).get('we') || ''; } catch (e) {}
+const WE_ZONES = () => Object.keys(ZONES).filter(z => !ZONES[z].dungeon && !ZONES[z].arena && !ZONES[z].village && ZONES[z].mobs && ZONES[z].mobs.length);
+function weState(now) {
+  now = now || Date.now(); const slot = Math.floor(now / WE_SLOT), t0 = slot * WE_SLOT, zs = WE_ZONES(), types = Object.keys(WE_TYPES);
+  if (WE_TEST) { const [ty, zz] = WE_TEST.split(':'); return { type: WE_TYPES[ty] ? ty : 'meteor', zone: ZONES[zz] ? zz : zs[0], live: true, id: 'we' + slot + WE_TEST, ends: t0 + WE_SLOT, next: t0 + WE_SLOT }; }
+  let h = (slot * 2654435761) >>> 0; const zone = zs[h % zs.length], type = types[(h >>> 8) % types.length];
+  return { type, zone, live: now - t0 < WE_LEN, id: 'we' + slot, ends: t0 + WE_LEN, next: t0 + WE_SLOT };
+}
+const WE = { id: '', spawned: '', warned: '', wave: 0, waveT: 0, bought: {} };
+Object.assign(MOBS, {
+  wechest: { name: 'Метеоритный сундук', key: 'golem', tint: 0xffd36a },
+  riftoni: { name: 'Демон разлома', key: 'horned', tint: 0xb050ff },
+  tidespawn: { name: 'Порождение прилива', key: 'kappa', tint: 0x3a8aff },
+  tidetotem: { name: 'Тотем прилива', key: 'shade', tint: 0x40e0ff, hover: true },
+  leviathan: { name: 'Левиафан Бездны', key: 'boss', tint: 0x4ae0ff, boss: true, drops: [['wings', 'azure', .25], ['costume', 'abyss', .25]] }
+});
+for (const k of ['wechest', 'riftoni', 'tidespawn', 'tidetotem']) BEST_SKIP.add(k);
+function weTick(S) {
+  const st = weState();
+  if (st.live && WE.warned !== st.id) { WE.warned = st.id; log('Мировое событие: «' + WE_TYPES[st.type].n + '» в землях «' + ZONES[st.zone].name + '». ' + WE_TYPES[st.type].d, 'info'); if (S.zoneId === st.zone) banner(WE_TYPES[st.type].n, ZONES[st.zone].name); }
+  if (!st.live || S.zoneId !== st.zone || !S.hero) { if (S.weNpc && (!st.live || S.zoneId !== st.zone)) { S.weNpc.destroy(); S.weNpc = null; } return; }
+  if (st.type === 'meteor' && WE.spawned !== st.id + S.zoneId + (S.weGen || 0)) {
+    WE.spawned = st.id + S.zoneId + (S.weGen || 0);
+    if (!save.weOpen || save.weOpen.id !== st.id) save.weOpen = { id: st.id, n: 0 };
+    const R = mulberry32(st.id.length * 977 + Math.floor(Date.now() / WE_SLOT));
+    for (let i = save.weOpen.n; i < 6; i++) for (let t = 0; t < 30; t++) { const x = C + (R() - .5) * 26, y = C + (R() - .5) * 26; if (S.mobWalkable(x, y)) { const m = S.spawnMob('wechest', x, y, save.lv, true); m.maxHp = m.hp = 1; m.passive = true; m.local = true; m.xp = Math.round(xpNeed(save.lv) * .03); m.gold = 200 + save.lv * 20; S.drawBar(m); const p = iso(x, y), g = S.add.image(p.x, p.y - 20, 'glow').setTint(0xffb040).setBlendMode(Phaser.BlendModes.ADD).setScale(1.2).setAlpha(.6).setDepth(p.y + 1); m.glowFx = g; break; } }
+  }
+  if (st.type === 'merchant' && !S.weNpc) { const p = iso(C, C); S.weNpc = S.add.text(p.x, p.y - 60, '🏮 Бродячий торговец', { fontFamily: FONT, fontSize: '16px', color: '#ffd36a', stroke: '#000', strokeThickness: 4 }).setOrigin(.5).setDepth(190000); }
+  if (st.type === 'rift' && !others().some(o => (o.in || o.z) === S.inst && o.pid < save.pid)) {
+    if (WE.id !== st.id) { WE.id = st.id; WE.wave = 0; WE.waveT = 0; }
+    if (WE.wave < 5 && performance.now() > WE.waveT && !S.mobs.some(m => m.alive && m.kind === 'riftoni' && !m.remote)) {
+      WE.wave++; WE.waveT = performance.now() + 40000; const crew = 1 + others().filter(o => (o.in || o.z) === S.inst).length;
+      for (let i = 0; i < 5 + WE.wave * 2; i++) for (let t = 0; t < 30; t++) { const a = rand(0, 6.28), r = rand(2, 7), x = C + Math.cos(a) * r, y = C + Math.sin(a) * r; if (S.mobWalkable(x, y)) { const m = S.spawnMob('riftoni', x, y, save.lv + 1); m.maxHp = m.hp = Math.round(m.maxHp * (1.2 + .3 * (crew - 1))); m.angry = true; m.aggro = 30; S.drawBar(m); break; } }
+      banner('Разлом · волна ' + WE.wave + ' из 5', ZONES[S.zoneId].name);
+    }
+  }
+}
+function weKill(S, m) {
+  if (m.kind === 'wechest') { if (m.glowFx) m.glowFx.destroy(); if (save.weOpen) save.weOpen.n++; const r = Math.random(); if (r < .12) shardGive(1, 'метеоритный сундук'); else if (r < .4) gemDrop(S, 2, 1); else if (r < .55) S.give(scroll(1)); persist(); }
+  if (m.kind === 'riftoni') { S.gainXp(m.xp); if (Math.random() < .03) shardGive(1, 'разлом'); }
+}
+const WE_SHOP = [['shard', 'Осколок пробуждения', 20000, 3], ['gem', 'Огранённый камень (3 ст.)', 8000, 5], ['scroll', 'Свиток верной заточки ×3', 3000, 5], ['pet', 'Случайный питомец', 25000, 1]];
+function weShop() {
+  const st = weState(), G = GAME; if (!G || st.type !== 'merchant' || !st.live || G.zoneId !== st.zone) { log('Торговец сейчас в землях «' + ZONES[st.zone].name + '» — только во время события.', 'bad'); return; }
+  if (!WE.bought[st.id]) WE.bought[st.id] = {};
+  let p = $('weShopP'); if (p) p.remove(); p = mk('div', 'panel evp'); p.id = 'weShopP';
+  const head = mk('div', 'phead'); head.append(mk('b', '', 'Бродячий торговец'), mk('span', '', 'редкости, пока он здесь')); const x = mk('button', 'x', '×'); x.type = 'button'; x.onclick = () => p.remove(); head.appendChild(x); p.appendChild(head);
+  const body = mk('div', 'evbody'); p.appendChild(body);
+  const draw = () => { body.innerHTML = ''; for (const [k, n, price, lim] of WE_SHOP) { const got = WE.bought[st.id][k] || 0, r = mk('div', 'srow noic'), info = mk('div'); info.append(mk('div', 'sn r3', n), mk('div', 'ss', price + ' мон · осталось ' + (lim - got))); r.append(info, btn('Купить', () => {
+    if (save.gold < price || got >= lim) return; if (k !== 'shard' && save.inv.length >= BAG) { log('Сумка полна.', 'bad'); return; }
+    save.gold -= price; WE.bought[st.id][k] = got + 1;
+    if (k === 'shard') shardGive(1, 'торговец'); else if (k === 'gem') gemDrop(G, 3, 1); else if (k === 'scroll') G.give(scroll(3)); else { const ids = Object.keys(PETS).filter(i => PETS[i].price); const pt = petItem(ids[ri(0, ids.length - 1)], save.lv); G.give(pt); banner(pt.name, 'Питомец от торговца'); }
+    persist(); draw(); }, 'main', save.gold < price || got >= lim)); body.appendChild(r); } };
+  draw(); document.querySelector('.hud').appendChild(p); if (typeof bringFront === 'function') bringFront(p);
+}
+
+SEAL_SHOP.r_abyss = [['wings', 'azure', 800], ['costume', 'abyss', 600], ['pet', 'jadeloong', 900]]; SEAL_PER.r_abyss = 120;
+{ const _h = renderHomeTab; renderHomeTab = (b, G) => { _h(b, G); storeSection(b, G); }; }
+{ const _p = renderPathTab; renderPathTab = (b, G) => { awakenSection(b, G); _p(b, G); }; }
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
