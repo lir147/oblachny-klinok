@@ -41,10 +41,81 @@ const FLR = (() => {
   function init(S) {
     scene = S; window.__FLG = S;
     if (!MAN && !status.__man) { status.__man = 1; fetch(BASE + 'manifest.json').then(r => r.json()).then(j => { MAN = j; }).catch(() => { MAN = { hero: { m: [], f: [] }, mob: [] }; }); }
-    S.load.on('filecomplete', (key, type) => { if (type === 'atlasjson' && key.startsWith('fl_')) { status[key] = 'ready'; makeAnims(S, key); } });
-    S.load.on('loaderror', f => { if (f && f.key && f.key.startsWith('fl_')) status[f.key] = 'missing'; });
-    S.events.on('postupdate', () => { for (const r of rigs) tick(S, r); });
-    S.events.once('shutdown', () => { for (const r of [...rigs]) destroy(r); });
+    if (!S._flInit) {
+      S._flInit = true;
+      S.load.on('filecomplete', (key, type) => { if (type === 'atlasjson' && key.startsWith('fl_')) { status[key] = 'ready'; makeAnims(S, key); } });
+      S.load.on('loaderror', f => { if (f && f.key && f.key.startsWith('fl_')) status[f.key] = 'missing'; });
+      S.events.on('postupdate', () => { for (const r of rigs) tick(S, r); });
+      S.events.on('shutdown', () => { for (const r of [...rigs]) destroy(r); });
+    }
+    addTiles(S);
+    if (!TILE.ready) TILE.waiters.push(() => { if (S.sys && S.sys.isActive()) { addTiles(S); if (S.gChunks) { for (const k of Object.keys(S.gChunks)) S.releaseChunk(k); for (const key of [...GTEX.keys()]) { if (S.textures.exists(key)) S.textures.remove(key); GTEX.delete(key); } if (S.updateGround) try { S.updateGround(true); } catch (e) {} } } });
+  }
+  /* ---------- карта: тайлы земли и объекты ---------- */
+  const TILE = { img: null, json: null, ready: false, waiters: [], tinted: {} };
+  fetch(BASE + 'tiles.json').then(r => r.json()).then(j => { TILE.json = j; const im = new Image(); im.onload = () => { TILE.img = im; TILE.ready = true; const w = TILE.waiters.splice(0); w.forEach(f => { try { f(); } catch (e) { console.warn(e); } }); }; im.src = BASE + 'tiles.webp'; }).catch(() => {});
+  function addTiles(S) { if (TILE.ready && !S.textures.exists('fl_t')) S.textures.addAtlas('fl_t', TILE.img, TILE.json); }
+  const rng = n => { const a = []; for (let i = n[0]; i <= n[1]; i++) a.push(i); return a; };
+  const DFLOOR = [16, 17, 18, 19, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47];
+  const GROUND = {
+    t: { p: 'g', grass: rng([16, 31]), path: rng([32, 43]) },
+    b: { p: 'g', grass: rng([16, 31]), path: rng([32, 43]), tint: 0xdce8a0 },
+    w: { p: 'g', grass: rng([16, 31]), path: rng([32, 43]), tint: 0xa8dcd4 },
+    m: { p: 'g', grass: rng([16, 31]), path: rng([44, 47]), tint: 0x9aa88a },
+    s: { p: 's', grass: rng([16, 31]), path: rng([32, 43]), flower: rng([568, 583]) },
+    d: { p: 's', grass: rng([16, 31]), path: rng([32, 43]), flower: rng([568, 575]), tint: 0xe8c890 },
+    a: { p: 'c', grass: rng([16, 31]), path: rng([48, 51]), flower: rng([52, 55]) },
+    k: { p: 'd', grass: DFLOOR, path: [32, 33, 34, 35] },
+    v: { p: 'd', grass: DFLOOR, path: [56, 57, 58, 59], tint: 0xc0a8e8 }
+  };
+  const groundOk = () => TILE.ready;
+  function tintedSrc(tint) {
+    if (!tint) return TILE.img;
+    if (TILE.tinted[tint]) return TILE.tinted[tint];
+    const c = document.createElement('canvas'); c.width = TILE.img.width; c.height = TILE.img.height; const x = c.getContext('2d');
+    x.drawImage(TILE.img, 0, 0); x.globalCompositeOperation = 'multiply'; x.fillStyle = '#' + tint.toString(16).padStart(6, '0'); x.fillRect(0, 0, c.width, c.height);
+    x.globalCompositeOperation = 'destination-in'; x.drawImage(TILE.img, 0, 0);
+    return (TILE.tinted[tint] = c);
+  }
+  function paintGround(x, code, P, ti0, ti1, tj0, tj1, m, inView, tileRng, z) {
+    const G = GROUND[code] || GROUND.t, src = tintedSrc(G.tint), F = TILE.json.frames;
+    for (let j = tj0; j <= tj1; j++) for (let i = ti0; i <= ti1; i++) {
+      const c = P(i + .5, j + .5); if (!inView(c[0], c[1], 60)) continue;
+      const t = m[j][i], R = tileRng(z, i, j, 5);
+      const list = t === 3 ? G.path : (t === 2 && G.flower && R() < .5) ? G.flower : G.grass;
+      const f = F[G.p + list[Math.floor(R() * list.length)]]; if (!f) continue;
+      const fr = f.frame;
+      x.drawImage(src, fr.x, fr.y, fr.w, fr.h, c[0] - HW - .6, c[1] - HH - .3, HW * 2 + 1.2, HH * 2 + .6);
+    }
+  }
+  // объект карты v55 → кадр атласа Flare
+  const pickBy = (list, x, y) => list[Math.abs(Math.floor(x * 7.13 + y * 3.71)) % list.length];
+  const DECO = {
+    pine: ['g', [248, 249, 250, 251], .95], snowpine: ['g', [248, 249, 250, 251], .95, 0xe4ecff], wist: ['g', [252, 253, 254, 255], .95, 0xe0c8ff], maple: ['g', [252, 253, 254, 255], .95, 0xffb070],
+    sakura: ['g', [240, 241, 242, 243], .95, 0xffc8dc], dead: ['g', [244, 245, 246, 247], .95], bamboo: ['g', [248, 249, 250, 251], .9, 0xd0f0a0], bush: ['g', [112, 113, 116, 117], .8],
+    rock: ['g', [128, 129, 130, 131], .8], snowrock: ['s', [602, 603, 622, 623], .8], stump: ['g', [136, 137], .8], crystal: ['s', [148, 149, 150, 151], .8, 0xbfe8ff],
+    shrine: ['d', [150, 151, 160, 161], .85], torii: ['d', [126, 127], 1], lantern: ['d', [183], .9], stall: ['g', [98], .9], anvil: ['g', [103], .9],
+    chest: ['g', [76], .8], gchest: ['g', [297], .95], board: ['d', [196], .9], bed: ['d', [220], 1], table: ['d', [166], .9], books: ['d', [112], 1], throne: ['d', [162], 1], barrel: ['d', [178], .85], crate: ['d', [179], .85], statue: ['d', [150], .85],
+    house0: ['g', [72], 1], house1: ['g', [75], 1], house2: ['g', [72], 1], well2: ['g', [102], .9], portal3: ['d', [265], .8, 0, true]
+  };
+  function deco(S, key, code, x, y) {
+    if (!TILE.ready || !S.textures.exists('fl_t')) return null;
+    let d = DECO[key]; if (!d) return null;
+    let set = d[0], ids = d[1];
+    if (code === 's' && key === 'dead') { set = 's'; ids = [435, 436, 437, 439]; }
+    if (code === 's' && key === 'stump') { set = 's'; ids = [555]; }
+    if (code === 's' && (key === 'house0' || key === 'house1' || key === 'house2')) { set = 's'; ids = [104, 107]; }
+    const f = set + pickBy(ids, x, y);
+    if (!TILE.json.frames[f]) return null;
+    return { f, o: TILE.json.meta.origins[f], s: (1 / 3) / TILE.json.meta.scale * 1.35 * d[2], tint: d[3] || 0, flat: !!d[4] };
+  }
+  function decoImage(S, key, code, x, y) { // готовая картинка объекта или null
+    const fd = deco(S, key, code, x, y); if (!fd) return null;
+    const img = S.add.image(x, y, 'fl_t', fd.f).setOrigin(fd.o[0], fd.o[1]).setScale(fd.flat ? (1 / 3) / TILE.json.meta.scale * 1.1 : fd.s).setDepth(fd.flat ? -95000 : y);
+    if (fd.tint) img.setTint(fd.tint);
+    img.setScale = function () { return this; }; // старый код подгонял масштаб своих текстур — Flare уже в нужном
+    img.flare = true;
+    return img;
   }
   const has = (sex, item) => !MAN || (MAN.hero[sex] || []).includes(item);
   function need(S, key, path) {
@@ -72,10 +143,11 @@ const FLR = (() => {
     const cls = TIER[o.cls] ? o.cls : 'warrior', sex = o.fem ? 'f' : 'm';
     const t = Math.max(0, Math.min(4, o.costume ? Math.max(3, o.r || 0) : (o.r || 0)));
     const L = Object.assign({}, SETS[TIER[cls][t]]);
-    L.head = sex === 'f' ? 'head_long' : 'head_short';
+    L.head = sex === 'f' ? 'head_long' : o.bald ? 'head_bald' : 'head_short';
     let helm = HELM[cls][t]; if (o.head) helm = cls === 'mage' ? 'mage_hood_alt2' : cls === 'warrior' ? 'plate_helm' : 'leather_hood';
     if (helm) L.helm = helm;
-    L.main = WEAP[o.weapon] || DEF_WEAP[cls];
+    L.main = o.noWeapon ? null : (WEAP[o.weapon] || o.weapon || DEF_WEAP[cls]); if (!L.main) delete L.main;
+    if (o.noHelm) delete L.helm;
     if (cls === 'rogue' && t >= 2) L.off = 'buckler';
     for (const k in L) if (!has(sex, L[k])) delete L[k];
     const tint = {};
@@ -212,5 +284,7 @@ const FLR = (() => {
     };
     tryDraw(0);
   }
-  return { init, heroSpec, portrait, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
+  function whenTiles(f) { if (TILE.ready) return f(); let done = false; const go = () => { if (!done) { done = true; f(); } }; TILE.waiters.push(go); setTimeout(go, 5000); }
+  const NPC = { npc_master: { cls: 'mage', r: 2, weapon: 'bo' }, npc_trader: { cls: 'archer', r: 0, fem: true, noWeapon: true, noHelm: true }, npc_smith: { cls: 'warrior', r: 1, weapon: 'smith_hammer', bald: true, noHelm: true } };
+  return { NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
 })();

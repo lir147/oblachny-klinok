@@ -3134,6 +3134,7 @@ function paintGroundChunk(z, m, X0, Y0, CW, CH) {
     x.beginPath(); x.moveTo(e[0], e[1] + 2); x.quadraticCurveTo(e[0] + (R() - .5) * 8, e[1] + L * .6, e[0] + (R() - .5) * 6, e[1] + L); x.stroke();
   }
   }
+  if (FLR.groundOk()) { x.save(); island(); x.clip(); FLR.paintGround(x, z.tiles, P, ti0, ti1, tj0, tj1, m, inView, tileRng, z); } else {
   // --- base colour per tile
   const BM = 28, base = document.createElement('canvas'); base.width = CW + BM * 2; base.height = CH + BM * 2;
   const bx = base.getContext('2d'); bx.translate(-X0 + BM, -Y0 + BM);
@@ -3195,6 +3196,7 @@ function paintGroundChunk(z, m, X0, Y0, CW, CH) {
       if (R() < (t === 2 ? .7 : .15)) for (let k = 0; k < 3; k++) { const p = pt(R(), R()); x.fillStyle = pal.flower[Math.floor(R() * 3)]; x.beginPath(); x.arc(p[0], p[1], 1.2, 0, 6.29); x.fill(); }
       if (R() < .06) { const p = pt(R(), R()); x.fillStyle = 'rgba(80,80,90,.9)'; x.beginPath(); x.ellipse(p[0], p[1], 3, 1.6, 0, 0, 6.29); x.fill(); x.fillStyle = 'rgba(255,255,255,.2)'; x.beginPath(); x.ellipse(p[0] - .8, p[1] - .5, 1.4, .6, 0, 0, 6.29); x.fill(); }
     }
+  }
   }
   // smooth ponds: muddy bank, deep gradient water, reflections, ripples, foam, lilies or ice
   for (let pk = 0; pk < z.ponds.length; pk++) {
@@ -4368,7 +4370,16 @@ ZONES.bg_field = { name: 'Поле битвы', seed: 177, tiles: 't', bg: '#0d1
 ZONES.arena_map = { name: 'Арена Облачного клинка', seed: 263, tiles: 'k', bg: '#100a14', deco: 'arena', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 ZONES.ghall = { name: 'Зал гильдии', seed: 251, tiles: 'k', bg: '#0e0a14', deco: 'sky', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
 ZONES.tower = { name: 'Башня испытаний', seed: 233, tiles: 'v', bg: '#0a0814', deco: 'spirit', ambient: 'none', ponds: [], mobs: [], portals: [{ to: 'village', x: 14.5, y: 27 }], arena: true };
-for (const z of Object.values(ZONES)) z.size = z.dungeon || z.arena ? 44 : 150;
+Object.assign(ZONES, {
+  town: { name: 'Деревня Кумо', seed: 13, tiles: 't', bg: '#0d1220', village: true, town: true, deco: 'town', ambient: 'fireflies', ponds: [], mobs: [], size: 32,
+    portals: [{ to: 'village', x: 14.5, y: 27 }, { to: 'gate', x: 27, y: 14.5, gate: true }, { to: 'home', x: 14.5, y: 1 }] },
+  home: { name: 'Ваш дом', seed: 17, tiles: 'k', bg: '#0e0a14', village: true, home: true, deco: 'none', ambient: 'none', ponds: [], mobs: [], size: 18,
+    portals: [{ to: 'town', x: 14.5, y: 27 }] }
+});
+ZONES.village.village = false; ZONES.village.name = 'Окрестности деревни Кумо';
+ZONES.village.portals = ZONES.village.portals.filter(p => !p.gate); ZONES.village.portals.unshift({ to: 'town', x: 14.5, y: 14.5 });
+for (const [id, z] of Object.entries(ZONES)) if (z.dungeon || z.arena || ['ghall', 'tower', 'bg_field', 'arena_map'].includes(id)) for (const p of z.portals || []) if (p.to === 'village') p.to = 'town';
+for (const z of Object.values(ZONES)) z.size = z.size || (z.dungeon || z.arena ? 44 : 150);
 { for (const z of Object.values(ZONES)) {
     const S = z.size, ZF = S / 28, Cz = S / 2, rk = 1.25 * Math.sqrt(ZF / (44 / 28)), edge = v => v > 25 ? S - 1 : v < 3 ? 1 : Cz + .5 + (v - 14.5) * ZF;
     z.ponds = z.ponds.map(([x, y, rx, ry]) => [x * ZF, y * ZF, rx * rk, ry * rk]);
@@ -4534,7 +4545,7 @@ const absorbXp = it => [40, 100, 240, 600, 1500][it.rarity] + Math.round((it.val
 const lookBonus = () => (save.ward.lv - 1) * .015 + save.coll.length * .006;
 if (!save.qv) { if (save.q.i >= 3) save.q = { i: 3, n: 0, state: 'avail' }; save.qv = 3; }
 save.inv.forEach(fixItem); Object.values(save.eq).forEach(fixItem);
-if (!ZONES[save.zone]) save.zone = 'village';
+if (!ZONES[save.zone]) save.zone = 'town';
 let CLOUD_DIRTY = 0;
 const persist = () => { if (typeof NO_PERSIST !== 'undefined' && NO_PERSIST) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} CLOUD_DIRTY = CLOUD_DIRTY || Date.now(); };
 
@@ -4544,8 +4555,13 @@ const xpNeed = lv => Math.round(40 * Math.pow(lv, 1.5));
 const NPCS = [
   { id: 'master', name: 'Мастер Гэнсай', role: 'старый мечник', key: 'npc_master', x: C - 2.3, y: C - 2.3 },
   { id: 'trader', name: 'Торговка Оцуру', role: 'лавка и наряды', key: 'npc_trader', x: C + 2.3, y: C - 2.3 },
-  { id: 'smith', name: 'Кузнец Тэцу', role: 'заточка', key: 'npc_smith', x: C - 2.3, y: C + 2.3 }
+  { id: 'smith', name: 'Кузнец Тэцу', role: 'заточка', key: 'npc_smith', x: C - 2.3, y: C + 2.3 },
+  { id: 'chest', name: 'Личный сундук', role: 'склад', key: 'obj_chest', obj: 'chest', x: C - 4.2, y: C - .6 },
+  { id: 'gchest', name: 'Сундук гильдии', role: 'общий склад гильдии', key: 'obj_gchest', obj: 'gchest', x: C - .6, y: C - 4.2 },
+  { id: 'chest', name: 'Сундук', role: 'склад', key: 'obj_chest', obj: 'chest', zone: 'home', x: C - 2.2, y: C - 3.2 },
+  { id: 'board', name: 'Обустройство', role: 'дом, сад и трофеи', key: 'obj_board', obj: 'board', zone: 'home', x: C + 2.2, y: C - 3.2 }
 ];
+NPCS.forEach(d => { d.dx = d.x - C; d.dy = d.y - C; });
 
 /* ---------- HUD helpers ---------- */
 const setText = (el, s) => { if (el._t !== s) { el._t = s; el.textContent = s; } };
@@ -4592,15 +4608,15 @@ class World extends Phaser.Scene {
   create(data) {
     GAME = this;
     FLR.init(this);
-    this.zoneId = (data && data.zone) || save.zone || 'village';
-    if (!(data && data.zone) && ZONES[this.zoneId] && ZONES[this.zoneId].dungeon) this.zoneId = 'village';
+    this.zoneId = (data && data.zone) || save.zone || 'town';
+    if (!(data && data.zone) && ZONES[this.zoneId] && ZONES[this.zoneId].dungeon) this.zoneId = 'town';
     // network instance: open zones are shared, a dungeon run belongs to one party (or to you alone)
     this.dgDiff = Math.max(0, Math.min(2, +(data && data.diff) || 0)); this.dgT0 = Date.now();
     this.netMobSeq = 0; this.rmobs = new Map(); this.hitQ = new Map(); this.puMap = new Map(); this.partyUnits = [];
     { const zd = ZONES[this.zoneId] && ZONES[this.zoneId].dungeon, gi = data && data.dgInst;
       this.dgHost = !!(zd && gi && PARTY && PARTY.lead === save.pid && gi === 'dg:' + PARTY.id + ':' + this.zoneId);
       this.dgRemote = !!(zd && gi && !this.dgHost);
-      this.inst = zd ? (gi || 'solo:' + save.pid + ':' + this.zoneId) : gi && gi.startsWith('bg:') ? gi : this.zoneId === 'tower' ? 'tower:' + save.pid : this.zoneId === 'ghall' ? 'gh:' + (save.guild ? gtag(save.guild) : save.pid) : this.zoneId; }
+      this.inst = zd ? (gi || 'solo:' + save.pid + ':' + this.zoneId) : gi && gi.startsWith('bg:') ? gi : this.zoneId === 'tower' ? 'tower:' + save.pid : this.zoneId === 'home' ? 'home:' + save.pid : this.zoneId === 'ghall' ? 'gh:' + (save.guild ? gtag(save.guild) : save.pid) : this.zoneId; }
     this.tw = this.zoneId === 'tower' ? { f: Math.max(1, +(data && data.towF) || 1), state: 'wait', t: performance.now() + 2500 } : null;
     this.zone = ZONES[this.zoneId];
     N = this.zone.size || 44; C = N / 2;
@@ -4764,6 +4780,7 @@ class World extends Phaser.Scene {
     const HI = { pine: 'pine2', wist: 'wist2', rock: 'rock2', snowpine: 'spine2', snowrock: 'srock2', maple: 'maple3', sakura: 'sakura3', dead: 'dead3', bush: 'bush3', stump: 'stump3', bamboo: 'bamboo3', crystal: 'crystal3', shrine: 'shrine3', torii: 'torii3', lantern: 'lantern3', stall: 'stall3', anvil: 'anvil3' };
     this.decoHI = HI;
     const putDeco = (key, p, oy) => {
+      const fimg = FLR.decoImage(this, key, z.tiles, p.x, p.y); if (fimg) return fimg;
       const hk = HI[key];
       this.add.image(p.x, p.y, 'shadow').setDepth(-90000).setAlpha(.7).setScale(key.includes('rock') || key === 'bush' || key === 'stump' ? 1.1 : key === 'torii' || key === 'stall' ? 2.6 : 1.9, 1.5);
       const img = this.add.image(p.x, p.y, hk || key).setOrigin(.5, oy).setDepth(p.y);
@@ -4789,6 +4806,8 @@ class World extends Phaser.Scene {
       else if (z.deco === 'sky') { if (r < .03) put('sakura', .95); else if (r < .042) put('shrine', .94); else if (r < .062) put('rock', .82); else if (r < .076) put('crystal', .92); else if (r < .088) put('wist', .95); else if (r < .1) put('bush', .82); }
       else if (z.deco === 'desert') { if (r < .03) put('dead', .95); else if (r < .07) put('rock', .82); else if (r < .08) put('stump', .82); else if (r < .085) put('shrine', .94); }
       else if (z.deco === 'marsh') { if (r < .04) put('dead', .95); else if (r < .07) put('wist', .95); else if (r < .11) put('bush', .82); else if (r < .13) put('rock', .82); }
+      else if (z.deco === 'none') {}
+      else if (z.deco === 'town') { if (dc > 7.5) { if (r < .05) put('pine', .95); else if (r < .07) put('sakura', .95); else if (r < .09) put('bush', .82); else if (r < .1) put('rock', .82); } }
       else if (z.deco === 'arena') { const rr = Math.hypot(cx - C, cy - C); if (rr > 12 && r < .05) put(r < .02 ? 'shrine' : r < .035 ? 'sakura' : 'rock', .9); }
       else { if (r < .07) put('snowpine', .95); else if (r < .082) put('dead', .95); else if (r < .108) put('snowrock', .82); else if (r < .122) put('crystal', .92); }
     }
@@ -4801,7 +4820,14 @@ class World extends Phaser.Scene {
       this.tweens.add({ targets: g, alpha: .45, duration: rand(500, 900), yoyo: true, repeat: -1, ease: 'Sine.inOut' });
       light(x, y, 0xffb35c, 4.2, .55);
     };
+    if (z.home) {
+      for (const [k, x, y] of [['bed', C - 3.4, C + .2], ['table', C + 2.6, C + 1.2], ['books', C - 3.6, C - 3.6], ['books', C - 1.4, C - 4.4], ['throne', C + .2, C - 3.8], ['barrel', C + 3.8, C - 1.2], ['crate', C + 3.6, C - .2], ['statue', C - 3.8, C + 3.2]]) place(k, x, y, .9);
+      for (const [x, y] of [[C - 2.4, C - 2.4], [C + 2.4, C - 2.4], [C + 2.4, C + 2.4], [C - 2.4, C + 2.4]]) lantern(x, y);
+      const trophies = Object.keys((save.stats || {}).bossKinds || {}).slice(0, 6);
+      trophies.forEach((k, i) => { const p = iso(C - 1 + i * .9, C + 4.2), t = this.add.text(p.x, p.y - 30, '★', { fontFamily: FONT, fontSize: '20px', color: '#ffd36a', stroke: '#000', strokeThickness: 3 }).setOrigin(.5).setDepth(p.y); });
+    }
     if (z.village) {
+      if (!z.home) {
       place('torii', C, C + 4.3, .97);
       place('torii', C + 4.3, C, .97);
       [[-3.4, -3.4], [3.4, -3.4], [-3.4, 3.4], [3.4, 3.4]].forEach(([a, b]) => lantern(C + a, C + b));
@@ -4814,10 +4840,14 @@ class World extends Phaser.Scene {
       for (const [hx, hy] of [[C - 6.2, C - 2.6], [C - 2.6, C - 6.2], [C + 2.6, C + 6.4], [C + 6.4, C + 2.6]]) light(hx + .8, hy + .8, 0xffc070, 2.4, .45);
       place('stall', C + 2.9, C - 3.1, .9);
       place('anvil', C - 3.0, C + 2.9, .85);
+      }
       for (const d of NPCS) {
-        const n = Object.assign({}, d, { lungeT: -9, off: Math.random() * 6 });
+        if ((d.zone || 'town') !== this.zoneId) continue;
+        const n = Object.assign({}, d, { x: C + d.dx, y: C + d.dy, lungeT: -9, off: Math.random() * 6 });
         n.shadow = this.add.image(0, 0, 'shadow').setScale(WK);
-        n.spr = this.add.image(0, 0, 'npc2' + d.key.slice(3)).setOrigin(.5, HERO_FY / HERO_H).setScale(HERO_K / 2).setFlipX(d.x > C);
+        n.spr = (d.obj && FLR.decoImage(this, d.obj, z.tiles, 0, 0)) || this.add.image(0, 0, 'npc2' + (d.obj ? '_master' : d.key.slice(3))).setOrigin(.5, HERO_FY / HERO_H).setScale(HERO_K / 2).setFlipX(n.x > C);
+        if (d.obj) n.shadow.setVisible(false);
+        try { if (FLR.NPC[d.key]) FLR.attachHero(this, n, FLR.heroSpec(FLR.NPC[d.key])); } catch (e) {}
         n.label = this.add.text(0, 0, d.name, { fontFamily: FONT, fontSize: '13px', color: '#e0b04f', stroke: '#000', strokeThickness: 3 }).setOrigin(.5, 1).setDepth(190000);
         n.mark = this.add.text(0, 0, '', { fontFamily: FONT, fontStyle: 'bold', fontSize: '24px', color: '#ffd36a', stroke: '#000', strokeThickness: 4 }).setOrigin(.5, 1).setDepth(190000);
         this.npcs.push(n);
@@ -4826,7 +4856,7 @@ class World extends Phaser.Scene {
     for (const pd of z.portals) {
       const p = iso(pd.x, pd.y);
       const po = Object.assign({ portal: true }, pd);
-      po.spr = this.add.image(p.x, p.y, 'portal3').setOrigin(.5, .97).setScale(.5).setDepth(p.y);
+      po.spr = FLR.decoImage(this, 'portal3', z.tiles, p.x, p.y) || this.add.image(p.x, p.y, 'portal3').setOrigin(.5, .97).setScale(.5).setDepth(p.y);
       light(pd.x, pd.y, 0x6fb8ff, 3.6, .6);
       po.glow = this.add.image(p.x, p.y - 40, 'glow').setTint(0x6fb8ff).setBlendMode(Phaser.BlendModes.ADD).setScale(1.6, 2.2).setDepth(p.y + 1).setAlpha(.6);
       this.tweens.add({ targets: po.glow, alpha: .3, scaleX: 1.3, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
@@ -4879,12 +4909,13 @@ class World extends Phaser.Scene {
       return [sp];
     }
     const key = d.k, hk = this.decoHI[key];
-    const sh = this.add.image(d.x, d.y, 'shadow').setDepth(-90000).setAlpha(.7).setScale(key.includes('rock') || key === 'bush' || key === 'stump' ? 1.1 : key === 'torii' || key === 'stall' || key.startsWith('house') ? 2.6 : 1.9, 1.5);
-    const img = this.add.image(d.x, d.y, hk || key).setOrigin(.5, d.oy).setDepth(d.y);
-    if (d.sc) img.setScale(d.sc); else if (hk) img.setScale(.5);
+    const fimg = FLR.decoImage(this, key, this.zone.tiles, d.x, d.y);
+    const sh = fimg ? null : this.add.image(d.x, d.y, 'shadow').setDepth(-90000).setAlpha(.7).setScale(key.includes('rock') || key === 'bush' || key === 'stump' ? 1.1 : key === 'torii' || key === 'stall' || key.startsWith('house') ? 2.6 : 1.9, 1.5);
+    const img = fimg || this.add.image(d.x, d.y, hk || key).setOrigin(.5, d.oy).setDepth(d.y);
+    if (!fimg) { if (d.sc) img.setScale(d.sc); else if (hk) img.setScale(.5); }
     if (d.flip) img.setFlipX(true);
     if (d.tint) img.setTint(d.tint);
-    const out = [sh, img];
+    const out = sh ? [sh, img] : [img];
     if (d.glow) {
       const g = this.add.image(d.x, d.y - 30, 'glow').setBlendMode(ADD).setDepth(d.y + 1).setScale(1.4).setAlpha(.7).setTint(d.glow);
       this.tweens.add({ targets: g, alpha: .4, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
@@ -4989,6 +5020,7 @@ class World extends Phaser.Scene {
   }
 
   safeAt(x, y) {
+    if (this.zone.town || this.zone.home) return true;
     if (this.zone.village && Math.max(Math.abs(x - C), Math.abs(y - C)) < 4.2) return true;
     return this.portals.some(p => Math.hypot(x - p.x, y - p.y) < 2.8);
   }
@@ -5886,6 +5918,15 @@ class World extends Phaser.Scene {
         acts.append(btn('Взяться', () => this.acceptQuest(), 'main'));
       }
       acts.append(close);
+    } else if (n.id === 'chest') {
+      txt.textContent = this.zone.home ? 'Ваш домашний сундук. Здесь вещи в безопасности.' : 'Личный сундук. Внутри те же вещи, что и в сундуке у вас дома.';
+      storeSection(body, this, () => this.renderDlg()); acts.append(close);
+    } else if (n.id === 'gchest') {
+      txt.textContent = 'Общий сундук гильдии: что положите вы, смогут взять соратники, и наоборот.';
+      guildChestSection(body, this); acts.append(close);
+    } else if (n.id === 'board') {
+      txt.textContent = 'Здесь можно расширить дом, посадить травы и посмотреть трофеи.';
+      renderHomeTab(body, this); acts.append(close);
     } else if (n.id === 'trader') {
       txt.textContent = 'Колобки свежие, снаряжение крепкое, а наряды — из самой столицы. Ненужное из сумки тоже возьму.';
       if (!this.stock || this.stockLv !== save.lv) {
@@ -6394,7 +6435,7 @@ class World extends Phaser.Scene {
     h.spr.clearTint().setAlpha(1).setAngle(0);
     $('death').hidden = true;
     for (const a of this.allies) { if (!a.alive) this.reviveAlly(a); a.x = h.x + rand(-1, 1); a.y = h.y + rand(-1, 1); }
-    if (this.tw) { this.travel({ to: 'village' }); return; }
+    if (this.tw) { this.travel({ to: 'town' }); return; }
     log('Вы очнулись ' + (this.zone.dungeon ? 'у входа в подземелье' : 'в лагере') + (lost ? ' и потеряли ' + lost + ' мон.' : '.'), 'info');
   }
 
@@ -7004,7 +7045,7 @@ class World extends Phaser.Scene {
     if (performance.now() > (this.achT || 0)) { this.achT = performance.now() + 2000; checkAch(this); evHud(); }
     if (performance.now() > (this.phudT || 0)) { this.phudT = performance.now() + 500; renderPartyHud(); safeRun('dgTimer', () => dgTimerHud(this), 1); safeRun('path', () => pathTick(this), 1); safeRun('inv', () => invTick(this), 1); safeRun('gh', () => ghTick(this), 1); safeRun('awk', () => awkTick(this), 1); safeRun('we', () => weTick(this), 1); safeRun('quest', () => { if (save.q.state === 'ready') qAutoComplete(this); qAutoTick(this); qRender(this); }, 1); }
     if (this.zone.dungeon) this.updateDungeon();
-    for (const n of this.npcs) this.placeUnit(n, Math.sin(this.now * 1.6 + n.off) * .8);
+    for (const n of this.npcs) this.placeUnit(n, n.obj ? 0 : Math.sin(this.now * 1.6 + n.off) * .8);
 
     if (!this.zone.dungeon && this.zone.mobs.length && this.now > this.nextSpawn) {
       this.nextSpawn = this.now + (N > 60 ? .7 : 1.4);
@@ -9727,7 +9768,7 @@ function openGift(G) {
   sfx('loot'); persist(); G.renderInv();
 }
 function holidayDecor(S) {
-  const id = holidayNow(); if (!id || S.zone.dungeon || S.zone.arena) return;
+  const id = holidayNow(); if (!id || S.zone.dungeon || S.zone.arena || S.zone.home) return;
   if (id === 'hw') {
     const key = 'jack_o';
     if (!S.textures.exists(key)) S.canvasTex(key, 32, 32, c => { const g = c.createRadialGradient(14, 14, 2, 16, 18, 14); g.addColorStop(0, '#ffc060'); g.addColorStop(1, '#c0500a'); c.fillStyle = g; c.beginPath(); c.ellipse(16, 19, 12, 10, 0, 0, 6.29); c.fill(); c.fillStyle = '#3a6a1a'; c.fillRect(15, 6, 3, 5); c.fillStyle = '#ffee80'; c.beginPath(); c.moveTo(10, 16); c.lineTo(13, 13); c.lineTo(14, 17); c.fill(); c.beginPath(); c.moveTo(22, 16); c.lineTo(19, 13); c.lineTo(18, 17); c.fill(); c.beginPath(); c.moveTo(9, 21); c.quadraticCurveTo(16, 27, 23, 21); c.lineTo(20, 23); c.lineTo(16, 22); c.lineTo(12, 23); c.closePath(); c.fill(); }, 'rgba(10,6,20,.7)', 2);
@@ -9921,7 +9962,7 @@ function bgEnd(win) {
   if (S) { for (const m of S.mobs) if (m.bg && m.alive) netDropMob(S, m); S.bgFlags = null; }
   if (win === me) { stat('duelW'); save.arena.r += 25; save.arena.honor += 60; save.seals = (save.seals || 0) + 20; save.bgW = (save.bgW || 0) + 1; if (save.bgW >= 5 && !save.titles.includes('bgchamp')) save.titles.push('bgchamp'); banner('Победа на поле битвы', 'Рейтинг +25 · честь +60 · печати +20'); }
   else if (win === -1) banner('Ничья на поле битвы', 'Честь +20'); else { save.arena.honor += 20; banner('Поражение на поле битвы', 'Честь +20'); }
-  persist(); bgHud(); if (S && S.zoneId === BG_ID) setTimeout(() => S.travel({ to: 'village' }), 3000);
+  persist(); bgHud(); if (S && S.zoneId === BG_ID) setTimeout(() => S.travel({ to: 'town' }), 3000);
 }
 function bgMsg(d) {
   if (d.t === 'bginv') {
@@ -10006,7 +10047,7 @@ function emotePicker() {
 /* weather: each land changes every 10 minutes, the same for everyone */
 const WEATHER = { clear: { n: 'Ясно' }, rain: { n: 'Дождь', xp: 1.1 }, fog: { n: 'Туман', aggro: .6 }, storm: { n: 'Гроза', xp: 1.25, mob: 'stormoni' }, blizzard: { n: 'Метель', xp: 1.15 } };
 function weatherNow(z, zid) {
-  if (!z || z.dungeon || z.arena) return 'clear';
+  if (!z || z.dungeon || z.arena || z.home) return 'clear';
   const p = Math.floor(Date.now() / 600000); let h = p * 2654435761 ^ (z.seed || 1) * 40503; h = (h ^ (h >>> 13)) >>> 0;
   const r = (h % 1000) / 1000, snow = z.tiles === 's';
   if (z.tiles === 'd') return r < .75 ? 'clear' : 'fog';
@@ -10436,10 +10477,10 @@ function invHost(S) { const here = others().filter(o => (o.in || o.z) === S.inst
 function invTick(S) {
   const st = invState();
   if (st.phase === 'soon' && INV.warned !== st.id) { INV.warned = st.id; banner('Демоны идут на Кумо!', 'Вторжение через ' + Math.ceil((st.start - Date.now()) / 60000) + ' мин'); log('Через несколько минут орда нападёт на деревню Кумо. Защитники получат награды!', 'bad'); }
-  if (st.phase === 'live' && INV.id !== st.id) { INV.id = st.id; INV.kills = 0; INV.wave = 0; INV.waveT = 0; if (S.zone.village) banner('Вторжение!', 'Защитите деревню Кумо'); else log('Вторжение на деревню Кумо началось! Возвращайтесь защищать её.', 'bad'); }
+  if (st.phase === 'live' && INV.id !== st.id) { INV.id = st.id; INV.kills = 0; INV.wave = 0; INV.waveT = 0; if (S.zone.town) banner('Вторжение!', 'Защитите деревню Кумо'); else log('Вторжение на деревню Кумо началось! Возвращайтесь защищать её.', 'bad'); }
   if (st.phase !== 'live' && INV.id && INV.paid !== INV.id) invPay(S);
   invHud(S, st);
-  if (st.phase !== 'live' || !S.zone.village || !S.hero || !invHost(S)) return;
+  if (st.phase !== 'live' || !S.zone.town || !S.hero || !invHost(S)) return;
   if (INV.wave < INV_WAVES && performance.now() > INV.waveT && !S.mobs.some(m => m.alive && m.inv && !m.remote && Math.hypot(m.x - C, m.y - C) < 30)) {
     INV.wave++; INV.waveT = performance.now() + 45000;
     const n = 6 + INV.wave * 2, crew = 1 + others().filter(o => (o.in || o.z) === S.inst).length, lv = Math.max(save.lv, ...others().filter(o => (o.in || o.z) === S.inst).map(o => +o.lv || 1));
@@ -10848,7 +10889,7 @@ function ghTick(S) {
   if (save.guild && st.live && GH.warned !== st.id && S.zoneId !== GH_ID) { GH.warned = st.id; log('В зале гильдии началось событие «' + GH_EV[st.type].n + '». Вход — «Мир» → «Гильдия».', 'info'); }
   ghHud(S, st);
   if (S.zoneId !== GH_ID) return;
-  if (!save.guild) { S.travel({ to: 'village' }); return; }
+  if (!save.guild) { S.travel({ to: 'town' }); return; }
   if (st.live && GH.id !== st.id) { GH.id = st.id; banner(GH_EV[st.type].n, 'Событие в зале гильдии'); }
   if (!st.live || !S.hero.alive) return;
   const host = !ghMates(S).some(o => o.pid < save.pid);
@@ -10977,7 +11018,7 @@ function startDuel(foe, mode) {
 }
 function arenaSetup(S) {
   if (S.zoneId !== AR_ID) { if (ARENA.busy) { ARENA.busy = false; ARENA.pending = null; } const hud = $('arHud'); if (hud) hud.remove(); return; }
-  const P = ARENA.pending; if (!P) { S.time.delayedCall(300, () => S.travel({ to: 'village' })); return; }
+  const P = ARENA.pending; if (!P) { S.time.delayedCall(300, () => S.travel({ to: 'town' })); return; }
   S.ar = { foe: P.foe, mode: P.mode, state: 'count', t: performance.now() + 3500, end: 0, m: null };
   S.hero.x = C - 4; S.hero.y = C; S.hero.hp = S.hero.maxHp; S.hero.mp = S.hero.maxMp; S.hero.cds = {};
   banner('Арена', P.foe.n + ' · ' + CLASSES[P.foe.c].name + ' · ур. ' + P.foe.lv);
@@ -11034,7 +11075,7 @@ function arenaFinish(S, win) {
 function arenaLeave(S, again) {
   const P = ARENA.pending || { back: 'village' }; ARENA.pending = null; const hud = $('arHud'); if (hud) hud.remove();
   S.hero.alive = true; S.hero.hp = Math.max(S.hero.hp, S.hero.maxHp * .5); S.hero.spr.clearTint().setAlpha(1).setAngle(0);
-  S.travel({ to: P.back && ZONES[P.back] && !ZONES[P.back].dungeon && !ZONES[P.back].arena ? P.back : 'village' });
+  S.travel({ to: P.back && ZONES[P.back] && !ZONES[P.back].dungeon && !ZONES[P.back].arena ? P.back : 'town' });
   if (again) setTimeout(() => { WORLD_TAB = 'arena'; toggleWorld(true); }, 1200);
 }
 
@@ -11176,17 +11217,56 @@ function awkAura(S) {
 /* ---------- house storage ---------- */
 const STORE_MAX = 60;
 if (!Array.isArray(save.store)) save.store = [];
-function storeSection(body, G) {
+function storeSection(body, G, after) {
   body.appendChild(mk('div', 'label', 'Склад · ' + save.store.length + ' / ' + STORE_MAX));
   const inV = G && G.zone.village;
   body.appendChild(mk('div', 'ds', inV ? 'Нажмите на вещь в сумке, чтобы положить её на склад, и на вещь на складе, чтобы забрать.' : 'Склад стоит в доме — пользоваться им можно в деревне Кумо.'));
   const wrap = mk('div', 'storewrap'), colB = mk('div', 'storecol'), colS = mk('div', 'storecol');
   colB.appendChild(mk('div', 'ss', 'Сумка · ' + save.inv.length + ' / ' + BAG)); colS.appendChild(mk('div', 'ss', 'Склад'));
   const gB = mk('div', 'storegrid'), gS = mk('div', 'storegrid');
-  save.inv.forEach((it, i) => { const c = cellFor(it, ''); c.title = itemName(it) + ' → на склад'; c.onclick = () => { if (!inV) return; if (save.store.length >= STORE_MAX) { log('Склад полон.', 'bad'); return; } save.store.push(save.inv.splice(i, 1)[0]); persist(); G.selItem = null; G.renderInv(); renderDiary(); }; gB.appendChild(c); });
-  save.store.forEach((it, i) => { const c = cellFor(it, ''); c.title = itemName(it) + ' → в сумку'; c.onclick = () => { if (!inV) return; if (save.inv.length >= BAG && !(it.kind && G.stack(it.kind))) { log('Сумка полна.', 'bad'); return; } const x = save.store.splice(i, 1)[0]; G.give(x, true); persist(); G.renderInv(); renderDiary(); }; gS.appendChild(c); });
+  save.inv.forEach((it, i) => { const c = cellFor(it, ''); c.title = itemName(it) + ' → на склад'; c.onclick = () => { if (!inV) return; if (save.store.length >= STORE_MAX) { log('Склад полон.', 'bad'); return; } save.store.push(save.inv.splice(i, 1)[0]); persist(); G.selItem = null; G.renderInv(); (after || renderDiary)(); }; gB.appendChild(c); });
+  save.store.forEach((it, i) => { const c = cellFor(it, ''); c.title = itemName(it) + ' → в сумку'; c.onclick = () => { if (!inV) return; if (save.inv.length >= BAG && !(it.kind && G.stack(it.kind))) { log('Сумка полна.', 'bad'); return; } const x = save.store.splice(i, 1)[0]; G.give(x, true); persist(); G.renderInv(); (after || renderDiary)(); }; gS.appendChild(c); });
   if (!save.store.length) gS.appendChild(mk('div', 'ds', 'Пусто.'));
   colB.appendChild(gB); colS.appendChild(gS); wrap.append(colB, colS); body.appendChild(wrap);
+}
+
+/* ---------- сундук гильдии: общий склад через сервер (сохранённое сообщение) ---------- */
+const GCH_MAX = 30;
+let GCHEST = { key: null, st: null, waiting: false };
+const gchestKey = () => 'gst/' + encodeURIComponent(String(save.guild && save.guild.n || '').toLowerCase()).slice(0, 80);
+function gchestSync(G) {
+  if (!save.guild || !netOk()) return;
+  const key = gchestKey(); if (GCHEST.key === key) return;
+  if (GCHEST.key && ROOM.unlisten) ROOM.unlisten(NET_NS + GCHEST.key);
+  GCHEST = { key, st: null, waiting: true };
+  const redraw = () => { if (G && G.dlgNpc && G.dlgNpc.id === 'gchest') G.renderDlg(); };
+  ROOM.listen(NET_NS + key, d => { if (d && Array.isArray(d.items) && (!GCHEST.st || (+d.v || 0) >= (+GCHEST.st.v || 0))) { GCHEST.st = d; GCHEST.waiting = false; redraw(); } }, NET_NS + key);
+  setTimeout(() => { if (GCHEST.key === key && !GCHEST.st) { GCHEST.st = { v: 0, items: [], log: [] }; GCHEST.waiting = false; redraw(); } }, 4000);
+}
+function gchestPush(st, line) {
+  st = { v: (+GCHEST.st.v || 0) + 1, t: Date.now(), items: st.items, log: [line, ...(GCHEST.st.log || [])].slice(0, 20) };
+  GCHEST.st = st; netSend(GCHEST.key, st, true);
+}
+function guildChestSection(body, G) {
+  if (!save.guild) { body.appendChild(mk('div', 'ds', 'Сундук открывается только членам гильдии. Вступить или основать гильдию можно во вкладке «Мир» → «Гильдия».')); return; }
+  if (!netOk()) { body.appendChild(mk('div', 'ds', 'Нет связи с игровым сервером — сундук гильдии сейчас недоступен.')); return; }
+  gchestSync(G);
+  if (!GCHEST.st) { body.appendChild(mk('div', 'ds', 'Открываем сундук…')); return; }
+  const st = GCHEST.st, who = cleanText(save.name || 'Игрок');
+  body.appendChild(mk('div', 'label', 'Сундук гильдии «' + save.guild.n + '» · ' + st.items.length + ' / ' + GCH_MAX));
+  body.appendChild(mk('div', 'ds', 'Нажмите на вещь в сумке, чтобы положить её в сундук, и на вещь в сундуке, чтобы забрать.'));
+  const wrap = mk('div', 'storewrap'), colB = mk('div', 'storecol'), colS = mk('div', 'storecol');
+  colB.appendChild(mk('div', 'ss', 'Сумка · ' + save.inv.length + ' / ' + BAG)); colS.appendChild(mk('div', 'ss', 'Сундук гильдии'));
+  const gB = mk('div', 'storegrid'), gS = mk('div', 'storegrid');
+  save.inv.forEach((it, i) => { const c = cellFor(it, ''); c.title = itemName(it) + ' → в сундук гильдии'; c.onclick = () => {
+    if (st.items.length >= GCH_MAX) { log('Сундук гильдии полон.', 'bad'); return; }
+    const x = save.inv.splice(i, 1)[0]; gchestPush({ items: [...st.items, x] }, who + ' положил: ' + itemName(x)); persist(); G.selItem = null; G.renderInv(); G.renderDlg(); }; gB.appendChild(c); });
+  st.items.forEach((it, i) => { const c = cellFor(it, ''); c.title = itemName(it) + ' → в сумку'; c.onclick = () => {
+    if (save.inv.length >= BAG && !(it.kind && G.stack(it.kind))) { log('Сумка полна.', 'bad'); return; }
+    const items = st.items.slice(), x = items.splice(i, 1)[0]; x.uid = uid(); gchestPush({ items }, who + ' взял: ' + itemName(x)); G.give(x, true); persist(); G.renderInv(); G.renderDlg(); }; gS.appendChild(c); });
+  if (!st.items.length) gS.appendChild(mk('div', 'ds', 'Пусто.'));
+  colB.appendChild(gB); colS.appendChild(gS); wrap.append(colB, colS); body.appendChild(wrap);
+  if ((st.log || []).length) { body.appendChild(mk('div', 'label', 'Последние действия')); for (const l of st.log.slice(0, 6)) body.appendChild(mk('div', 'ds', cleanText(l))); }
 }
 
 /* ---------- raid «Бездна Левиафана» for a party of up to 4 ---------- */
@@ -11819,10 +11899,81 @@ const FLR = (() => {
   function init(S) {
     scene = S; window.__FLG = S;
     if (!MAN && !status.__man) { status.__man = 1; fetch(BASE + 'manifest.json').then(r => r.json()).then(j => { MAN = j; }).catch(() => { MAN = { hero: { m: [], f: [] }, mob: [] }; }); }
-    S.load.on('filecomplete', (key, type) => { if (type === 'atlasjson' && key.startsWith('fl_')) { status[key] = 'ready'; makeAnims(S, key); } });
-    S.load.on('loaderror', f => { if (f && f.key && f.key.startsWith('fl_')) status[f.key] = 'missing'; });
-    S.events.on('postupdate', () => { for (const r of rigs) tick(S, r); });
-    S.events.once('shutdown', () => { for (const r of [...rigs]) destroy(r); });
+    if (!S._flInit) {
+      S._flInit = true;
+      S.load.on('filecomplete', (key, type) => { if (type === 'atlasjson' && key.startsWith('fl_')) { status[key] = 'ready'; makeAnims(S, key); } });
+      S.load.on('loaderror', f => { if (f && f.key && f.key.startsWith('fl_')) status[f.key] = 'missing'; });
+      S.events.on('postupdate', () => { for (const r of rigs) tick(S, r); });
+      S.events.on('shutdown', () => { for (const r of [...rigs]) destroy(r); });
+    }
+    addTiles(S);
+    if (!TILE.ready) TILE.waiters.push(() => { if (S.sys && S.sys.isActive()) { addTiles(S); if (S.gChunks) { for (const k of Object.keys(S.gChunks)) S.releaseChunk(k); for (const key of [...GTEX.keys()]) { if (S.textures.exists(key)) S.textures.remove(key); GTEX.delete(key); } if (S.updateGround) try { S.updateGround(true); } catch (e) {} } } });
+  }
+  /* ---------- карта: тайлы земли и объекты ---------- */
+  const TILE = { img: null, json: null, ready: false, waiters: [], tinted: {} };
+  fetch(BASE + 'tiles.json').then(r => r.json()).then(j => { TILE.json = j; const im = new Image(); im.onload = () => { TILE.img = im; TILE.ready = true; const w = TILE.waiters.splice(0); w.forEach(f => { try { f(); } catch (e) { console.warn(e); } }); }; im.src = BASE + 'tiles.webp'; }).catch(() => {});
+  function addTiles(S) { if (TILE.ready && !S.textures.exists('fl_t')) S.textures.addAtlas('fl_t', TILE.img, TILE.json); }
+  const rng = n => { const a = []; for (let i = n[0]; i <= n[1]; i++) a.push(i); return a; };
+  const DFLOOR = [16, 17, 18, 19, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47];
+  const GROUND = {
+    t: { p: 'g', grass: rng([16, 31]), path: rng([32, 43]) },
+    b: { p: 'g', grass: rng([16, 31]), path: rng([32, 43]), tint: 0xdce8a0 },
+    w: { p: 'g', grass: rng([16, 31]), path: rng([32, 43]), tint: 0xa8dcd4 },
+    m: { p: 'g', grass: rng([16, 31]), path: rng([44, 47]), tint: 0x9aa88a },
+    s: { p: 's', grass: rng([16, 31]), path: rng([32, 43]), flower: rng([568, 583]) },
+    d: { p: 's', grass: rng([16, 31]), path: rng([32, 43]), flower: rng([568, 575]), tint: 0xe8c890 },
+    a: { p: 'c', grass: rng([16, 31]), path: rng([48, 51]), flower: rng([52, 55]) },
+    k: { p: 'd', grass: DFLOOR, path: [32, 33, 34, 35] },
+    v: { p: 'd', grass: DFLOOR, path: [56, 57, 58, 59], tint: 0xc0a8e8 }
+  };
+  const groundOk = () => TILE.ready;
+  function tintedSrc(tint) {
+    if (!tint) return TILE.img;
+    if (TILE.tinted[tint]) return TILE.tinted[tint];
+    const c = document.createElement('canvas'); c.width = TILE.img.width; c.height = TILE.img.height; const x = c.getContext('2d');
+    x.drawImage(TILE.img, 0, 0); x.globalCompositeOperation = 'multiply'; x.fillStyle = '#' + tint.toString(16).padStart(6, '0'); x.fillRect(0, 0, c.width, c.height);
+    x.globalCompositeOperation = 'destination-in'; x.drawImage(TILE.img, 0, 0);
+    return (TILE.tinted[tint] = c);
+  }
+  function paintGround(x, code, P, ti0, ti1, tj0, tj1, m, inView, tileRng, z) {
+    const G = GROUND[code] || GROUND.t, src = tintedSrc(G.tint), F = TILE.json.frames;
+    for (let j = tj0; j <= tj1; j++) for (let i = ti0; i <= ti1; i++) {
+      const c = P(i + .5, j + .5); if (!inView(c[0], c[1], 60)) continue;
+      const t = m[j][i], R = tileRng(z, i, j, 5);
+      const list = t === 3 ? G.path : (t === 2 && G.flower && R() < .5) ? G.flower : G.grass;
+      const f = F[G.p + list[Math.floor(R() * list.length)]]; if (!f) continue;
+      const fr = f.frame;
+      x.drawImage(src, fr.x, fr.y, fr.w, fr.h, c[0] - HW - .6, c[1] - HH - .3, HW * 2 + 1.2, HH * 2 + .6);
+    }
+  }
+  // объект карты v55 → кадр атласа Flare
+  const pickBy = (list, x, y) => list[Math.abs(Math.floor(x * 7.13 + y * 3.71)) % list.length];
+  const DECO = {
+    pine: ['g', [248, 249, 250, 251], .95], snowpine: ['g', [248, 249, 250, 251], .95, 0xe4ecff], wist: ['g', [252, 253, 254, 255], .95, 0xe0c8ff], maple: ['g', [252, 253, 254, 255], .95, 0xffb070],
+    sakura: ['g', [240, 241, 242, 243], .95, 0xffc8dc], dead: ['g', [244, 245, 246, 247], .95], bamboo: ['g', [248, 249, 250, 251], .9, 0xd0f0a0], bush: ['g', [112, 113, 116, 117], .8],
+    rock: ['g', [128, 129, 130, 131], .8], snowrock: ['s', [602, 603, 622, 623], .8], stump: ['g', [136, 137], .8], crystal: ['s', [148, 149, 150, 151], .8, 0xbfe8ff],
+    shrine: ['d', [150, 151, 160, 161], .85], torii: ['d', [126, 127], 1], lantern: ['d', [183], .9], stall: ['g', [98], .9], anvil: ['g', [103], .9],
+    chest: ['g', [76], .8], gchest: ['g', [297], .95], board: ['d', [196], .9], bed: ['d', [220], 1], table: ['d', [166], .9], books: ['d', [112], 1], throne: ['d', [162], 1], barrel: ['d', [178], .85], crate: ['d', [179], .85], statue: ['d', [150], .85],
+    house0: ['g', [72], 1], house1: ['g', [75], 1], house2: ['g', [72], 1], well2: ['g', [102], .9], portal3: ['d', [265], .8, 0, true]
+  };
+  function deco(S, key, code, x, y) {
+    if (!TILE.ready || !S.textures.exists('fl_t')) return null;
+    let d = DECO[key]; if (!d) return null;
+    let set = d[0], ids = d[1];
+    if (code === 's' && key === 'dead') { set = 's'; ids = [435, 436, 437, 439]; }
+    if (code === 's' && key === 'stump') { set = 's'; ids = [555]; }
+    if (code === 's' && (key === 'house0' || key === 'house1' || key === 'house2')) { set = 's'; ids = [104, 107]; }
+    const f = set + pickBy(ids, x, y);
+    if (!TILE.json.frames[f]) return null;
+    return { f, o: TILE.json.meta.origins[f], s: (1 / 3) / TILE.json.meta.scale * 1.35 * d[2], tint: d[3] || 0, flat: !!d[4] };
+  }
+  function decoImage(S, key, code, x, y) { // готовая картинка объекта или null
+    const fd = deco(S, key, code, x, y); if (!fd) return null;
+    const img = S.add.image(x, y, 'fl_t', fd.f).setOrigin(fd.o[0], fd.o[1]).setScale(fd.flat ? (1 / 3) / TILE.json.meta.scale * 1.1 : fd.s).setDepth(fd.flat ? -95000 : y);
+    if (fd.tint) img.setTint(fd.tint);
+    img.setScale = function () { return this; }; // старый код подгонял масштаб своих текстур — Flare уже в нужном
+    img.flare = true;
+    return img;
   }
   const has = (sex, item) => !MAN || (MAN.hero[sex] || []).includes(item);
   function need(S, key, path) {
@@ -11850,10 +12001,11 @@ const FLR = (() => {
     const cls = TIER[o.cls] ? o.cls : 'warrior', sex = o.fem ? 'f' : 'm';
     const t = Math.max(0, Math.min(4, o.costume ? Math.max(3, o.r || 0) : (o.r || 0)));
     const L = Object.assign({}, SETS[TIER[cls][t]]);
-    L.head = sex === 'f' ? 'head_long' : 'head_short';
+    L.head = sex === 'f' ? 'head_long' : o.bald ? 'head_bald' : 'head_short';
     let helm = HELM[cls][t]; if (o.head) helm = cls === 'mage' ? 'mage_hood_alt2' : cls === 'warrior' ? 'plate_helm' : 'leather_hood';
     if (helm) L.helm = helm;
-    L.main = WEAP[o.weapon] || DEF_WEAP[cls];
+    L.main = o.noWeapon ? null : (WEAP[o.weapon] || o.weapon || DEF_WEAP[cls]); if (!L.main) delete L.main;
+    if (o.noHelm) delete L.helm;
     if (cls === 'rogue' && t >= 2) L.off = 'buckler';
     for (const k in L) if (!has(sex, L[k])) delete L[k];
     const tint = {};
@@ -11990,14 +12142,16 @@ const FLR = (() => {
     };
     tryDraw(0);
   }
-  return { init, heroSpec, portrait, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
+  function whenTiles(f) { if (TILE.ready) return f(); let done = false; const go = () => { if (!done) { done = true; f(); } }; TILE.waiters.push(go); setTimeout(go, 5000); }
+  const NPC = { npc_master: { cls: 'mage', r: 2, weapon: 'bo' }, npc_trader: { cls: 'archer', r: 0, fem: true, noWeapon: true, noHelm: true }, npc_smith: { cls: 'warrior', r: 1, weapon: 'smith_hammer', bald: true, noHelm: true } };
+  return { NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
 })();
 
-new Phaser.Game({
+FLR.whenTiles(() => new Phaser.Game({
   type: Phaser.AUTO, parent: 'game', transparent: true,
   scale: { mode: Phaser.Scale.RESIZE, width: window.innerWidth, height: window.innerHeight },
   scene: World
-});
+}));
 })();
 </script>
 

@@ -86,7 +86,7 @@ HERO_ITEMS = ('head_short head_bald head_long plate_helm chain_coif leather_hood
               'default_hands cloth_gloves leather_gloves chain_gloves plate_gauntlets mage_sleeves mage_sleeves_alt1 mage_sleeves_alt2 '
               'default_feet cloth_sandals leather_boots chain_boots plate_boots mage_boots mage_boots_alt1 mage_boots_alt2 '
               'longsword shortsword dagger greatsword zweihander infantry_axe reinforced_club war_hammer battle_axe mace club hand_axe maul '
-              'staff greatstaff rod wand longbow shortbow greatbow slingshot buckler kite_shield').split()
+              'staff greatstaff rod wand longbow shortbow greatbow slingshot buckler kite_shield smith_hammer').split()
 
 # монстр v55 → (файл Flare, масштаб хранения)
 MOBS = {'goblin': 'goblin', 'goblin_elite': 'goblin_elite', 'hobgoblin': 'hobgoblin', 'skeleton': 'skeleton', 'skeleton_archer': 'skeleton_archer',
