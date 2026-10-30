@@ -559,6 +559,7 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
     <button class="skill" id="sk4" type="button"><kbd>4</kbd><span class="ic c3"></span><em></em><i class="cd"></i></button>
     <button class="skill" id="sk5" type="button"><kbd>5</kbd><span class="ic c5"></span><em></em><i class="cd"></i></button>
     <button class="skill" id="sk6" type="button"><kbd>6</kbd><span class="ic c5"></span><em></em><i class="cd"></i></button>
+    <button class="skill" id="sk7" type="button"><kbd>7</kbd><span class="ic c5"></span><em></em><i class="cd"></i></button>
     <button class="skill auto" id="skAuto" type="button" aria-pressed="false" aria-label="Автобой (T)"><kbd>T</kbd><span class="ic">自</span><em>Авто</em></button>
   </div>
 
@@ -683,9 +684,13 @@ i.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fe
 <script>
 /* boot guard: runs before everything else, so even a script that fails to start leaves a readable error on screen */
 window.__BOOT_ERRS = [];
+(function () { var d = document.createElement('div'); d.id = 'bootLoad'; d.setAttribute('style', 'position:fixed;inset:0;z-index:99990;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#2a1e48,#06040c);color:#f3ead8;font:16px sans-serif');
+  d.innerHTML = '<div style="display:grid;gap:14px;justify-items:center"><div style="font:32px serif;color:#ffd36a">Облачный клинок</div><div>Загрузка мира…</div><div style="width:220px;height:6px;border-radius:3px;background:#1a1430;overflow:hidden"><i style="display:block;height:100%;width:40%;background:linear-gradient(90deg,#8a6a2a,#ffd36a);animation:bootbar 1.2s ease-in-out infinite"></i></div></div><style>@keyframes bootbar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}</style>';
+  document.body.appendChild(d); })();
 window.addEventListener('error', function (e) { window.__BOOT_ERRS.push(String(e.message || 'error').slice(0, 200) + (e.lineno ? ' @' + e.lineno + ':' + (e.colno || 0) : '')); });
 setTimeout(function () {
   if (window.__BOOT_OK || document.getElementById('bootErr')) return;
+  var bl = document.getElementById('bootLoad'); if (bl) bl.remove();
   var box = document.createElement('div'); box.id = 'bootErr';
   box.setAttribute('style', 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:100000;width:min(520px,calc(100vw - 32px));padding:16px;border:1px solid #c8433a;border-radius:10px;background:#140c14;color:#f3ead8;font:15px sans-serif;display:grid;gap:8px');
   var t = document.createElement('b'); t.textContent = 'Игра не запустилась'; box.appendChild(t);
@@ -937,7 +942,7 @@ const WGEO = {
 };
 function outfitFor(look) {
   if (look.costume) return OUTFITS[look.costume];
-  if (look.armor) return OUTFITS[look.armor][look.r];
+  if (look.armor) { const A = OUTFITS[look.armor]; if (!Array.isArray(A)) return A || OUTFITS.haori[0]; if (look.r >= 4) return OUTFITS.mytharmor; if (look.r >= 3 && !A[3]) return OUTFITS.legarmor[0]; return A[Math.min(look.r || 0, A.length - 1)]; }
   return OUTFITS['base_' + look.key] || OUTFITS.plain[0];
 }
 function paintHero(g, look) {
@@ -2018,6 +2023,8 @@ Object.assign(WEAPON_CLASS, { legblade: 'warrior', legstaff: 'mage', legbow: 'ar
 const LEG_WEAPON = { warrior: ['legblade', 'Клинок Небесного дракона'], mage: ['legstaff', 'Посох Вечного феникса'], archer: ['legbow', 'Лук Падающей звезды'] };
 OUTFITS.legarmor = [0, 1, 2, 3].map(() => ({ coat: 0xe8c060, inner: 0x5a1010, plates: true, sash: 0x8a1c24, trim: 0xfff0b0, cape: 0x8a1c24, glow: 0xffb030 }));
 APANTS.legarmor = 0x3a0a0a;
+OUTFITS.mytharmor = { coat: 0x2a0a2e, inner: 0x0e0410, plates: true, sash: 0xc0304a, trim: 0xff6ad8, cape: 0x4a0a3a, glow: 0xff4ad0, acc: 'kabuto' };
+APANTS.mytharmor = 0x14040e;
 WINGS.dawn = { name: 'Крылья Вечного рассвета', r: 3, price: 0, pal: [0xffc860, 0xfff4d8, 0xffffff, 0xe8a040], fx: 'flame', frame: 0xffd36a, gem: 0xff5a2a, energy: true, aura: 0x6a3000 };
 const GROW_STEP = 25, GROW_MAX = 100;
 function growStats(it) {
@@ -4206,7 +4213,7 @@ Object.assign(ZONES, {
     ponds: [[21, 21, 3, 2.4], [7, 7, 2.6, 2.2]], mobs: [['skytengu', 34, 37, 0], ['stormfox', 35, 38, 0], ['jadeguard', 37, 40, 1], ['skywraith', 38, 42, 1]],
     boss: { kind: 'thunderking', lv: 45, x: 4, y: 24, dir: 'юго-западе' }, portals: [{ to: 'ash', x: 14.5, y: 1 }] }
 });
-const LV_CAP = 55;
+const LV_CAP = 65;
 
 Object.assign(MOBS, {
   eclipseqn: { name: 'Императрица Затмения', key: 'spiderqueen', tint: 0xc080ff, boss: true, drops: [['wings', 'void', .2], ['costume', 'seraphknight', .2], ['mount', 'skydragon', .08]] },
@@ -4242,6 +4249,21 @@ Object.assign(ZONES, {
     mobs: [['lanternghost', 44, 46, 0], ['spiritfox', 45, 47, 0], ['oniguard', 46, 48, 1]], boss: { kind: 'nurarihyon', lv: 50, x: 4, y: 24, dir: 'юго-западе' }, portals: [{ to: 'ryugu', x: 14.5, y: 1 }, { to: 'volcano', x: 27, y: 14.5, minLv: 46 }] },
   volcano: { name: 'Вулкан Кагуцути', seed: 163, tiles: 'a', bg: '#1a0604', deco: 'ash', ambient: 'none', ponds: [[20, 8, 3.2, 2.4], [7, 19, 2.8, 3.2]],
     mobs: [['magmagolem', 46, 48, 0], ['firetengu', 47, 49, 0], ['ashwolf', 47, 50, 1]], boss: { kind: 'kagutsuchi', lv: 52, x: 24, y: 24, dir: 'юго-востоке' }, portals: [{ to: 'spirit', x: 1, y: 14.5 }] }
+});
+GROUND_PAL.d = { grass: [0xc8a868, 0xc0a060, 0xd0b070], blade: [0xe8cc8a, 0x8a6a3a, 0xfff0c0], flower: ['#ffd36a', '#e08a3a', '#ffffff'], stone: 0x9a8058, stoneHi: 0xbaa070, water: [0x2a8aa0, 0x8ae0e8], cliff: [0x8a6a3a, 0x3a2a14], lip: 0xd0b070 };
+GROUND_PAL.m = { grass: [0x3a4a2a, 0x344226, 0x405030], blade: [0x6a8a3a, 0x1e2a14, 0x8aaa5a], flower: ['#c0ff8a', '#ffe08a', '#ffffff'], stone: 0x4a5040, stoneHi: 0x6a7058, water: [0x2a3a1a, 0x6a8a3a], cliff: [0x2a3018, 0x0e1208], lip: 0x4a5a30 };
+Object.assign(MOBS, {
+  sandgolem: { name: 'Песчаный голем', key: 'golem', tint: 0xe0c080 }, dunefox: { name: 'Барханный лис', key: 'firefox', tint: 0xffd890 }, mummy: { name: 'Страж гробниц', key: 'skeleton', tint: 0xe8dcc0 },
+  pharaoh: { name: 'Фараон Миражей', key: 'general', tint: 0xffd36a, boss: true, drops: [['wings', 'celestial', .15], ['costume', 'goldemperor', .15]] },
+  bogkappa: { name: 'Болотная каппа', key: 'kappa', tint: 0x7a9a3a }, marshspider: { name: 'Топяной паук', key: 'spider', tint: 0x8ab04a }, bogwisp: { name: 'Болотный огонёк', key: 'shade', tint: 0xa0ff9a, hover: true },
+  bogqueen: { name: 'Царица Топей', key: 'spiderqueen', tint: 0x6ac05a, boss: true, drops: [['wings', 'emerald', .2], ['costume', 'lotus', .15]] }
+});
+ZONES.volcano.portals.push({ to: 'desert', x: 14.5, y: 27, minLv: 52 });
+Object.assign(ZONES, {
+  desert: { name: 'Пески Миражей', seed: 181, tiles: 'd', bg: '#2a1a08', deco: 'desert', ambient: 'none', ponds: [[22, 8, 2.4, 2]],
+    mobs: [['sandgolem', 53, 55, 0], ['dunefox', 53, 56, 0], ['mummy', 54, 57, 1]], boss: { kind: 'pharaoh', lv: 58, x: 24, y: 24, dir: 'юго-востоке' }, portals: [{ to: 'volcano', x: 14.5, y: 1 }, { to: 'marsh', x: 27, y: 14.5, minLv: 56 }] },
+  marsh: { name: 'Туманное болото', seed: 197, tiles: 'm', bg: '#0a120a', deco: 'marsh', ambient: 'fireflies', ponds: [[20, 8, 3.4, 2.6], [8, 20, 3, 3.2], [22, 22, 2.6, 2.2]],
+    mobs: [['bogkappa', 56, 58, 0], ['marshspider', 57, 59, 0], ['bogwisp', 58, 61, 1]], boss: { kind: 'bogqueen', lv: 62, x: 4, y: 24, dir: 'юго-западе' }, portals: [{ to: 'desert', x: 1, y: 14.5 }] }
 });
 const WORLD_QUESTS = [
   { title: 'Дорога под волнами', kind: 'kappaking', need: 10, minLv: 42, what: 'Морские каппы',
@@ -4587,6 +4609,7 @@ class World extends Phaser.Scene {
       else if (k === '4') this.cast(4);
       else if (k === '5') this.cast(5);
       else if (k === '6') this.cast(6);
+      else if (k === '7') this.cast(7);
       else if (k === 't' || k === 'е') $('skAuto').click();
       else if (k === 'r' || k === 'к') this.eatRice();
       else if (k === 'i' || k === 'ш') this.toggleInv();
@@ -4681,6 +4704,8 @@ class World extends Phaser.Scene {
       else if (z.deco === 'sea') { if (r < .04) put('rock', .82); else if (r < .06) put('crystal', .92); else if (r < .085) put('bush', .82); else if (r < .09) put('shrine', .94); }
       else if (z.deco === 'spirit') { if (r < .02) put('shrine', .94); else if (r < .04) put('wist', .95); else if (r < .06) put('sakura', .95); else if (r < .075) put('dead', .95); else if (r < .09) put('rock', .82); }
       else if (z.deco === 'sky') { if (r < .03) put('sakura', .95); else if (r < .042) put('shrine', .94); else if (r < .062) put('rock', .82); else if (r < .076) put('crystal', .92); else if (r < .088) put('wist', .95); else if (r < .1) put('bush', .82); }
+      else if (z.deco === 'desert') { if (r < .03) put('dead', .95); else if (r < .07) put('rock', .82); else if (r < .08) put('stump', .82); else if (r < .085) put('shrine', .94); }
+      else if (z.deco === 'marsh') { if (r < .04) put('dead', .95); else if (r < .07) put('wist', .95); else if (r < .11) put('bush', .82); else if (r < .13) put('rock', .82); }
       else if (z.deco === 'arena') { const rr = Math.hypot(cx - C, cy - C); if (rr > 12 && r < .05) put(r < .02 ? 'shrine' : r < .035 ? 'sakura' : 'rock', .9); }
       else { if (r < .07) put('snowpine', .95); else if (r < .082) put('dead', .95); else if (r < .108) put('snowrock', .82); else if (r < .122) put('crystal', .92); }
     }
@@ -5916,7 +5941,7 @@ class World extends Phaser.Scene {
     m.bar = this.add.graphics().setDepth(190000);
     this.drawBar(m);
     this.mobs.push(m);
-    if (this.zone.dungeon) { m.maxHp = m.hp = Math.round(m.maxHp * 1.7); m.atk *= 1.15; m.aggro = 40; m.angry = true; m.nextAtk = this.now + 1; }
+    if (this.zone.dungeon) { m.maxHp = m.hp = Math.round(m.maxHp * 1.05); m.atk *= 1.15; m.aggro = 40; m.angry = true; m.nextAtk = this.now + 1; }
     if (boss && !quiet) log(def.name + (this.zone.boss ? ' пробудился на ' + this.zone.boss.dir : ' выходит на бой') + '.', 'bad');
     m.nid = ++this.netMobSeq;
     return m;
@@ -6197,6 +6222,7 @@ class World extends Phaser.Scene {
       this.give(genItem(m.lv, 2)); this.give(genItem(m.lv, 1)); this.give(rice(3));
       if (Math.random() < .015) { const it = mythDrop(m.lv + 1); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); }
       if (Math.random() < .3) gemDrop(this, 2, 1);
+      legSetDropBoss(this, m);
       for (const [kind, id, ch] of def.drops || []) if (Math.random() < ch) {
         const it = kind === 'costume' ? costume(id) : kind === 'wings' ? wings(id, m.lv) : kind === 'mount' ? mount(id, m.lv) : cosmetic(kind, id);
         if (this.give(it) && it.rarity >= 2) banner(it.name, 'Редкая добыча');
@@ -6723,7 +6749,7 @@ class World extends Phaser.Scene {
   dgReward() {
     const cfg = this.zone.dungeon;
     stat('dg'); save.stats.dgKinds[this.zoneId] = (save.stats.dgKinds[this.zoneId] || 0) + 1;
-    const dI = dgRecord(this), D = DIFF[dI]; save.gold += Math.round(cfg.gold * (D.rew - 1)); gemDrop(this, 1 + dI * 2, D.gems); if (Math.random() < D.myth) { const it = mythDrop(cfg.lv + 2 + D.lv); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); }
+    const dI = dgRecord(this), D = DIFF[dI]; legSetDropDungeon(this, this.zoneId, dI); save.gold += Math.round(cfg.gold * (D.rew - 1)); gemDrop(this, 1 + dI * 2, D.gems); if (Math.random() < D.myth) { const it = mythDrop(cfg.lv + 2 + D.lv); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); }
     if (cfg.raid) { stat('raids'); shardGive(this.zoneId === 'r_abyss' ? 4 : 2, 'рейд'); gemDrop(this, 3, 2); if (Math.random() < .15) { const it = mythDrop(cfg.lv + 2); if (this.give(it)) banner(it.name, 'Мифическая добыча!'); } }
     {
       save.gold += cfg.gold; save.dgDone[this.zoneId] = (save.dgDone[this.zoneId] || 0) + 1;
@@ -6784,6 +6810,8 @@ class World extends Phaser.Scene {
         case 'heal': return h.hp < h.maxHp * .6;
         case 'fireball': case 'powershot': case 'poisonarrow': case 'phoenixarrow': case 'firerain': case 'blizzard': case 'meteor': case 'arrowrain': return d < 5;
         case 'multishot': return d < 5;
+        case 'dragonfang': return d < 6;
+        case 'blackhole': case 'starfall': return d < 6;
         case 'frostnova': return near > 0;
         case 'whirl': case 'roar': case 'shadow': case 'storm': case 'hundred': case 'mountfall': case 'moonslash': return near > 0 && d < 2.4;
         default: return d < 1.8;
@@ -6806,7 +6834,7 @@ class World extends Phaser.Scene {
 
   /* ---------- loop ---------- */
   update(time, delta) {
-    if (!this.ran) { this.ran = true; BOOT_OK = true; window.__BOOT_OK = true; const bo = $('bootErr'); if (bo) bo.remove(); }
+    if (!this.ran) { this.ran = true; BOOT_OK = true; window.__BOOT_OK = true; const bo = $('bootErr'); if (bo) bo.remove(); const bl = $('bootLoad'); if (bl) { bl.style.transition = 'opacity .4s'; bl.style.opacity = '0'; setTimeout(() => bl.remove(), 450); } }
     const dt = Math.min(delta / 1000, .05);
     this.now += dt;
     this.updateGround(false);
@@ -7241,7 +7269,7 @@ function openClassPick(paid) {
 }
 
 $('sk0').addEventListener('click', () => GAME && GAME.targetNearest());
-[1, 2, 3, 4, 5, 6].forEach(n => $('sk' + n).addEventListener('click', () => GAME && GAME.cast(n)));
+[1, 2, 3, 4, 5, 6, 7].forEach(n => $('sk' + n).addEventListener('click', () => GAME && GAME.cast(n)));
 $('skAuto').addEventListener('click', () => { TUT_EV.auto = true; save.auto = !save.auto; persist(); syncAuto();
   if (save.auto && save.cls && CLASSES[save.cls].skills.filter(id => skLv(id)).length < 2) log('Подсказка: изучите техники во вкладке «Навыки» (K), и автобой будет применять их сам.', 'info'); log(save.auto ? 'Автобой включён: техники, колобки и ближайшие враги — сами.' : 'Автобой выключен.', 'info'); });
 function syncAuto() { $('skAuto').classList.toggle('on', !!save.auto); $('skAuto').setAttribute('aria-pressed', save.auto ? 'true' : 'false'); }
@@ -7256,7 +7284,7 @@ $('fbX').addEventListener('click', () => { $('fbP').hidden = true; });
 let COMMENTS = null;
 (async () => { try { COMMENTS = window.claude && window.claude.use ? await window.claude.use('comments') : null; } catch (e) { COMMENTS = null; } if (!COMMENTS) $('fbGo').hidden = true; })();
 let FB_STARS = 5, FB_KIND = 'bug';
-const GAME_VER = '50', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
+const GAME_VER = '51', FB_KINDS = { bug: 'Ошибка', idea: 'Идея', review: 'Отзыв' }, FB_PH = { bug: 'Что сломалось? Что вы делали перед этим, в какой зоне, что ожидали увидеть…', idea: 'Что добавить или изменить в игре?', review: 'Что понравилось, что нет?' };
 const JS_ERRS = (window.__BOOT_ERRS || []).slice(-5);
 let BOOT_OK = false; const SAFE_SEEN = {};
 // run a game add-on so that one broken feature can never stop the whole game
@@ -8639,7 +8667,7 @@ const LOGIN_REWARDS = [
   { name: 'Эпическая вещь', give: G => G.give(genItem(save.lv, 2)) },
   { name: '4 000 мон и 2 звёздных кристалла', give: G => { save.gold += 4000; if (save.mats) save.mats.star += 2; } },
   { name: '30 печатей подземелья', give: G => { save.seals = (save.seals || 0) + 30; } },
-  { name: 'Сундук дракона: 2 эпические вещи, 50 печатей, шанс 10% на мифическое оружие', give: G => { G.give(genItem(save.lv + 1, 2)); G.give(genItem(save.lv + 1, 2)); save.seals = (save.seals || 0) + 50; if (Math.random() < .1) { const it = mythDrop(save.lv + 1); if (G.give(it)) banner(it.name, 'Мифическая добыча!'); } } }
+  { name: 'Сундук дракона: 2 эпические вещи, 50 печатей и 2 осколка пробуждения', give: G => { G.give(genItem(save.lv + 1, 2)); G.give(genItem(save.lv + 1, 2)); save.seals = (save.seals || 0) + 50; shardGive(2, 'сундук'); } }
 ];
 const dayKeyOf = d => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 function dailyCheck(G) {
@@ -9423,7 +9451,7 @@ function seasonReward(lv, prem) {
   }
   if (lv === 10) return { name: 'Наряд «Золотой император»', give: G => G.give(costume('goldemperor')) };
   if (lv === 20) return { name: 'Маунт «Белый тигр»', give: G => G.give(mount('whitetiger', L)) };
-  if (lv === SEASON_LV) return { name: 'Крылья «Небесные», мифическое оружие и титул «Герой сезона»', give: G => { G.give(wings('celestial', L)); const it = mythDrop(L + 2); G.give(it); if (!save.titles.includes('seasonhero')) save.titles.push('seasonhero'); banner('Герой сезона', 'Небесные крылья и мифическое оружие'); } };
+  if (lv === SEASON_LV) return { name: 'Крылья «Небесные», 5 осколков пробуждения и титул «Герой сезона»', give: G => { G.give(wings('celestial', L)); shardGive(5, 'сезон'); if (!save.titles.includes('seasonhero')) save.titles.push('seasonhero'); banner('Герой сезона', 'Небесные крылья и мифическое оружие'); } };
   if (lv % 5 === 0) return { name: '2 эпические вещи и 3 звёздных кристалла', give: G => { G.give(genItem(L + 1, 2)); G.give(genItem(L + 1, 2)); if (save.mats) save.mats.star += 3; } };
   return [{ name: (1000 + lv * 300) + ' мон', give: () => { save.gold += 1000 + lv * 300; } }, { name: '2 свитка заточки', give: G => G.give(scroll(2)) }, { name: '25 печатей и 1 звёздный кристалл', give: () => { save.seals = (save.seals || 0) + 25; if (save.mats) save.mats.star += 1; } }, { name: 'Материалы кузницы: руда ×20, эссенция ×10', give: () => { if (save.mats) { save.mats.ore += 20; save.mats.ess += 10; } } }][lv % 4];
 }
@@ -9546,7 +9574,7 @@ function petGain(G) {
     G.recalc();
   }
 }
-const petMul = it => 1 + (((it && it.plv) || 1) - 1) * .03;
+const petMul = it => (1 + (((it && it.plv) || 1) - 1) * .03) * (1 + .15 * ((it && it.star) || 0));
 
 /* ---------- holidays: Halloween (Oct 25 – Nov 7) and New Year (Dec 20 – Jan 14) ---------- */
 let HOL_FORCE = ''; try { HOL_FORCE = new URLSearchParams(location.search).get('hol') || ''; } catch (e) {}
@@ -9627,7 +9655,7 @@ const TUT = [
   { t: 'Снаряжение', s: 'Откройте «Сумку» (I или в меню) и наденьте найденные вещи. Лучшие вещи — в окне «Герой».', done: () => TUT_EV.bag },
   { t: 'Техники', s: 'Откройте «Навыки» (K) и изучите первую технику. Потом жмите её кнопку на панели внизу.', done: () => TUT_EV.cast },
   { t: 'Дневник', s: 'В «Дневнике» (J) — задания дня, награда за вход, достижения и титулы. Загляните туда.', done: () => TUT_EV.diary },
-  { t: 'Вместе веселее', s: 'В окне «Мир» (O) видно, кто в игре. Позовите друга в отряд — демоны и награды станут общими.', done: () => TUT_EV.world },
+  { t: 'Вместе веселее', s: 'В окне «Мир» (O) видно, кто в игре. Позовите друга в отряд — демоны и награды станут общими. Вверху у карты — «События», «Почта» и «Помощь».', done: () => TUT_EV.world },
   { t: 'Автобой', s: 'Кнопка «Авто» (T) сама ищет врагов, пока вы отдыхаете. Удачи, странник!', done: () => TUT_EV.auto }
 ];
 const TUT_EV = {};
@@ -9699,7 +9727,7 @@ function renderLeaderboard(body) {
   const tabs = mk('div', 'acts'); for (const [k, n] of LB_KINDS) tabs.appendChild(btn(n, () => { LB_KIND = k; renderWorld(); }, k === LB_KIND ? 'main' : ''));
   body.appendChild(tabs);
   const K = LB_KINDS.find(x => x[0] === LB_KIND), me = { f: save.pid, n: save.name, c: save.cls, lv: save.lv, reb: save.reb || 0, gold: save.gold, fish: save.stats.fish, kills: save.stats.kills, raid: (save.records || {}).r_eclipse_0 || 0, tower: (save.tower && save.tower.best) || 0 };
-  const all = Object.values(Object.assign({}, LB.data, { [save.pid]: me })).filter(d => LB_KIND !== 'raid' || d.raid).sort((a, b) => K[2](b) - K[2](a));
+  const all = Object.values(Object.assign({}, LB.data, { [save.pid]: me })).filter(d => (LB_KIND !== 'raid' || d.raid) && (d.f === save.pid || lbSane(d))).sort((a, b) => K[2](b) - K[2](a));
   body.appendChild(mk('div', 'ds', 'Таблица собирается из всех игроков, кто заходил в игру. Обновляется раз в пару минут.'));
   const tb = mk('div', 'rank');
   all.slice(0, 30).forEach((d, i) => { const r = mk('div', 'rrow' + (d.f === save.pid ? ' me' : '')); r.append(mk('span', 'rp', String(i + 1)), mk('span', 'rn', cleanText(d.n)), mk('span', 'rc', CLASSES[d.c] ? CLASSES[d.c].name : ''), mk('span', 'rv', K[3](d)), mk('span', '', '')); tb.appendChild(r); });
@@ -9882,6 +9910,7 @@ function weatherNow(z, zid) {
   if (!z || z.dungeon || z.arena) return 'clear';
   const p = Math.floor(Date.now() / 600000); let h = p * 2654435761 ^ (z.seed || 1) * 40503; h = (h ^ (h >>> 13)) >>> 0;
   const r = (h % 1000) / 1000, snow = z.tiles === 's';
+  if (z.tiles === 'd') return r < .75 ? 'clear' : 'fog';
   if (r < .5) return 'clear'; if (r < .68) return snow ? 'blizzard' : 'rain'; if (r < .84) return 'fog'; return snow ? 'blizzard' : 'storm';
 }
 function weatherApply(S) {
@@ -9985,7 +10014,7 @@ function towerEnter(f) {
   G.travel({ to: TOWER_ID, extra: { towF: Math.max(1, Math.min(f || 1, towerStartFloor())) } });
 }
 function towerSpawn(S) {
-  const T = S.tw, f = T.f, boss = f % 5 === 0, lv = save.lv + Math.floor(f / 2), hpK = 1 + f * .1, atkK = 1 + f * .045;
+  const T = S.tw, f = T.f, boss = f % 5 === 0, lv = save.lv + Math.floor(f / 2), hpK = (1 + f * .1) / 1.6, atkK = 1 + f * .045;
   const put = (kind, k) => { for (let t = 0; t < 40; t++) { const a = rand(0, 6.28), r = rand(2.5, 7.5), x = C + Math.cos(a) * r, y = C + Math.sin(a) * r; if (S.mobWalkable(x, y)) { const m = S.spawnMob(kind, x, y, lv); m.maxHp = m.hp = Math.round(m.maxHp * hpK * k); m.atk *= atkK; m.angry = true; m.tower = true; S.drawBar(m); return m; } } return null; };
   const pool = TOWER_POOL.length ? TOWER_POOL : ['oni'];
   if (boss) { put(TOWER_BOSSES[(f / 5 - 1) % TOWER_BOSSES.length] || pool[0], 2.2); for (let i = 0; i < 2; i++) put(pool[(f + i) % pool.length], 1); banner('Этаж ' + f, 'Страж этажа'); }
@@ -10134,6 +10163,7 @@ function renderAdmin(body) {
   const on = others();
   if (!on.length) body.appendChild(mk('div', 'ss', 'Сейчас никого нет.'));
   for (const o of on) { const r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0'; info.append(mk('div', 'sn', cleanText(o.n) + ' · ' + (CLASSES[o.c] ? CLASSES[o.c].name : '') + ' · ур. ' + o.lv), mk('div', 'ss', 'id: ' + o.pid)); const a = mk('div', 'acts'); a.append(btn('Подарок', () => gift(o.pid), ''), btn('Заблокировать', () => admBan(o.pid, true, cleanText(o.n)), '')); r.append(info, a); body.appendChild(r); }
+  { const bad = Object.values(LB.data).filter(d => !lbSane(d)); if (bad.length) { sect('Подозрительные рекорды · ' + bad.length); for (const d of bad.slice(0, 20)) { const r = mk('div', 'srow noic'), info = mk('div'); info.style.minWidth = '0'; info.append(mk('div', 'sn', cleanText(d.n || '?') + ' · ур. ' + d.lv + (d.reb ? ' · перерожд. ' + d.reb : '')), mk('div', 'ss', 'мон ' + Math.round(d.gold || 0).toLocaleString('ru-RU') + ' · побед ' + (d.kills || 0) + ' · башня ' + (d.tower || 0) + ' · id ' + d.f)); r.append(info, btn('Заблокировать', () => admBan(d.f, true, cleanText(d.n || '')), '')); body.appendChild(r); } } }
   sect('Заблокированные');
   if (!ADM.ban.size) body.appendChild(mk('div', 'ss', 'Никого.'));
   for (const pid of ADM.ban) { const r = mk('div', 'srow noic'); r.append(mk('div', 'sn', (ADM.banN[pid] ? cleanText(ADM.banN[pid]) + ' · ' : '') + pid), btn('Разблокировать', () => admBan(pid, false), '')); body.appendChild(r); }
@@ -11141,6 +11171,121 @@ function weShop() {
 SEAL_SHOP.r_abyss = [['wings', 'azure', 800], ['costume', 'abyss', 600], ['pet', 'jadeloong', 900]]; SEAL_PER.r_abyss = 120;
 { const _h = renderHomeTab; renderHomeTab = (b, G) => { _h(b, G); storeSection(b, G); }; }
 { const _p = renderPathTab; renderPathTab = (b, G) => { awakenSection(b, G); _p(b, G); }; }
+
+/* ---------- dungeon sets: legendary armor + jewellery, only from dungeon bosses and world bosses ---------- */
+Object.assign(SETS, {
+  nest:    { name: 'Повелительницы нитей', lv: 14, b2: { atk: .10 }, b4: { hp: .10, crit: 8 }, armor: 'leather', drop: 'd_nest' },
+  moon:    { name: 'Кровавой луны', lv: 22, b2: { hp: .12 }, b4: { atk: .15, crit: 5 }, armor: 'haori', drop: 'd_moon' },
+  ice:     { name: 'Ледяной цитадели', lv: 30, b2: { def: 40 }, b4: { hp: .20, atk: .10 }, armor: 'leather', drop: 'd_ice' },
+  eclipse: { name: 'Затмения', lv: 36, b2: { atk: .15 }, b4: { hp: .20, crit: 10 }, armor: 'haori', drop: 'r_eclipse' },
+  abyss:   { name: 'Бездны', lv: 50, b2: { hp: .18 }, b4: { atk: .20, def: 60 }, armor: 'leather', drop: 'r_abyss' },
+  dune:    { name: 'Миражей', lv: 56, b2: { atk: .18 }, b4: { hp: .22, crit: 10 }, armor: 'haori', drop: 'boss:pharaoh' },
+  bog:     { name: 'Топей', lv: 60, b2: { hp: .22 }, b4: { atk: .22, def: 80 }, armor: 'leather', drop: 'boss:bogqueen' }
+});
+const LEG_SETS = ['nest', 'moon', 'ice', 'eclipse', 'abyss', 'dune', 'bog'];
+function legSetPiece(id, slot, lv) {
+  const S = SETS[id]; lv = Math.max(S.lv, lv || save.lv);
+  slot = slot || SET_SLOTS[ri(0, SET_SLOTS.length - 1)][0];
+  const it = genItem(lv, 2, slot, slot === 'armor' ? S.armor : undefined), mul = RAR[3].k / RAR[2].k * 1.25;
+  for (const k in it.st) if (k !== 'crit') it.st[k] = Math.round(it.st[k] * mul);
+  it.st.crit = (it.st.crit || 0) + 3; it.rarity = 3; it.set = id; it.legset = true;
+  it.name = SET_SLOTS.find(s => s[0] === slot)[1] + ' ' + S.name; it.value = Math.round(it.value * 3);
+  return it;
+}
+function legSetDropDungeon(G, did, dI) {
+  const id = LEG_SETS.find(k => SETS[k].drop === did); if (!id) return;
+  const ch = (ZONES[did].raid ? .6 : .35) + (dI || 0) * .15;
+  if (Math.random() < ch) { const it = legSetPiece(id, null, ZONES[did].dungeon.lv + 2); if (G.give(it)) banner(it.name, 'Легендарная броня · комплект «' + SETS[id].name + '»'); }
+}
+function legSetDropBoss(G, m) {
+  let id = LEG_SETS.find(k => SETS[k].drop === 'boss:' + m.kind);
+  const ch = id ? .25 : .04;
+  if (!id) { const fit = LEG_SETS.filter(k => SETS[k].lv <= m.lv + 2); id = fit[fit.length - 1]; }
+  if (id && Math.random() < ch) { const it = legSetPiece(id, null, m.lv + 1); if (G.give(it)) banner(it.name, 'Легендарная броня с босса'); }
+}
+
+/* ---------- pet stars: merge two identical pets ---------- */
+function petMerge(G) {
+  const pet = save.eq.pet; if (!pet) return;
+  if ((pet.star || 0) >= 5) { log('Питомец уже ★5.', 'info'); return; }
+  const i = save.inv.findIndex(it => it && it.slot === 'pet' && it.base === pet.base && it !== pet && !it.lock);
+  if (i < 0) { log('Нужен второй такой же питомец в сумке.', 'bad'); return; }
+  const cost = 5000 * ((pet.star || 0) + 1); if (save.gold < cost) { log('Нужно ' + cost + ' мон.', 'bad'); return; }
+  save.gold -= cost; save.inv.splice(i, 1); pet.star = (pet.star || 0) + 1; persist(); G.recalc(); G.renderInv();
+  banner((PETS[pet.base] ? PETS[pet.base].name : pet.name) + ' ' + '★'.repeat(pet.star), 'Сила питомца +' + pet.star * 15 + '%'); sfx('myth'); renderDiary();
+}
+function petStarSection(body, G) {
+  const pet = save.eq.pet; if (!pet) return;
+  const n = pet.star || 0, twin = save.inv.some(it => it && it.slot === 'pet' && it.base === pet.base && !it.lock), cost = 5000 * (n + 1);
+  body.appendChild(mk('div', 'label', 'Звёзды питомца'));
+  body.appendChild(mk('div', 'ds', 'Слейте с надетым питомцем второго такого же — он получит звезду: +15% силы за каждую, до ★5. Сейчас: ' + (n ? '★'.repeat(n) : 'без звёзд') + '.'));
+  body.appendChild(btn(n >= 5 ? 'Максимум ★5' : twin ? 'Слить · ' + cost + ' мон' : 'Нужен второй ' + (PETS[pet.base] ? PETS[pet.base].name : 'такой же питомец'), () => petMerge(G), 'main', n >= 5 || !twin || save.gold < cost));
+}
+
+/* ---------- two new lands ---------- */
+WORLD_QUESTS.push(
+  { title: 'Пески времени', kind: 'sandgolem', need: 12, minLv: 53, what: 'Песчаные големы', text: 'За вулканом раскинулись Пески Миражей. Песчаные големы стерегут дорогу к гробницам. Расчисти путь.', done: 'Песок помнит твои шаги. Возьми это золото — пустыня щедра к смелым.', reward: { gold: 30000, xp: 120000, item: ['armor', 2] } },
+  { title: 'Фараон Миражей', kind: 'pharaoh', need: 1, minLv: 56, what: 'Фараон', text: 'В сердце пустыни проснулся Фараон Миражей. Его миражи сводят путников с ума. Положи этому конец.', done: 'Мираж рассеялся. Вот сокровище из его гробницы.', reward: { gold: 50000, xp: 200000, myth: true } },
+  { title: 'Туман над топью', kind: 'bogkappa', need: 12, minLv: 57, what: 'Болотные каппы', text: 'Дальше — Туманное болото. Болотные каппы утаскивают путников в трясину.', done: 'Туман редеет. Держи — это поможет пройти дальше.', reward: { gold: 40000, xp: 160000, item: ['ring', 2] } },
+  { title: 'Царица Топей', kind: 'bogqueen', need: 1, minLv: 60, what: 'Царица Топей', text: 'Царица Топей плетёт сети из тумана и душ. Освободи болото.', done: 'Болото снова дышит. Это сокровище — твоё.', reward: { gold: 70000, xp: 300000, myth: true } }
+);
+
+/* ---------- new skills (unlocked at 45) ---------- */
+Object.assign(SKILLS, {
+  dragonfang: { name: 'Клык дракона', short: 'Клык', glyph: '龍', cost: 60, cd: 30, text: 'прыжок к цели: огромный урон вокруг и оглушение' },
+  blackhole: { name: 'Чёрная дыра', short: 'Бездна', glyph: '淵', cost: 75, cd: 30, text: 'стягивает врагов в одну точку и взрывается' },
+  starfall: { name: 'Звездопад', short: 'Звёзды', glyph: '隕', cost: 65, cd: 28, text: 'шесть звёздных стрел с неба по врагам вокруг' }
+});
+Object.assign(SKILL_COL, { dragonfang: 0xff5a3a, blackhole: 0x8a3aff, starfall: 0xffe060 });
+CLASSES.warrior.skills.push('dragonfang'); CLASSES.mage.skills.push('blackhole'); CLASSES.archer.skills.push('starfall');
+SKILL_LV.push(45);
+World.prototype.sk_dragonfang = function (h) {
+  const m = this.nearTarget(7); if (!m) { log('Нет цели.', 'info'); return false; }
+  const a = Math.atan2(h.y - m.y, h.x - m.x); h.x = m.x + Math.cos(a) * .9; h.y = m.y + Math.sin(a) * .9;
+  this.cameras.main.shake(300, .012);
+  for (const [col, d] of [[0xffd36a, 0], [0xff5a3a, 120], [0xffffff, 240]]) this.ring(m.x, m.y, 3, col, 6, d);
+  this.burst(m.x, m.y, [0xff5a3a, 0xffd36a], 30, 90, 10);
+  this.aoeAt({ x: m.x, y: m.y }, 3, 4.5, { stun: 2 });
+};
+World.prototype.sk_blackhole = function (h) {
+  const m = this.nearTarget(7); if (!m) { log('Нет цели.', 'info'); return false; }
+  const c = { x: m.x, y: m.y }, atk = h.atk, p = iso(c.x, c.y);
+  const hole = this.add.image(p.x, p.y - 10, 'glow').setTint(0x6a2aff).setBlendMode(Phaser.BlendModes.ADD).setScale(.3).setDepth(200000);
+  this.tweens.add({ targets: hole, scale: 2.6, angle: 360, duration: 1400, onComplete: () => hole.destroy() });
+  for (const e of this.mobs) if (e.alive && !e.remote && !e.sb && !e.pvp && dist(e, c) < 5) this.tweens.add({ targets: e, x: c.x + rand(-.4, .4), y: c.y + rand(-.4, .4), duration: 1200, ease: 'Quad.in' });
+  this.time.delayedCall(1400, () => { if (!this.scene.isActive()) return; this.ring(c.x, c.y, 3.6, 0xc08aff, 7, 0); this.burst(c.x, c.y, [0x8a3aff, 0xffffff], 36, 100, 10); const a0 = h.atk; h.atk = atk; this.aoeAt(c, 3.6, 5.2, { stun: 1 }); h.atk = a0; });
+};
+World.prototype.sk_starfall = function (h) {
+  const tg = this.mobs.filter(e => e.alive && dist(e, h) < 8).sort((a, b) => dist(a, h) - dist(b, h)).slice(0, 6);
+  if (!tg.length) { log('Нет целей.', 'info'); return false; }
+  const atk = h.atk;
+  tg.forEach((e, i) => this.time.delayedCall(i * 140, () => {
+    if (!e.alive || !this.scene.isActive()) return; const p = iso(e.x, e.y);
+    const st = this.add.image(p.x + 60, p.y - 300, 'glow').setTint(0xfff0a0).setBlendMode(Phaser.BlendModes.ADD).setScale(.5).setDepth(200000);
+    this.tweens.add({ targets: st, x: p.x, y: p.y - 10, duration: 320, ease: 'Quad.in', onComplete: () => { st.destroy(); this.burst(e.x, e.y, [0xfff0a0, 0xffffff], 12, 40, 10); const crit = Math.random() * 100 < h.crit + 30; this.hurtMob(e, Math.round(atk * 2.2 * (crit ? 1.8 : 1)), crit); } });
+  }));
+};
+
+/* ---------- loading screen gone, help button, leaderboard sanity ---------- */
+function lbSane(d) { return d && (d.lv || 0) <= LV_CAP && (d.reb || 0) <= 10 && (d.gold || 0) < 2e9 && (d.kills || 0) < 5e6 && (d.fish || 0) < 1e6 && (d.tower || 0) <= 300 && (!d.raid || d.raid > 45000); }
+function helpPanel() {
+  let p = $('helpP'); if (p) { p.remove(); return; }
+  p = mk('div', 'panel evp'); p.id = 'helpP';
+  const head = mk('div', 'phead'); head.append(mk('b', '', 'Помощь'), mk('span', '', 'управление')); const x = mk('button', 'x', '×'); x.type = 'button'; x.onclick = () => p.remove(); head.appendChild(x); p.appendChild(head);
+  const body = mk('div', 'evbody');
+  for (const [k, t] of [['Клик по земле', 'идти'], ['Клик по демону', 'бой'], ['Клик по жителю или порталу', 'подойти'], ['Пробел', 'ближайший враг'], ['1–7', 'техники'], ['K', 'навыки'], ['T', 'автобой'], ['I', 'сумка'], ['R', 'колобок'], ['O', 'мир'], ['F', 'кузница'], ['J', 'дневник'], ['B', 'рынок'], ['Y', 'эмоции'], ['P', 'фоторежим'], ['Enter', 'чат'], ['Клик по карте', 'идти туда'], ['Окна', 'можно двигать за заголовок']]) { const r = mk('div', 'evrow'); r.append(mk('b', '', k), mk('span', '', t)); body.appendChild(r); }
+  body.appendChild(mk('div', 'ds', 'Версия ' + GAME_VER));
+  p.appendChild(body); document.querySelector('.hud').appendChild(p); if (typeof bringFront === 'function') bringFront(p);
+}
+(() => {
+  const bar = $('topBtns'); if (!bar) return;
+  const b = mk('button', 'skill', ''); b.id = 'skHelp'; b.type = 'button'; b.setAttribute('aria-label', 'Помощь'); b.innerHTML = '<span class="ic">？</span><em>Помощь</em>';
+  b.addEventListener('click', () => helpPanel()); bar.insertBefore(b, $('sndBtn'));
+  const hp = document.querySelector('.help'); if (hp) hp.style.display = 'none';
+})();
+
+
+{ const _p2 = renderPathTab; renderPathTab = (b, G) => { _p2(b, G); petStarSection(b, G); }; }
 
 (async () => {
   try { ROOM = window.claude && window.claude.use ? await window.claude.use('room') : null; } catch (e) { ROOM = null; }
