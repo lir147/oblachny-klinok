@@ -1,6 +1,6 @@
 # Проверка двумя браузерами
 
-Время: 30.10.2026, 10:32:22
+Время: 30.10.2026, 10:53:08
 
 ## Браузер 1
 
@@ -8,14 +8,14 @@
 
 ```
 ВАШ НИК
-Странник6935
+Странник7784
 У вас стандартный ник — выберите свой бесплатно (один раз).
 Выбрать
 ДРУЗЬЯ · 0
 Друзей пока нет. Добавьте игроков из списка «Сейчас в игре».
 СЕЙЧАС В ИГРЕ · 1
 剣
-Странник5387
+Странник1368
 Воин · ур. 1 · БМ 427 · Бронза I · Окрестности деревни Кумо
 Добавить
 Дуэль
@@ -36,10 +36,10 @@
 
 **Консоль и сеть:**
 ```
-warning: [.WebGL-0x11f4010ed800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x11f4010ed800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x11f4010ed800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
-warning: [.WebGL-0x11f4010ed800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+warning: [.WebGL-0x298400197400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x298400197400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x298400197400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+warning: [.WebGL-0x298400197400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
 ws open wss://public.cloud.shiftr.io/
 ws sent 1 frames to wss://public.cloud.shiftr.io/
 ws sent 5 frames to wss://public.cloud.shiftr.io/
@@ -52,14 +52,14 @@ ws sent 20 frames to wss://public.cloud.shiftr.io/
 
 ```
 ВАШ НИК
-Странник5387
+Странник1368
 У вас стандартный ник — выберите свой бесплатно (один раз).
 Выбрать
 ДРУЗЬЯ · 0
 Друзей пока нет. Добавьте игроков из списка «Сейчас в игре».
 СЕЙЧАС В ИГРЕ · 1
 剣
-Странник6935
+Странник7784
 Воин · ур. 1 · БМ 427 · Бронза I · Окрестности деревни Кумо
 Добавить
 Дуэль
