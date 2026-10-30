@@ -54,8 +54,9 @@ World.prototype.sk_deathlotus = function (h) {
 };""")
 
 # --- 2. графика Flare ---
-rep("\nnew Phaser.Game({\n  type: Phaser.AUTO, parent: 'game', transparent: true,", "\n" + rig + "\nFLR.whenTiles(() => new Phaser.Game({\n  type: Phaser.AUTO, parent: 'game', transparent: true,")
-rep("  scene: World\n});\n})();", "  scene: World\n}));\n})();")
+sty = open('/home/claude/work/flare_style.js', encoding='utf-8').read()
+rep("\nnew Phaser.Game({\n  type: Phaser.AUTO, parent: 'game', transparent: true,", "\n" + rig + "\n" + sty + "\nFLR.whenTiles(() => FST.ready.then(() => new Phaser.Game({\n  type: Phaser.AUTO, parent: 'game', transparent: true,")
+rep("  scene: World\n});\n})();", "  scene: World\n})));\n})();")
 rep("  create(data) {\n    GAME = this;", "  create(data) {\n    GAME = this;\n    FLR.init(this);")
 # герой: собираем слои по надетому снаряжению
 rep("""    const base = this.currentLook();
@@ -88,7 +89,7 @@ rep("""    this.tweens.add({ targets: ghost, alpha: 0, duration: 400, onComplete
     const m = h.target && h.target.alive ? h.target : null;""", """    if (ghost.scene) this.tweens.add({ targets: ghost, alpha: 0, duration: 400, onComplete: () => ghost.destroy() });
     const m = h.target && h.target.alive ? h.target : null;""")
 # окно персонажа
-rep("""    if (mt && mfly !== 'stand') ctx.drawImage(src(h.tex ? h.tex.idle : h.spr.texture.key)""", """    const flDrawn = FLR.drawPanel(this, ctx, h, cx, fy, k / HERO_K, t, mt && mfly !== 'stand');
+rep("""    if (mt && mfly !== 'stand') ctx.drawImage(src(h.tex ? h.tex.idle : h.spr.texture.key)""", """    const flDrawn = FLR.drawPanel(this, ctx, h, cx, fy, k / HERO_K * .8, t, mt && mfly !== 'stand');
     if (flDrawn) {} else if (mt && mfly !== 'stand') ctx.drawImage(src(h.tex ? h.tex.idle : h.spr.texture.key)""")
 rep("""    if (mt) mDraw('front');
     const wlk = this.weaponLook();""", """    if (mt) mDraw('front');
@@ -231,11 +232,40 @@ rep("function holidayDecor(S) {\n  const id = holidayNow(); if (!id || S.zone.du
 rep("  if (!z || z.dungeon || z.arena) return 'clear';", "  if (!z || z.dungeon || z.arena || z.home) return 'clear';")
 rep("if (S.zone.village) banner('Вторжение!'", "if (S.zone.town) banner('Вторжение!'")
 rep("  if (st.phase !== 'live' || !S.zone.village || !S.hero || !invHost(S)) return;", "  if (st.phase !== 'live' || !S.zone.town || !S.hero || !invHost(S)) return;")
+# --- питомцы, маунты, крылья, портреты ---
+rep("    this.pet.label = this.add.text(0, 0, '', { fontFamily: FONT, fontSize: '11px', color: PETS[id].col", "    FLR.attachPet(this, this.pet);\n    this.pet.label = this.add.text(0, 0, '', { fontFamily: FONT, fontSize: '11px', color: PETS[id].col")
+rep(" u.badge = remoteBadge(S, u, p); u.pet = remotePet(S, u, p);", " u.badge = remoteBadge(S, u, p); u.pet = remotePet(S, u, p); if (u.pet) FLR.attachPet(S, u.pet);")
+rep("    const w = this.wingLook(), ws = S * WING_WORLD * .7, shY = fy + (bodyShoulder() - HERO_FY) * k;", "    const w = FLR.ready(h) ? null : this.wingLook(), ws = S * WING_WORLD * .7, shY = fy + (bodyShoulder() - HERO_FY) * k;")
+rep("    if (mt) mDraw('back');", "    if (mt && !FLR.ready(h)) mDraw('back');")
+rep("    if (mt) mDraw('front');\n    const wlk = flDrawn ? null : this.weaponLook();", "    if (mt && !FLR.ready(h)) mDraw('front');\n    const wlk = flDrawn ? null : this.weaponLook();")
+rep("function portraitInto(cv, f) {\n  const G = GAME, x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height);", """function portraitInto(cv, f) {
+  const G = GAME, x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height);
+  try { const L = f.look || {}; if (FLR.portraitTo(G, cv, f.me ? G.hero : FLR.heroSpec({ cls: CLASSES[f.c] ? f.c : 'warrior', r: L.r == null ? 2 : +L.r, costume: L.co || null, weapon: L.w || (CLASSES[f.c] || CLASSES.warrior).starter, fem: !!L.fm }))) return; } catch (e) {}""")
+# иероглифы → символы (вне кода движка)
+KANJI = {'剣':'⚔','刀':'⚔','刃':'⚔','斬':'⚔','武':'⚔','闘':'⚔','術':'✧','技':'✧','弓':'➶','射':'➶','忍':'☾','月':'☾','影':'☾','旗':'⚑','盟':'⚑','冠':'♛','金':'◉','錢':'◉','市':'◉','宝':'◆','寶':'◆','秘':'◆','翼':'❦','羽':'❦','飯':'✚','癒':'✚','茶':'✚','巻':'✎','名':'✎','言':'✎','獄':'☠','鉱':'◇','皮':'▣','衣':'▣','魂':'✺','星':'★','隕':'★','日':'☀','自':'⟳','袋':'▤','運':'✦','祭':'✷','塔':'♜','頭':'☗','社':'❂','鍛':'⚒','輪':'◎','火':'✹','焔':'✹','氷':'❄','雪':'❄','雷':'⚡','風':'≋','雲':'☁','山':'▲','岩':'▲','崩':'▲','盾':'⛊','龍':'✷','淵':'◎'}
+import re as _re
+gi = s.index('<script>', s.index('</script>', s.index('Phaser v')) if 'Phaser v' in s else 0)
+head, tail = s[:gi], s[gi:]
+cnt = len(_re.findall(r'[\u3040-\u30ff\u4e00-\u9fff]', s))
+head = _re.sub(r'[\u3040-\u30ff\u4e00-\u9fff]', lambda m: KANJI.get(m.group(0), '✦'), head[:head.index('<script')] ) + head[head.index('<script'):]
+tail = _re.sub(r'[\u3040-\u30ff\u4e00-\u9fff]', lambda m: KANJI.get(m.group(0), '✦'), tail)
+s = head + tail
+print('иероглифов было', cnt, 'осталось', len(_re.findall(r'[\u3040-\u30ff\u4e00-\u9fff]', s)))
+_l = [l for l in s.split('\n') if l.startswith('    for (let i = 0; i < 4; i++) { const w = 46 - i * 9,')][0]
+rep(_l + "\n    ctx.fillRect(px - 1.5, py - 128, 3, 26);", """    // замок на холме вместо пагоды
+    ctx.fillRect(px - 40, py - 66, 80, 66); ctx.fillRect(px - 56, py - 104, 20, 104); ctx.fillRect(px + 36, py - 96, 20, 96); ctx.fillRect(px - 10, py - 120, 20, 54);
+    for (let k = 0; k < 4; k++) ctx.fillRect(px - 40 + k * 22, py - 76, 12, 10);
+    for (const [tx, ty, tw] of [[px - 46, py - 104, 14], [px + 46, py - 96, 14], [px, py - 120, 14]]) { ctx.beginPath(); ctx.moveTo(tx - tw, ty); ctx.lineTo(tx, ty - 26); ctx.lineTo(tx + tw, ty); ctx.closePath(); ctx.fill(); }""")
 # --- 3. тестовая версия: своё сохранение, облако только на чтение ---
 rep("const SAVE_KEY = 'oblachny-klinok-v2';", """const SAVE_KEY = 'oblachny-klinok-next';
 try { if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem('oblachny-klinok-v2')) localStorage.setItem(SAVE_KEY, localStorage.getItem('oblachny-klinok-v2')); } catch (e) {}""")
 rep("async function cloudUpload(manual) {", "async function cloudUpload(manual) {\n  if (manual) log('Это тестовая версия: прогресс здесь не отправляется в облако и не трогает основную игру.', 'info');\n  return;")
 rep("const GAME_VER = '55'", "const GAME_VER = '56'")
 rep("<title>Облачный клинок</title>", "<title>Облачный клинок — тест графики Flare</title>")
+import sys as _sys; _sys.path.insert(0, '/home/claude/work'); import rename as _rn
+_i = s.index('<script>', s.index('</script>', s.index('Phaser v')))
+s = _rn.apply(s[:s.index('<script')]) + s[s.index('<script'):_i] + _rn.apply(s[_i:])
+left = [w for w in ['Кумо', 'Гэнсай', 'Оцуру', 'Тэцу', 'каппа', 'тэнгу', 'ронин', 'кицунэ', 'самура', 'катан', 'Катан', 'колоб', 'Хаори', 'Кимоно', 'цилин'] if w in s[_i:]]
+print('остались японские слова:', left)
 open(DST, 'w', encoding='utf-8').write(s)
 print('ok', len(s))

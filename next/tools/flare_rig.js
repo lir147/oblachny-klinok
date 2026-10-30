@@ -39,7 +39,7 @@ const FLR = (() => {
   const rigs = new Set();
 
   function init(S) {
-    scene = S; window.__FLG = S;
+    scene = S; window.__FLG = S; window.__dbg = { get save() { return save; } };
     if (!MAN && !status.__man) { status.__man = 1; fetch(BASE + 'manifest.json').then(r => r.json()).then(j => { MAN = j; }).catch(() => { MAN = { hero: { m: [], f: [] }, mob: [] }; }); }
     if (!S._flInit) {
       S._flInit = true;
@@ -93,18 +93,18 @@ const FLR = (() => {
   const DECO = {
     pine: ['g', [248, 249, 250, 251], .95], snowpine: ['g', [248, 249, 250, 251], .95, 0xe4ecff], wist: ['g', [252, 253, 254, 255], .95, 0xe0c8ff], maple: ['g', [252, 253, 254, 255], .95, 0xffb070],
     sakura: ['g', [240, 241, 242, 243], .95, 0xffc8dc], dead: ['g', [244, 245, 246, 247], .95], bamboo: ['g', [248, 249, 250, 251], .9, 0xd0f0a0], bush: ['g', [112, 113, 116, 117], .8],
-    rock: ['g', [128, 129, 130, 131], .8], snowrock: ['s', [602, 603, 622, 623], .8], stump: ['g', [136, 137], .8], crystal: ['s', [148, 149, 150, 151], .8, 0xbfe8ff],
-    shrine: ['d', [150, 151, 160, 161], .85], torii: ['d', [126, 127], 1], lantern: ['d', [183], .9], stall: ['g', [98], .9], anvil: ['g', [103], .9],
-    chest: ['g', [76], .8], gchest: ['g', [297], .95], board: ['d', [196], .9], bed: ['d', [220], 1], table: ['d', [166], .9], books: ['d', [112], 1], throne: ['d', [162], 1], barrel: ['d', [178], .85], crate: ['d', [179], .85], statue: ['d', [150], .85],
+    rock: ['g', [128, 129, 130, 131], .8], snowrock: ['s', [552, 553, 554, 555, 556, 557], .8], stump: ['g', [136, 137], .8], crystal: ['s', [132, 133, 134, 135], .8, 0xbfe8ff],
+    shrine: ['d', [128, 129, 130, 131], .85], torii: ['d', [110, 111], 1], lantern: ['d', [151], .9], stall: ['g', [98], .9], anvil: ['g', [103], .9],
+    chest: ['g', [76], .8], gchest: ['g', [297], .95], board: ['d', [148], .9], bed: ['d', [202], 1], table: ['d', [136], .9], books: ['d', [100], 1], throne: ['d', [132], 1], barrel: ['d', [146], .85], crate: ['d', [147], .85], statue: ['d', [128], .85],
     house0: ['g', [72], 1], house1: ['g', [75], 1], house2: ['g', [72], 1], well2: ['g', [102], .9], portal3: ['d', [265], .8, 0, true]
   };
   function deco(S, key, code, x, y) {
     if (!TILE.ready || !S.textures.exists('fl_t')) return null;
     let d = DECO[key]; if (!d) return null;
     let set = d[0], ids = d[1];
-    if (code === 's' && key === 'dead') { set = 's'; ids = [435, 436, 437, 439]; }
-    if (code === 's' && key === 'stump') { set = 's'; ids = [555]; }
-    if (code === 's' && (key === 'house0' || key === 'house1' || key === 'house2')) { set = 's'; ids = [104, 107]; }
+    if (code === 's' && key === 'dead') { set = 's'; ids = [244, 245, 246, 247]; }
+    if (code === 's' && key === 'stump') { set = 's'; ids = [535]; }
+    if (code === 's' && (key === 'house0' || key === 'house1' || key === 'house2')) { set = 's'; ids = [72, 75]; }
     const f = set + pickBy(ids, x, y);
     if (!TILE.json.frames[f]) return null;
     return { f, o: TILE.json.meta.origins[f], s: (1 / 3) / TILE.json.meta.scale * 1.35 * d[2], tint: d[3] || 0, flat: !!d[4] };
@@ -165,16 +165,16 @@ const FLR = (() => {
     for (const slot in spec.layers) { const key = 'fl_h' + spec.sex + '_' + spec.layers[slot]; r.parts[slot] = { key, path: 'hero/' + spec.sex + '/' + spec.layers[slot], spr: null }; }
     unit.flr = r; rigs.add(r); return r;
   }
-  function attachMob(S, unit, kind) {
-    const m = MOB[kind]; if (!m) return null;
+  function attachMob(S, unit, kind, opt) {
+    const m = opt ? [opt.key, opt.height, opt.tint] : MOB[kind]; if (!m) return null;
     if (unit.flr) destroy(unit.flr);
     const r = { unit, kind: 'mob', mobKey: kind, parts: { body: { key: 'fl_m_' + m[0], path: 'mob/' + m[0], spr: null } }, dir: Math.floor(Math.random() * 8), anim: '', ready: false, height: m[1], defTint: m[2] };
     unit.flr = r; rigs.add(r); return r;
   }
-  function destroy(r) { for (const s in r.parts) if (r.parts[s].spr) r.parts[s].spr.destroy(); rigs.delete(r); if (r.unit && r.unit.flr === r) r.unit.flr = null; restore(r); }
+  function destroy(r) { for (const s in r.parts) if (r.parts[s].spr) r.parts[s].spr.destroy(); for (const o of [r.mnt && r.mnt.spr, ...(r.aura || [])]) if (o) o.destroy(); rigs.delete(r); if (r.unit && r.unit.flr === r) r.unit.flr = null; restore(r); }
   const NOREN = () => false;
-  function hideOld(u) { for (const o of [u.spr, u.wspr, u.wglow]) if (o && o.willRender !== NOREN) { o._flWR = o.willRender; o.willRender = NOREN; } }
-  function restore(r) { const u = r.unit; if (!u) return; for (const o of [u.spr, u.wspr, u.wglow]) if (o && o._flWR) { o.willRender = o._flWR; delete o._flWR; } }
+  function hideOld(u) { for (const o of [u.spr, u.wspr, u.wglow, u.mountB, u.mountF, u.wingR, u.wingL, u.wingGR, u.wingGL]) if (o && o.willRender !== NOREN) { o._flWR = o.willRender; o.willRender = NOREN; } }
+  function restore(r) { const u = r.unit; if (!u) return; for (const o of [u.spr, u.wspr, u.wglow, u.mountB, u.mountF, u.wingR, u.wingL, u.wingGR, u.wingGL]) if (o && o._flWR) { o.willRender = o._flWR; delete o._flWR; } }
 
   function tick(S, r) {
     const u = r.unit, spr = u.spr;
@@ -183,7 +183,7 @@ const FLR = (() => {
       let all = true; for (const s in r.parts) if (!need(S, r.parts[s].key, r.parts[s].path)) { if (status[r.parts[s].key] === 'missing') { delete r.parts[s]; continue; } all = false; }
       if (!all || !Object.keys(r.parts).length) return;
       for (const s in r.parts) { const p = r.parts[s], o = meta(S, p.key).origin || [.5, .8]; p.spr = S.add.sprite(0, 0, p.key, Object.keys(S.textures.get(p.key).frames).find(f => f !== '__BASE')).setOrigin(o[0], o[1]); }
-      if (r.kind === 'mob') { const p = r.parts.body, f = S.textures.getFrame(p.key, 'stance_6_0') || p.spr.frame, h = (f.data && f.data.spriteSourceSize ? f.data.spriteSourceSize.h : f.height) || 60; r.scale = Phaser.Math.Clamp(r.height / h, .3, 3) * (u.boss && !MOB[r.mobKey][1] ? 1.3 : 1); }
+      if (r.kind === 'mob') { const p = r.parts.body, f = S.textures.getFrame(p.key, 'stance_6_0') || p.spr.frame, h = (f.data && f.data.spriteSourceSize ? f.data.spriteSourceSize.h : f.height) || 60; r.scale = Phaser.Math.Clamp(r.height / h, .15, 3); }
       r.ready = true; r.lx = u.x; r.ly = u.y; hideOld(u);
     }
     // направление: по движению в клетках карты, иначе — к цели
@@ -223,11 +223,40 @@ const FLR = (() => {
       i++;
     }
     r.anim = key;
+    if (r.kind === 'hero') { hideOld(u); mountTick(S, r, u, mounted, moving); auraTick(S, r, u); }
     // свечение заточки на оружии (тот же цвет, что и у старого свечения)
     if (r.kind === 'hero' && r.parts.main && r.parts.main.spr && u.wTier && typeof tierColor === 'function') {
       const ms = r.parts.main.spr;
       if (!ms.preFX) { /* canvas renderer */ } else { if (!r.glow) r.glow = ms.preFX.addGlow(0xffffff, 3, 0, false, .1, 10); r.glow.color = tierColor(u.wTier, S.now || 0); r.glow.outerStrength = 2.5 + Math.sin((S.now || 0) * 4); }
     } else if (r.glow && r.parts.main && r.parts.main.spr) { r.parts.main.spr.preFX.remove(r.glow); r.glow = null; }
+  }
+  // маунт: существо Flare под героем
+  const MOUNT = { wolf: ['antlion', 0xe8eeff], tiger: ['antlion', 0xffb060], qilin: ['fire_ant', 0xffd080], boar: ['antlion_small', 0xc89870], deer: ['antlion', 0xd8e0ff], panther: ['antlion', 0x7a6a9a],
+    lion: ['antlion', 0xffd070], cerberus: ['fire_ant', 0xff7050], nightmare: ['antlion_armored', 0xc06070], drake: ['wyvern_water'], warboar: ['antlion_armored', 0xd0a080], bat: ['wyvern_air', 0xc07080],
+    crane: ['wyvern_air', 0xf0f4ff], phoenix: ['wyvern_fire'], skydragon: ['wyvern_water', 0xd8e8ff], whitetiger: ['antlion', 0xffffff], shadowlion: ['antlion_armored', 0x8a70b0], flysword: ['wyvern_air', 0xc8e0ff] };
+  function mountKey(id) { const m = MOUNT[id]; if (m) return m; const M = typeof MOUNTS !== 'undefined' && MOUNTS[id]; return M && M.fly ? ['wyvern_air'] : ['antlion']; }
+  function mountTick(S, r, u, mounted, moving) {
+    const id = !mounted ? null : u === S.hero ? (save.eq.mount && save.eq.mount.base) : u.mt;
+    if (!id) { if (r.mnt) r.mnt.spr.setVisible(false); return; }
+    const mk = mountKey(id), key = 'fl_m_' + mk[0];
+    if (!r.mnt || r.mnt.id !== id) { if (r.mnt) r.mnt.spr.destroy(); r.mnt = { id, key, spr: null }; }
+    if (!r.mnt.spr) {
+      if (!need(S, key, 'mob/' + mk[0])) return;
+      const o = meta(S, key).origin || [.5, .8], f = S.textures.getFrame(key, 'stance_6_0'), h = (f && f.data && f.data.spriteSourceSize ? f.data.spriteSourceSize.h : 60) || 60;
+      r.mnt.spr = S.add.sprite(0, 0, key, 'stance_6_0').setOrigin(o[0], o[1]).setScale(Phaser.Math.Clamp((/wyvern/.test(mk[0]) ? 78 : 58) / h, .2, 3)); if (mk[1]) r.mnt.spr.setTint(mk[1]);
+    }
+    const ms = r.mnt.spr, an = (moving ? 'run' : 'stance') + '|' + r.dir, k = key + '|' + an;
+    if (r.mnt.an !== an && S.anims.exists(k)) { ms.play(k); r.mnt.an = an; }
+    ms.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(u.shadow ? u.shadow.x : u.spr.x, (u.shadow ? u.shadow.y : u.spr.y) - (/wyvern/.test(mk[0]) ? 14 : 0)).setDepth(u.spr.depth - .02);
+  }
+  // крылья: светящиеся «крылья» из света за спиной в цветах крыльев
+  function auraTick(S, r, u) {
+    let wid = u === S.hero ? (u.hasWings ? u.wingId : null) : (u.wingR && u.wingR.texture && u.wingR.texture.key.startsWith('wing7_') ? u.wingR.texture.key.slice(6) : null);
+    const W = wid && typeof WINGS !== 'undefined' ? WINGS[wid] : null;
+    if (!W) { if (r.aura) for (const g of r.aura) g.setVisible(false); return; }
+    if (!r.aura) r.aura = [0, 1].map(() => S.add.image(0, 0, 'glow').setBlendMode(Phaser.BlendModes.ADD));
+    const t = S.now || 0, flap = 1 + Math.sin(t * 3) * .12, c0 = W.pal ? W.pal[0] : 0xffffff, c1 = W.pal ? W.pal[1] : 0xffffff;
+    r.aura.forEach((g, i) => { const sd = i ? 1 : -1; g.setVisible(u.spr.visible).setTint(i ? c1 : c0).setAlpha(.55 * u.spr.alpha).setPosition(u.spr.x + sd * 15, u.spr.y - 50).setScale(.55 * flap, 1.05).setAngle(sd * 28).setDepth(u.spr.depth - .03); });
   }
   function setDir(r, sx, sy, snap) {
     if (Math.hypot(sx, sy) < 1e-6) return;
@@ -257,6 +286,9 @@ const FLR = (() => {
   function drawPanel(S, ctx, u, cx, fy, k, t, mounted) { // рисует героя в окне персонажа; true если получилось
     const r = u && u.flr; if (!r || !r.ready || r.kind !== 'hero') return false;
     const fi = Math.floor(t * 3.2) % 4, d = 6;
+    if (mounted && u === S.hero && save.eq.mount) { const mk = mountKey(save.eq.mount.base), key = 'fl_m_' + mk[0], f = S.textures.exists(key) && S.textures.getFrame(key, 'stance_6_0');
+      if (f) { const o = meta(S, key).origin || [.5, .8], ss = f.data.spriteSourceSize, src = f.data.sourceSize, kk = k * 80 / ss.h * (/wyvern/.test(mk[0]) ? 1.3 : 1);
+        ctx.drawImage(f.source.image, f.cutX, f.cutY, f.cutWidth, f.cutHeight, cx - o[0] * src.w * kk + ss.x * kk, fy + 12 * k - o[1] * src.h * kk + ss.y * kk, f.cutWidth * kk, f.cutHeight * kk); } }
     for (const slot of ORDER[d]) {
       const p = r.parts[slot]; if (!p || (mounted && (slot === 'feet' || slot === 'legs'))) continue;
       const f = S.textures.getFrame(p.key, 'stance_' + d + '_' + fi) || S.textures.getFrame(p.key, 'stance_' + d + '_0'); if (!f) continue;
@@ -285,6 +317,22 @@ const FLR = (() => {
     tryDraw(0);
   }
   function whenTiles(f) { if (TILE.ready) return f(); let done = false; const go = () => { if (!done) { done = true; f(); } }; TILE.waiters.push(go); setTimeout(go, 5000); }
+  const PET = { dragon: ['wyvern_fire'], kitsune: ['fire_ant'], owl: ['wyvern_air', 0xd0d8ff], panda: ['antlion_small', 0xf0f0f0], phoenixchick: ['wyvern_fire', 0xffd080], jadeturtle: ['boulder', 0x9affc0],
+    qilinkid: ['goblin_elite', 0xffe08a], frostpup: ['ice_ant'], spiderling: ['antlion_small', 0xc080ff], moonbat: ['wyvern_air', 0xff8090] };
+  function attachPet(S, P) { if (!P || !P.spr) return; const m = PET[P.id] || ['wyvern_air']; attachMob(S, P, null, { key: m[0], height: /wyvern/.test(m[0]) ? 34 : 26, tint: m[1] }); }
+  function petFrame(S, id) { const m = PET[id] || ['wyvern_air'], key = 'fl_m_' + m[0]; need(S, key, 'mob/' + m[0]); return S.textures.exists(key) ? { key, f: S.textures.getFrame(key, 'stance_6_0'), tint: m[1] } : null; }
   const NPC = { npc_master: { cls: 'mage', r: 2, weapon: 'bo' }, npc_trader: { cls: 'archer', r: 0, fem: true, noWeapon: true, noHelm: true }, npc_smith: { cls: 'warrior', r: 1, weapon: 'smith_hammer', bald: true, noHelm: true } };
-  return { NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
+  function portraitTo(S, cv, src) { // портрет героя/соперника в стиле Flare на canvas; true если нарисовано
+    let fake = src && src.flr ? src : null;
+    if (!fake) {
+      const spec = src; let ok = true;
+      for (const it of Object.values(spec.layers)) { const k = 'fl_h' + spec.sex + '_' + it; if (!need(S, k, 'hero/' + spec.sex + '/' + it) && status[k] !== 'missing') ok = false; }
+      if (!ok) return false;
+      fake = { flr: { ready: true, kind: 'hero', spec, parts: {} } };
+      for (const slot in spec.layers) { const k = 'fl_h' + spec.sex + '_' + spec.layers[slot]; if (S.textures.exists(k)) fake.flr.parts[slot] = { key: k }; }
+    }
+    const x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height);
+    return drawPanel(S, x, fake, cv.width / 2, cv.height * .96, cv.height / 100, 0, false);
+  }
+  return { portraitTo, WEAP, PET, petFrame, attachPet, mountKey, NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
 })();
