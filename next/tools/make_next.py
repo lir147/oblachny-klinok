@@ -89,7 +89,7 @@ rep("""    this.tweens.add({ targets: ghost, alpha: 0, duration: 400, onComplete
     const m = h.target && h.target.alive ? h.target : null;""", """    if (ghost.scene) this.tweens.add({ targets: ghost, alpha: 0, duration: 400, onComplete: () => ghost.destroy() });
     const m = h.target && h.target.alive ? h.target : null;""")
 # окно персонажа
-rep("""    if (mt && mfly !== 'stand') ctx.drawImage(src(h.tex ? h.tex.idle : h.spr.texture.key)""", """    const flDrawn = FLR.drawPanel(this, ctx, h, cx, fy, k / HERO_K * .8, t, mt && mfly !== 'stand');
+rep("""    if (mt && mfly !== 'stand') ctx.drawImage(src(h.tex ? h.tex.idle : h.spr.texture.key)""", """    const flDrawn = FLR.drawPanel(this, ctx, h, cx, FLR.ready(h) ? gy - 6 : fy, k / HERO_K * .8, t, !!mt);
     if (flDrawn) {} else if (mt && mfly !== 'stand') ctx.drawImage(src(h.tex ? h.tex.idle : h.spr.texture.key)""")
 rep("""    if (mt) mDraw('front');
     const wlk = this.weaponLook();""", """    if (mt) mDraw('front');
@@ -147,11 +147,12 @@ rep("""  { id: 'smith', name: 'Кузнец Тэцу', role: 'заточка', k
   { id: 'chest', name: 'Сундук', role: 'склад', key: 'obj_chest', obj: 'chest', zone: 'home', x: C - 2.2, y: C - 3.2 },
   { id: 'board', name: 'Обустройство', role: 'дом, сад и трофеи', key: 'obj_board', obj: 'board', zone: 'home', x: C + 2.2, y: C - 3.2 }
 ];
-NPCS.forEach(d => { d.dx = d.x - C; d.dy = d.y - C; });""")
+NPCS.forEach(d => { d.dx = d.x - C; d.dy = d.y - C; });
+const TOWN_K = 1.8; // город просторнее: всё убранство и жители дальше от центра""")
 rep("""      for (const d of NPCS) {
         const n = Object.assign({}, d, { lungeT: -9, off: Math.random() * 6 });""", """      for (const d of NPCS) {
         if ((d.zone || 'town') !== this.zoneId) continue;
-        const n = Object.assign({}, d, { x: C + d.dx, y: C + d.dy, lungeT: -9, off: Math.random() * 6 });""")
+        const n = Object.assign({}, d, { x: C + d.dx * (d.zone ? 1 : TOWN_K), y: C + d.dy * (d.zone ? 1 : TOWN_K), lungeT: -9, off: Math.random() * 6 });""")
 rep("""        n.spr = this.add.image(0, 0, 'npc2' + d.key.slice(3)).setOrigin(.5, HERO_FY / HERO_H).setScale(HERO_K / 2).setFlipX(d.x > C);""",
     """        n.spr = (d.obj && FLR.decoImage(this, d.obj, z.tiles, 0, 0)) || this.add.image(0, 0, 'npc2' + (d.obj ? '_master' : d.key.slice(3))).setOrigin(.5, HERO_FY / HERO_H).setScale(HERO_K / 2).setFlipX(n.x > C);
         if (d.obj) n.shadow.setVisible(false);""")
@@ -159,8 +160,14 @@ rep("    for (const n of this.npcs) this.placeUnit(n, Math.sin(this.now * 1.6 + 
 # убранство: в доме — мебель вместо деревенских построек
 rep("""    if (z.village) {
       place('torii', C, C + 4.3, .97);""", """    if (z.home) {
-      for (const [k, x, y] of [['bed', C - 3.4, C + .2], ['table', C + 2.6, C + 1.2], ['books', C - 3.6, C - 3.6], ['books', C - 1.4, C - 4.4], ['throne', C + .2, C - 3.8], ['barrel', C + 3.8, C - 1.2], ['crate', C + 3.6, C - .2], ['statue', C - 3.8, C + 3.2]]) place(k, x, y, .9);
+      for (const [k, x, y] of [['bed', C - 3.4, C + .2], ['table', C + 2.6, C + 1.2], ['throne', C + .2, C - 3.8], ['barrel', C + 3.8, C - 1.2], ['crate', C + 3.6, C - .2], ['statue', C - 3.8, C + 3.2]]) place(k, x, y, .9);
       for (const [x, y] of [[C - 2.4, C - 2.4], [C + 2.4, C - 2.4], [C + 2.4, C + 2.4], [C - 2.4, C + 2.4]]) lantern(x, y);
+      // стены комнаты по двум дальним краям: камень, книжные шкафы, факелы, знамёна
+      const WL = [64, 64, 100, 64, 102, 64, 106, 64], WR = [65, 65, 101, 65, 103, 65, 107, 65];
+      for (let i = 0, t = .5; t < N; t += 1.39, i++) {
+        let p = iso(t, -.5), w = FLR.tileImage(this, 'd' + WR[i % WR.length], p.x, p.y, .5); if (w) w.setDepth(p.y + 25);
+        p = iso(-.5, t); w = FLR.tileImage(this, 'd' + WL[i % WL.length], p.x, p.y, .5); if (w) w.setDepth(p.y + 25);
+      }
       const trophies = Object.keys((save.stats || {}).bossKinds || {}).slice(0, 6);
       trophies.forEach((k, i) => { const p = iso(C - 1 + i * .9, C + 4.2), t = this.add.text(p.x, p.y - 30, '★', { fontFamily: FONT, fontSize: '20px', color: '#ffd36a', stroke: '#000', strokeThickness: 3 }).setOrigin(.5).setDepth(p.y); });
     }
@@ -256,6 +263,37 @@ rep(_l + "\n    ctx.fillRect(px - 1.5, py - 128, 3, 26);", """    // замок 
     ctx.fillRect(px - 40, py - 66, 80, 66); ctx.fillRect(px - 56, py - 104, 20, 104); ctx.fillRect(px + 36, py - 96, 20, 96); ctx.fillRect(px - 10, py - 120, 20, 54);
     for (let k = 0; k < 4; k++) ctx.fillRect(px - 40 + k * 22, py - 76, 12, 10);
     for (const [tx, ty, tw] of [[px - 46, py - 104, 14], [px + 46, py - 96, 14], [px, py - 120, 14]]) { ctx.beginPath(); ctx.moveTo(tx - tw, ty); ctx.lineTo(tx, ty - 26); ctx.lineTo(tx + tw, ty); ctx.closePath(); ctx.fill(); }""")
+# --- 4. союзники, колесо удачи, праздничные тыквы — в стиле Flare ---
+rep("""      a.bar = this.add.graphics().setDepth(190000);
+      this.drawBar(a);
+      this.allies.push(a);""", """      a.bar = this.add.graphics().setDepth(190000);
+      this.drawBar(a);
+      try { FLR.attachHero(this, a, FLR.heroSpec(({ tank: { cls: 'warrior', r: 3, weapon: 'kanabo' }, heal: { cls: 'mage', r: 2, fem: true, weapon: 'bo' }, arch: { cls: 'archer', r: 2, fem: true, weapon: 'stormbow' } })[role])); } catch (e) {}
+      this.allies.push(a);""")
+rep("""    x.fillStyle = rare ? '#ffd36a' : '#ebe5d5';
+    x.font = '24px serif'; x.fillText(WHEEL[i].glyph, R - 10, 8);""", """    x.fillStyle = rare ? '#ffd36a' : '#ebe5d5';
+    const wi = wheelIcon(i); if (wi) x.drawImage(wi, R - 40, -15, 30, 30); else { x.font = '24px serif'; x.fillText(WHEEL[i].glyph, R - 10, 8); }""")
+rep("function drawWheel() {", """const WHEEL_IC = [88, 20, 64, 161, 224, 216, 88, 98], WHEEL_IM = [];
+function wheelIcon(i) { if (!WHEEL_IM[i] && typeof FST !== 'undefined') { const im = new Image(); im.src = FST.icon(WHEEL_IC[i]); WHEEL_IM[i] = im; } const im = WHEEL_IM[i]; return im && im.complete && im.naturalWidth ? im : null; }
+function drawWheel() {""")
+rep("x.beginPath(); x.arc(0, 0, R + 10, 0, Math.PI * 2); x.fillStyle = '#3a2a14'; x.fill(); x.lineWidth = 3; x.strokeStyle = '#e0b04f'; x.stroke();",
+    "x.beginPath(); x.arc(0, 0, R + 10, 0, Math.PI * 2); { const wg = x.createRadialGradient(0, 0, R - 4, 0, 0, R + 10); wg.addColorStop(0, '#5a3a1e'); wg.addColorStop(.5, '#7a5230'); wg.addColorStop(1, '#3a2412'); x.fillStyle = wg; } x.fill(); x.lineWidth = 3; x.strokeStyle = '#8a8f98'; x.stroke();")
+_pl = [l for l in s.split('\n') if l.startswith("    if (!S.textures.exists(key)) S.canvasTex(key, 32, 32, c => { const g = c.createRadialGradient(14, 14, 2, 16, 18, 14);")][0]
+rep(_pl, """    if (!S.textures.exists(key)) S.textures.addCanvas(key, (() => { // тыква с вырезанным лицом, нарисованная в духе Flare
+      const cv = document.createElement('canvas'); cv.width = cv.height = 64; const c = cv.getContext('2d');
+      c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(32, 58, 24, 5, 0, 0, 6.29); c.fill();
+      for (const [ox, w] of [[-14, 12], [14, 12], [-7, 13], [7, 13], [0, 13]]) { const g = c.createRadialGradient(32 + ox - 3, 30, 2, 32 + ox, 38, 22); g.addColorStop(0, '#ffb24a'); g.addColorStop(.6, '#d0661a'); g.addColorStop(1, '#6a2a08'); c.fillStyle = g; c.beginPath(); c.ellipse(32 + ox, 39, w, 17, 0, 0, 6.29); c.fill(); c.strokeStyle = 'rgba(60,20,4,.55)'; c.lineWidth = 1.2; c.stroke(); }
+      c.fillStyle = '#4a5a22'; c.beginPath(); c.moveTo(29, 24); c.quadraticCurveTo(30, 14, 37, 11); c.lineTo(38, 14); c.quadraticCurveTo(34, 17, 34, 24); c.closePath(); c.fill();
+      c.fillStyle = '#ffe27a'; c.shadowColor = '#ffb030'; c.shadowBlur = 6;
+      for (const sx of [-1, 1]) { c.beginPath(); c.moveTo(32 + sx * 5, 36); c.lineTo(32 + sx * 13, 36); c.lineTo(32 + sx * 9, 29); c.closePath(); c.fill(); }
+      c.beginPath(); c.moveTo(19, 42); c.quadraticCurveTo(32, 54, 45, 42); c.lineTo(40, 44); c.lineTo(37, 41); c.lineTo(32, 45); c.lineTo(27, 41); c.lineTo(24, 44); c.closePath(); c.fill();
+      return cv; })());""")
+rep("S.add.image(p.x, p.y, key).setOrigin(.5, .9).setScale(WK * .8)", "S.add.image(p.x, p.y, key).setOrigin(.5, .9).setScale(WK * .42)")
+rep("    const place = (key, x, y, oy) => { const p = iso(x, y); return putDeco(key, p, oy); };", "    const place = (key, x, y, oy) => { if (z.town) { x = C + (x - C) * TOWN_K; y = C + (y - C) * TOWN_K; } const p = iso(x, y); return putDeco(key, p, oy); };")
+rep("      place('lantern', x, y, .95);\n      const p = iso(x, y);", "      place('lantern', x, y, .95);\n      const p = z.town ? iso(C + (x - C) * TOWN_K, C + (y - C) * TOWN_K) : iso(x, y);")
+rep("    if (z.village) { if (dc < 3.6 || Math.abs(cx - C) < 1.01", "    if (z.village) { if (dc < 3.6 * (z.town ? TOWN_K : 1) || Math.abs(cx - C) < 1.01")
+rep("      if (z.village ? dc < 5 : Math.hypot(cx - C, cy - C) < 3) continue;", "      if (z.village ? dc < 5 * (z.town ? TOWN_K : 1) : Math.hypot(cx - C, cy - C) < 3) continue;")
+rep("    if (this.zone.village && Math.max(Math.abs(x - C), Math.abs(y - C)) < 4.2) return true;", "    if (this.zone.village && Math.max(Math.abs(x - C), Math.abs(y - C)) < 4.2 * (this.zone.town ? TOWN_K : 1)) return true;")
 # --- 3. тестовая версия: своё сохранение, облако только на чтение ---
 rep("const SAVE_KEY = 'oblachny-klinok-v2';", """const SAVE_KEY = 'oblachny-klinok-next';
 try { if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem('oblachny-klinok-v2')) localStorage.setItem(SAVE_KEY, localStorage.getItem('oblachny-klinok-v2')); } catch (e) {}""")

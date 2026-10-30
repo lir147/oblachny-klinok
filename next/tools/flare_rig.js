@@ -21,7 +21,7 @@ const FLR = (() => {
   const HELM = { warrior: [null, null, 'chain_coif', 'plate_helm', 'plate_helm'], archer: [null, null, 'leather_hood', 'leather_hood', 'chain_coif'], rogue: ['leather_hood', 'leather_hood', 'leather_hood', 'leather_hood', 'chain_coif'], mage: [null, 'mage_hood', 'mage_hood_alt1', 'mage_hood_alt2', 'mage_hood_alt2'] };
   const WEAP = {
     katana: 'longsword', tachi: 'longsword', jian: 'longsword', legblade: 'longsword', kusarigama: 'hand_axe', wakizashi: 'shortsword', tanto: 'dagger', kunai: 'dagger', shinobi: 'shortsword',
-    nodachi: 'greatsword', odachi: 'greatsword', greatsword: 'greatsword', zanbato: 'zweihander',
+    nodachi: 'zweihander', odachi: 'zweihander', greatsword: 'greatsword', zanbato: 'zweihander',
     naginata: 'infantry_axe', yari: 'infantry_axe', bisento: 'infantry_axe', scythe: 'infantry_axe', kanabo: 'reinforced_club', hammer: 'war_hammer', ono: 'battle_axe',
     bo: 'staff', mstaff: 'greatstaff', icestaff: 'greatstaff', bonestaff: 'greatstaff', legstaff: 'greatstaff', scepter: 'rod', tome: 'wand', orb: 'wand', tessen: 'wand',
     yumi: 'longbow', longbow: 'longbow', stormbow: 'longbow', legbow: 'longbow', hankyu: 'shortbow', compbow: 'shortbow', crossbow: 'shortbow', repeater: 'shortbow', greatbow: 'greatbow'
@@ -117,6 +117,10 @@ const FLR = (() => {
     img.flare = true;
     return img;
   }
+  function tileImage(S, f, x, y, sc) { // кусок тайлсета Flare (стена, колонна) в натуральную величину * sc
+    if (!TILE.ready || !S.textures.exists('fl_t') || !TILE.json.frames[f]) return null;
+    const o = TILE.json.meta.origins[f]; return S.add.image(x, y, 'fl_t', f).setOrigin(o[0], o[1]).setScale((sc || 1) / TILE.json.meta.scale).setDepth(y);
+  }
   const has = (sex, item) => !MAN || (MAN.hero[sex] || []).includes(item);
   function need(S, key, path) {
     if (S.textures.exists(key)) { if (status[key] !== 'ready') { status[key] = 'ready'; makeAnims(S, key); } return true; }
@@ -139,20 +143,30 @@ const FLR = (() => {
   }
 
   /* ---------- что надето → какие слои ---------- */
+  // костюмы: свой комплект Flare + окраска; [комплект, шлем, оттенок одежды, оттенок шлема, свечение]
+  const COSTUME = {
+    sakura: ['mage1', null, 0xffb0cc], monk: ['cloth', null, 0xffa040], raven: ['leather', 'leather_hood', 0x6a6478, 0x5a5468], fox: ['leather', 'leather_hood', 0xffd8a0, 0xff9a50],
+    miko: ['mage0', null, 0xffe8e0], festival: ['mage1', null, 0x8fa0ff], ninja: ['leather', 'leather_hood', 0x707484, 0x60646e], shogun: ['plate', 'plate_helm', 0xff8a7a, 0xff8a7a],
+    abyss: ['plate', 'plate_helm', 0x7ab0b8, 0x7ab0b8, 0x3ae0d0], paladin: ['plate', 'plate_helm', 0xfff0b0, 0xfff0b0, 0xffe08a], bloodreaper: ['mage2', 'mage_hood_alt2', 0xff7a7a, 0x9a5060, 0xff3b5e]
+  };
+  const HEADC = { hunter: ['chain_coif', 0xe8f0ff], reaper: ['mage_hood_alt2', 0x8a7090], crown: ['plate_helm', 0xffd060], oni: ['leather_hood', 0xff7a6a] };
   function heroSpec(o) { // o: { cls, r, costume, head, weapon, fem, outfit }
     const cls = TIER[o.cls] ? o.cls : 'warrior', sex = o.fem ? 'f' : 'm';
-    const t = Math.max(0, Math.min(4, o.costume ? Math.max(3, o.r || 0) : (o.r || 0)));
-    const L = Object.assign({}, SETS[TIER[cls][t]]);
+    const t = Math.max(0, Math.min(4, o.r || 0)), C = o.costume && COSTUME[o.costume], H = o.head && HEADC[o.head];
+    const L = Object.assign({}, SETS[C ? C[0] : TIER[cls][t]]);
     L.head = sex === 'f' ? 'head_long' : o.bald ? 'head_bald' : 'head_short';
-    let helm = HELM[cls][t]; if (o.head) helm = cls === 'mage' ? 'mage_hood_alt2' : cls === 'warrior' ? 'plate_helm' : 'leather_hood';
+    let helm = C ? C[1] : HELM[cls][t]; if (H) helm = H[0];
     if (helm) L.helm = helm;
     L.main = o.noWeapon ? null : (WEAP[o.weapon] || o.weapon || DEF_WEAP[cls]); if (!L.main) delete L.main;
     if (o.noHelm) delete L.helm;
     if (cls === 'rogue' && t >= 2) L.off = 'buckler';
     for (const k in L) if (!has(sex, L[k])) delete L[k];
     const tint = {};
-    if (o.outfit) { const c = mixWhite(o.outfit, .45); tint.chest = c; tint.legs = mixWhite(o.outfit, .6); }
-    return { sex, layers: L, tint, act: ACT[cls] || 'swing', sig: sex + JSON.stringify(L) + JSON.stringify(tint) };
+    if (C) { for (const k of ['chest', 'legs', 'hands', 'feet']) tint[k] = C[2]; if (C[3]) tint.helm = C[3]; }
+    else if (o.outfit && !o.r) { tint.chest = mixWhite(o.outfit, .45); tint.legs = mixWhite(o.outfit, .6); }
+    if (H) tint.helm = H[1];
+    for (const k in tint) if (!L[k]) delete tint[k];
+    return { sex, layers: L, tint, glow: C && C[4] || 0, act: ACT[cls] || 'swing', sig: sex + JSON.stringify(L) + JSON.stringify(tint) };
   }
   const mixWhite = (c, k) => { const r = c >> 16 & 255, g = c >> 8 & 255, b = c & 255; return (Math.round(r + (255 - r) * k) << 16) | (Math.round(g + (255 - g) * k) << 8) | Math.round(b + (255 - b) * k); };
 
@@ -171,7 +185,7 @@ const FLR = (() => {
     const r = { unit, kind: 'mob', mobKey: kind, parts: { body: { key: 'fl_m_' + m[0], path: 'mob/' + m[0], spr: null } }, dir: Math.floor(Math.random() * 8), anim: '', ready: false, height: m[1], defTint: m[2] };
     unit.flr = r; rigs.add(r); return r;
   }
-  function destroy(r) { for (const s in r.parts) if (r.parts[s].spr) r.parts[s].spr.destroy(); for (const o of [r.mnt && r.mnt.spr, ...(r.aura || [])]) if (o) o.destroy(); rigs.delete(r); if (r.unit && r.unit.flr === r) r.unit.flr = null; restore(r); }
+  function destroy(r) { for (const s in r.parts) if (r.parts[s].spr) r.parts[s].spr.destroy(); for (const o of [r.mnt && r.mnt.spr, ...(r.wings || [])]) if (o) o.destroy(); rigs.delete(r); if (r.unit && r.unit.flr === r) r.unit.flr = null; restore(r); }
   const NOREN = () => false;
   function hideOld(u) { for (const o of [u.spr, u.wspr, u.wglow, u.mountB, u.mountF, u.wingR, u.wingL, u.wingGR, u.wingGL]) if (o && o.willRender !== NOREN) { o._flWR = o.willRender; o.willRender = NOREN; } }
   function restore(r) { const u = r.unit; if (!u) return; for (const o of [u.spr, u.wspr, u.wglow, u.mountB, u.mountF, u.wingR, u.wingL, u.wingGR, u.wingGL]) if (o && o._flWR) { o.willRender = o._flWR; delete o._flWR; } }
@@ -214,8 +228,10 @@ const FLR = (() => {
       const p = r.parts[slot]; if (!p || !p.spr) continue;
       const s = p.spr, k = p.key + '|' + key;
       if (r.anim !== key || restart || !s.anims.isPlaying && an !== 'die') { if (S.anims.exists(k)) s.play(k, !restart && r.anim === key); }
-      s.setPosition(spr.x, spr.y + (u.flBob || 0)).setDepth(spr.depth + .01 + i * .001).setAlpha(spr.alpha).setVisible(spr.visible && !(mounted && (slot === 'feet' || slot === 'legs')));
-      s.setScale(r.scale || 1);
+      const sc = r.scale || 1, sit = mounted && r.lift !== undefined && (slot === 'feet' || slot === 'legs');
+      // в седле ноги «согнуты»: укорочены от бёдер вниз и чуть разведены
+      s.setPosition(spr.x, spr.y + (u.flBob || 0) - (r.lift || 0) - (sit ? HIP * sc * (1 - SITQ) : 0)).setDepth(spr.depth + .01 + i * .001).setAlpha(spr.alpha).setVisible(spr.visible);
+      s.setScale(sc * (sit ? 1.12 : 1), sc * (sit ? SITQ : 1));
       if (tinted || (r.spec && r.spec.tint[slot]) || r.defTint) {
         const base = r.spec && r.spec.tint[slot] || r.defTint;
         if (fill) s.setTintFill(tc); else if (tinted) s.setTint(tc); else s.setTint(base);
@@ -223,40 +239,132 @@ const FLR = (() => {
       i++;
     }
     r.anim = key;
-    if (r.kind === 'hero') { hideOld(u); mountTick(S, r, u, mounted, moving); auraTick(S, r, u); }
-    // свечение заточки на оружии (тот же цвет, что и у старого свечения)
-    if (r.kind === 'hero' && r.parts.main && r.parts.main.spr && u.wTier && typeof tierColor === 'function') {
-      const ms = r.parts.main.spr;
-      if (!ms.preFX) { /* canvas renderer */ } else { if (!r.glow) r.glow = ms.preFX.addGlow(0xffffff, 3, 0, false, .1, 10); r.glow.color = tierColor(u.wTier, S.now || 0); r.glow.outerStrength = 2.5 + Math.sin((S.now || 0) * 4); }
-    } else if (r.glow && r.parts.main && r.parts.main.spr) { r.parts.main.spr.preFX.remove(r.glow); r.glow = null; }
+    if (r.kind === 'hero') { hideOld(u); mountTick(S, r, u, mounted, moving); wingTick(S, r, u); glowTick(S, r, u); }
   }
-  // маунт: существо Flare под героем
-  const MOUNT = { wolf: ['antlion', 0xe8eeff], tiger: ['antlion', 0xffb060], qilin: ['fire_ant', 0xffd080], boar: ['antlion_small', 0xc89870], deer: ['antlion', 0xd8e0ff], panther: ['antlion', 0x7a6a9a],
-    lion: ['antlion', 0xffd070], cerberus: ['fire_ant', 0xff7050], nightmare: ['antlion_armored', 0xc06070], drake: ['wyvern_water'], warboar: ['antlion_armored', 0xd0a080], bat: ['wyvern_air', 0xc07080],
-    crane: ['wyvern_air', 0xf0f4ff], phoenix: ['wyvern_fire'], skydragon: ['wyvern_water', 0xd8e8ff], whitetiger: ['antlion', 0xffffff], shadowlion: ['antlion_armored', 0x8a70b0], flysword: ['wyvern_air', 0xc8e0ff] };
-  function mountKey(id) { const m = MOUNT[id]; if (m) return m; const M = typeof MOUNTS !== 'undefined' && MOUNTS[id]; return M && M.fly ? ['wyvern_air'] : ['antlion']; }
-  function mountTick(S, r, u, mounted, moving) {
-    const id = !mounted ? null : u === S.hero ? (save.eq.mount && save.eq.mount.base) : u.mt;
-    if (!id) { if (r.mnt) r.mnt.spr.setVisible(false); return; }
-    const mk = mountKey(id), key = 'fl_m_' + mk[0];
-    if (!r.mnt || r.mnt.id !== id) { if (r.mnt) r.mnt.spr.destroy(); r.mnt = { id, key, spr: null }; }
-    if (!r.mnt.spr) {
-      if (!need(S, key, 'mob/' + mk[0])) return;
-      const o = meta(S, key).origin || [.5, .8], f = S.textures.getFrame(key, 'stance_6_0'), h = (f && f.data && f.data.spriteSourceSize ? f.data.spriteSourceSize.h : 60) || 60;
-      r.mnt.spr = S.add.sprite(0, 0, key, 'stance_6_0').setOrigin(o[0], o[1]).setScale(Phaser.Math.Clamp((/wyvern/.test(mk[0]) ? 78 : 58) / h, .2, 3)); if (mk[1]) r.mnt.spr.setTint(mk[1]);
+  // свечение заточки: оружие (u.wTier) и доспех (u.aTier), а также «светящиеся» костюмы
+  function glowTick(S, r, u) {
+    const now = S.now || 0, tc = typeof tierColor === 'function' ? tierColor : null;
+    const want = { main: u.wTier && tc ? tc(u.wTier, now) : 0, chest: u.aTier && tc ? tc(u.aTier, now, .5) : r.spec.glow || 0 };
+    r.fx = r.fx || {};
+    for (const slot in want) {
+      const p = r.parts[slot], s = p && p.spr; if (!s || !s.preFX) continue;
+      if (want[slot]) { if (!r.fx[slot]) r.fx[slot] = s.preFX.addGlow(0xffffff, 3, 0, false, .1, 10); r.fx[slot].color = want[slot]; r.fx[slot].outerStrength = (slot === 'main' ? 2.6 : 1.6) + Math.sin(now * 4) * (slot === 'main' ? 1 : .6); }
+      else if (r.fx[slot]) { s.preFX.remove(r.fx[slot]); r.fx[slot] = null; }
     }
-    const ms = r.mnt.spr, an = (moving ? 'run' : 'stance') + '|' + r.dir, k = key + '|' + an;
-    if (r.mnt.an !== an && S.anims.exists(k)) { ms.play(k); r.mnt.an = an; }
-    ms.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(u.shadow ? u.shadow.x : u.spr.x, (u.shadow ? u.shadow.y : u.spr.y) - (/wyvern/.test(mk[0]) ? 14 : 0)).setDepth(u.spr.depth - .02);
   }
-  // крылья: светящиеся «крылья» из света за спиной в цветах крыльев
-  function auraTick(S, r, u) {
-    let wid = u === S.hero ? (u.hasWings ? u.wingId : null) : (u.wingR && u.wingR.texture && u.wingR.texture.key.startsWith('wing7_') ? u.wingR.texture.key.slice(6) : null);
-    const W = wid && typeof WINGS !== 'undefined' ? WINGS[wid] : null;
-    if (!W) { if (r.aura) for (const g of r.aura) g.setVisible(false); return; }
-    if (!r.aura) r.aura = [0, 1].map(() => S.add.image(0, 0, 'glow').setBlendMode(Phaser.BlendModes.ADD));
-    const t = S.now || 0, flap = 1 + Math.sin(t * 3) * .12, c0 = W.pal ? W.pal[0] : 0xffffff, c1 = W.pal ? W.pal[1] : 0xffffff;
-    r.aura.forEach((g, i) => { const sd = i ? 1 : -1; g.setVisible(u.spr.visible).setTint(i ? c1 : c0).setAlpha(.55 * u.spr.alpha).setPosition(u.spr.x + sd * 15, u.spr.y - 50).setScale(.55 * flap, 1.05).setAngle(sd * 28).setDepth(u.spr.depth - .03); });
+  // маунт: существо Flare под героем — герой сидит у него на спине
+  const MOUNT = { wolf: ['ice_ant'], tiger: ['fire_ant', 0xffe8b0], qilin: ['fire_ant'], boar: ['antlion', 0xe8d8c0], deer: ['ice_ant', 0xece4ff], panther: ['antlion_armored', 0xb8a8d8],
+    lion: ['fire_ant', 0xfff0a0], cerberus: ['fire_ant', 0xff9a88], nightmare: ['antlion_armored'], drake: ['wyvern_water'], warboar: ['antlion_armored', 0xf0d8b8], bat: ['wyvern_air', 0xd890a0],
+    crane: ['wyvern_air', 0xf0f4ff], phoenix: ['wyvern_fire'], skydragon: ['wyvern_water', 0xd8e8ff], whitetiger: ['ice_ant', 0xffffff], shadowlion: ['antlion_armored', 0x9888c8], flysword: ['wyvern_air', 0xc8e0ff] };
+  // [высота на экране, доля высоты, где спина/седло, подъём над землёй в полёте]
+  const MGEO = { antlion: [92, .5, 0], antlion_small: [80, .52, 0], antlion_armored: [104, .5, 0], fire_ant: [94, .5, 0], ice_ant: [94, .5, 0], wyvern_air: [134, .5, 8], wyvern_fire: [134, .5, 8], wyvern_water: [134, .5, 8] };
+  const HIP = 48, SITQ = .58; // высота бёдер героя над стопами (px атласа); насколько «сгибаются» ноги в седле
+  function mountKey(id) { const m = MOUNT[id]; if (m) return m; const M = typeof MOUNTS !== 'undefined' && MOUNTS[id]; return M && M.fly ? ['wyvern_air'] : ['antlion']; }
+  function mountGeo(S, key) {
+    const g = MGEO[key.replace('fl_m_', '')] || MGEO.antlion, f = S.textures.getFrame(key, 'stance_6_0'), h = (f && f.data && f.data.spriteSourceSize ? f.data.spriteSourceSize.h : 60) || 60;
+    const sc = g[0] / h; return { sc, seat: g[0] * g[1] + g[2], fly: g[2] };
+  }
+  function mountId(S, u, mounted) { return !mounted ? null : u === S.hero ? (save.eq.mount && save.eq.mount.base) : u.mt; }
+  function mountTick(S, r, u, mounted, moving) {
+    const id = mountId(S, u, mounted);
+    if (!id) { if (r.mnt && r.mnt.spr) r.mnt.spr.setVisible(false); r.lift = undefined; return; }
+    const mk = mountKey(id), key = 'fl_m_' + mk[0];
+    if (!r.mnt || r.mnt.id !== id) { if (r.mnt && r.mnt.spr) r.mnt.spr.destroy(); r.mnt = { id, key, spr: null }; }
+    if (!r.mnt.spr) {
+      r.lift = undefined;
+      if (!need(S, key, 'mob/' + mk[0])) return;
+      const o = meta(S, key).origin || [.5, .8]; r.mnt.g = mountGeo(S, key);
+      r.mnt.spr = S.add.sprite(0, 0, key, 'stance_6_0').setOrigin(o[0], o[1]).setScale(r.mnt.g.sc); if (mk[1]) r.mnt.spr.setTint(mk[1]);
+    }
+    const g = r.mnt.g, now = S.now || 0, hover = g.fly ? Math.sin(now * 2.2) * 3 : 0;
+    r.lift = Math.max(0, g.seat - HIP * (r.scale || 1)) + hover;
+    const ms = r.mnt.spr, an = (moving || g.fly ? 'run' : 'stance') + '|' + r.dir, k = key + '|' + an;
+    if (r.mnt.an !== an && S.anims.exists(k)) { ms.play(k); r.mnt.an = an; }
+    const tinted = u.spr.isTinted && u.spr.tintFill;
+    ms.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(u.spr.x, u.spr.y + (u.flBob || 0) + hover).setDepth(u.spr.depth - .02);
+    if (tinted) ms.setTintFill(u.spr.tintTopLeft); else if (mk[1]) ms.setTint(mk[1]); else ms.clearTint();
+  }
+
+  /* ---------- крылья: нарисованы в духе Flare (перья, перепонка, кристалл) ---------- */
+  const WCV = {}; // id → canvas правого крыла; корень крыла в (WR[0], WR[1])
+  const WSZ = 300, WR = [24, 236];
+  const rgb = (c, a) => 'rgba(' + (c >> 16 & 255) + ',' + (c >> 8 & 255) + ',' + (c & 255) + ',' + (a === undefined ? 1 : a) + ')';
+  const shade = (c, k) => { const f = v => Math.max(0, Math.min(255, Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k))); return (f(c >> 16 & 255) << 16) | (f(c >> 8 & 255) << 8) | f(c & 255); };
+  function wingCanvas(id) {
+    if (WCV[id]) return WCV[id];
+    const W = (typeof WINGS !== 'undefined' && WINGS[id]) || { pal: [0xd8d8e8, 0xf0f0ff, 0xffffff, 0x8a8aa0] };
+    const P = W.pal, cv = document.createElement('canvas'); cv.width = cv.height = WSZ; const x = cv.getContext('2d');
+    x.translate(WR[0], WR[1]); x.lineJoin = 'round';
+    // кость крыла: плечо → локоть → кисть → кончик
+    const arm = [[0, 0], [70, -96], [150, -150], [262, -206]];
+    const bez = t => { const [a, b, c, d] = arm, m = 1 - t; return [m * m * m * a[0] + 3 * m * m * t * b[0] + 3 * m * t * t * c[0] + t * t * t * d[0], m * m * m * a[1] + 3 * m * m * t * b[1] + 3 * m * t * t * c[1] + t * t * t * d[1]]; };
+    const outline = rgb(shade(P[3], -.55), .85);
+    if (W.style === 'membrane') {
+      const fingers = [[262, -206], [250, -60], [196, 10], [118, 30]], wrist = bez(.55);
+      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= .55; t += .05) { const q = bez(t); x.lineTo(q[0], q[1]); }
+      x.lineTo(262, -206);
+      for (let i = 1; i < fingers.length; i++) { const a = fingers[i - 1], b = fingers[i], mx = (a[0] + b[0]) / 2 - 18, my = (a[1] + b[1]) / 2 - 26; x.quadraticCurveTo(mx, my, b[0], b[1]); }
+      x.quadraticCurveTo(40, -10, 0, 0); x.closePath();
+      const g = x.createLinearGradient(0, -200, 160, 40); g.addColorStop(0, rgb(P[1])); g.addColorStop(.6, rgb(P[0])); g.addColorStop(1, rgb(P[3]));
+      x.fillStyle = g; x.fill(); x.lineWidth = 4; x.strokeStyle = outline; x.stroke();
+      x.lineCap = 'round';
+      for (const f of fingers) { x.beginPath(); x.moveTo(wrist[0], wrist[1]); x.lineTo(f[0], f[1]); x.lineWidth = 7; x.strokeStyle = rgb(shade(P[3], -.4)); x.stroke(); x.lineWidth = 2.5; x.strokeStyle = rgb(P[2], .55); x.stroke(); }
+      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= .55; t += .05) { const q = bez(t); x.lineTo(q[0], q[1]); } x.lineWidth = 11; x.strokeStyle = rgb(shade(P[3], -.4)); x.stroke(); x.lineWidth = 4; x.strokeStyle = rgb(P[2], .5); x.stroke();
+      x.beginPath(); x.moveTo(wrist[0], wrist[1]); x.lineTo(wrist[0] + 6, wrist[1] - 22); x.lineTo(wrist[0] + 14, wrist[1] - 2); x.fillStyle = rgb(P[2]); x.fill();
+    } else if (W.style === 'crystal') {
+      for (let i = 0; i < 9; i++) {
+        const t = .18 + i * .1, b = bez(Math.min(1, t)), len = 70 + i * 16, ang = Math.PI * (.42 - i * .045);
+        const tip = [b[0] + Math.cos(ang) * len, b[1] + Math.sin(ang) * len], w = 15 + i * 1.2, nx = -Math.sin(ang) * w, ny = Math.cos(ang) * w;
+        x.beginPath(); x.moveTo(b[0] + nx * .4, b[1] + ny * .4); x.lineTo(b[0] + (tip[0] - b[0]) * .55 + nx, b[1] + (tip[1] - b[1]) * .55 + ny); x.lineTo(tip[0], tip[1]); x.lineTo(b[0] + (tip[0] - b[0]) * .6 - nx * .6, b[1] + (tip[1] - b[1]) * .6 - ny * .6); x.lineTo(b[0] - nx * .3, b[1] - ny * .3); x.closePath();
+        const g = x.createLinearGradient(b[0], b[1], tip[0], tip[1]); g.addColorStop(0, rgb(P[0], .95)); g.addColorStop(.7, rgb(P[1], .85)); g.addColorStop(1, rgb(P[2], .9));
+        x.fillStyle = g; x.fill(); x.lineWidth = 2.5; x.strokeStyle = rgb(P[3], .9); x.stroke();
+        x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(tip[0], tip[1]); x.lineWidth = 1.6; x.strokeStyle = 'rgba(255,255,255,.7)'; x.stroke();
+      }
+      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= 1; t += .05) { const q = bez(t); x.lineTo(q[0], q[1]); } x.lineWidth = 10; x.strokeStyle = rgb(P[3]); x.stroke(); x.lineWidth = 3; x.strokeStyle = 'rgba(255,255,255,.75)'; x.stroke();
+    } else {
+      const feather = (b, ang, len, w, c0, c1, edge) => {
+        const tip = [b[0] + Math.cos(ang) * len, b[1] + Math.sin(ang) * len], nx = -Math.sin(ang), ny = Math.cos(ang);
+        x.beginPath(); x.moveTo(b[0] - nx * w * .35, b[1] - ny * w * .35);
+        x.quadraticCurveTo(b[0] + Math.cos(ang) * len * .55 - nx * w * .7, b[1] + Math.sin(ang) * len * .55 - ny * w * .7, tip[0], tip[1]);
+        x.quadraticCurveTo(b[0] + Math.cos(ang) * len * .6 + nx * w * .62, b[1] + Math.sin(ang) * len * .6 + ny * w * .62, b[0] + nx * w * .35, b[1] + ny * w * .35); x.closePath();
+        const g = x.createLinearGradient(b[0], b[1], tip[0], tip[1]); g.addColorStop(0, rgb(c0)); g.addColorStop(1, rgb(c1));
+        x.fillStyle = g; x.fill(); x.lineWidth = 2.2; x.strokeStyle = outline; x.stroke();
+        x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(b[0] + Math.cos(ang) * len * .85, b[1] + Math.sin(ang) * len * .85); x.lineWidth = 1.3; x.strokeStyle = rgb(edge, .55); x.stroke();
+      };
+      // маховые (длинные, по внешней половине), второстепенные, кроющие
+      for (let i = 10; i >= 0; i--) { const t = .35 + i * .065, b = bez(Math.min(1, t)); feather(b, Math.PI * (.47 - i * .052), 92 + i * 10, 24, shade(P[0], -.25), P[1], P[2]); }
+      for (let i = 7; i >= 0; i--) { const t = .04 + i * .055, b = bez(t); feather(b, Math.PI * (.52 - i * .02), 110 - i * 2, 26, shade(P[0], -.35), shade(P[0], .1), P[2]); }
+      for (let i = 0; i < 9; i++) { const t = .05 + i * .1, b = bez(t); feather([b[0] - 4, b[1] + 6], Math.PI * (.45 - i * .04), 46 + i * 2, 22, shade(P[3], 0), P[0], P[2]); }
+      for (let i = 0; i < 10; i++) { const t = .03 + i * .085, b = bez(t); feather([b[0], b[1] + 2], Math.PI * (.42 - i * .035), 26, 18, P[1], shade(P[0], .15), 0xffffff); }
+      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= 1; t += .04) { const q = bez(t); x.lineTo(q[0], q[1]); } x.lineCap = 'round'; x.lineWidth = 9; x.strokeStyle = rgb(shade(P[3], -.2)); x.stroke(); x.lineWidth = 3; x.strokeStyle = rgb(P[2], .7); x.stroke();
+      if (W.energy) { x.globalCompositeOperation = 'lighter'; x.globalAlpha = .35; x.drawImage(cv, -WR[0], -WR[1]); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over'; }
+    }
+    // лёгкий «живописный» шум
+    x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-atop';
+    for (let i = 0; i < 900; i++) { x.fillStyle = Math.random() < .5 ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.05)'; x.fillRect(Math.random() * WSZ, Math.random() * WSZ, 3, 3); }
+    x.globalCompositeOperation = 'source-over';
+    return (WCV[id] = cv);
+  }
+  const WSCALE = .3, SHOULDER = 74; // размер крыла в мире; высота корня крыла над стопами
+  function wingId(S, u) { return u === S.hero ? (u.hasWings && u.alive !== false ? u.wingId : null) : (u.wingR && u.wingR.texture && u.wingR.texture.key.startsWith('wing7_') ? u.wingR.texture.key.slice(6) : null); }
+  function wingPose(dir, t, moving) { // общая раскладка крыльев для мира и окна героя
+    const a = ANGLE[dir], wf = Math.max(.3, Math.abs(Math.sin(a))), front = Math.sin(a) < -.1;
+    const flap = Math.sin(t * (moving ? 7 : 2.6)) * (moving ? .2 : .12);
+    return { wf, front, ox: -Math.cos(a) * 7, oy: Math.sin(a) < 0 ? 2 : 0, flap };
+  }
+  function wingTick(S, r, u) {
+    const id = wingId(S, u);
+    if (!id) { if (r.wings) for (const w of r.wings) w.setVisible(false); return; }
+    const key = 'flw_' + id;
+    if (!S.textures.exists(key)) S.textures.addCanvas(key, wingCanvas(id));
+    if (!r.wings || r.wings[0].texture.key !== key) { if (r.wings) for (const w of r.wings) w.destroy(); r.wings = [1, -1].map(sd => S.add.image(0, 0, key).setOrigin(sd > 0 ? WR[0] / WSZ : 1 - WR[0] / WSZ, WR[1] / WSZ).setFlipX(sd < 0)); r.wfx = null; }
+    const pz = wingPose(r.dir, S.now || 0, u.moving), sc = WSCALE * (r.scale || 1), x0 = u.spr.x + pz.ox, y0 = u.spr.y + (u.flBob || 0) - (r.lift || 0) - SHOULDER + pz.oy;
+    const tier = u === S.hero ? u.wingTier : null;
+    r.wings.forEach((w, i) => {
+      const sd = i ? -1 : 1;
+      w.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(x0 + sd * 3, y0).setScale(sc * pz.wf, sc).setRotation(-sd * pz.flap).setDepth(u.spr.depth + (pz.front ? .03 : -.01));
+      if (w.preFX) { if (tier && typeof tierColor === 'function') { if (!w._g) w._g = w.preFX.addGlow(0xffffff, 2, 0, false, .1, 8); w._g.color = tierColor(tier, S.now || 0); } else if (w._g) { w.preFX.remove(w._g); w._g = null; } }
+    });
   }
   function setDir(r, sx, sy, snap) {
     if (Math.hypot(sx, sy) < 1e-6) return;
@@ -283,22 +391,50 @@ const FLR = (() => {
     }
     return true;
   }
-  function drawPanel(S, ctx, u, cx, fy, k, t, mounted) { // рисует героя в окне персонажа; true если получилось
+  const TCV = new Map(); // окрашенные кадры для canvas
+  function tintedFrame(f, tint) {
+    const id = f.texture.key + '|' + f.name + '|' + tint; let c = TCV.get(id); if (c) return c;
+    c = document.createElement('canvas'); c.width = f.cutWidth; c.height = f.cutHeight; const x = c.getContext('2d');
+    x.drawImage(f.source.image, f.cutX, f.cutY, f.cutWidth, f.cutHeight, 0, 0, f.cutWidth, f.cutHeight);
+    x.globalCompositeOperation = 'multiply'; x.fillStyle = rgb(tint); x.fillRect(0, 0, c.width, c.height);
+    x.globalCompositeOperation = 'destination-in'; x.drawImage(f.source.image, f.cutX, f.cutY, f.cutWidth, f.cutHeight, 0, 0, f.cutWidth, f.cutHeight);
+    if (TCV.size > 400) TCV.clear(); TCV.set(id, c); return c;
+  }
+  function blit(S, ctx, key, fname, cx, fy, k, tint, glow, ky, kx) {
+    ky = ky || k; kx = kx || k;
+    const f = S.textures.getFrame(key, fname); if (!f || !f.data) return false;
+    const o = meta(S, key).origin || [.5, .8], ss = f.data.spriteSourceSize, src = f.data.sourceSize || { w: f.realWidth, h: f.realHeight };
+    const x = cx - o[0] * src.w * kx + ss.x * kx, y = fy - o[1] * src.h * ky + ss.y * ky;
+    if (glow) { ctx.save(); ctx.shadowColor = rgb(glow, .95); ctx.shadowBlur = 14; }
+    if (tint) ctx.drawImage(tintedFrame(f, tint), x, y, f.cutWidth * kx, f.cutHeight * ky);
+    else ctx.drawImage(f.source.image, f.cutX, f.cutY, f.cutWidth, f.cutHeight, x, y, f.cutWidth * kx, f.cutHeight * ky);
+    if (glow) ctx.restore();
+    return true;
+  }
+  function drawPanel(S, ctx, u, cx, fy, k, t, mounted) { // рисует героя (с маунтом и крыльями) в окне персонажа; true если получилось
     const r = u && u.flr; if (!r || !r.ready || r.kind !== 'hero') return false;
-    const fi = Math.floor(t * 3.2) % 4, d = 6;
-    if (mounted && u === S.hero && save.eq.mount) { const mk = mountKey(save.eq.mount.base), key = 'fl_m_' + mk[0], f = S.textures.exists(key) && S.textures.getFrame(key, 'stance_6_0');
-      if (f) { const o = meta(S, key).origin || [.5, .8], ss = f.data.spriteSourceSize, src = f.data.sourceSize, kk = k * 80 / ss.h * (/wyvern/.test(mk[0]) ? 1.3 : 1);
-        ctx.drawImage(f.source.image, f.cutX, f.cutY, f.cutWidth, f.cutHeight, cx - o[0] * src.w * kk + ss.x * kk, fy + 12 * k - o[1] * src.h * kk + ss.y * kk, f.cutWidth * kk, f.cutHeight * kk); } }
+    const me = S && u === S.hero, mid = me && mounted && save.eq.mount ? save.eq.mount.base : null;
+    const d = mid ? 5 : 6, fi = Math.floor(t * 3.2) % 4, tc = typeof tierColor === 'function' ? tierColor : null;
+    let lift = 0, mkey = null, mg = null, mk = null;
+    if (mid) { mk = mountKey(mid); mkey = 'fl_m_' + mk[0]; need(S, mkey, 'mob/' + mk[0]); if (S.textures.exists(mkey)) { mg = mountGeo(S, mkey); k *= mg.fly ? .66 : .78; lift = (Math.max(0, mg.seat - HIP) + (mg.fly ? Math.sin(t * 2.2) * 3 : 0)) * k; } else mkey = null; }
+    // крылья (за спиной)
+    const wid = me ? wingId(S, u) : null;
+    if (wid) {
+      const cv = wingCanvas(wid), pz = wingPose(d, t, false), sc = WSCALE * k, x0 = cx + pz.ox * k, y0 = fy - lift - SHOULDER * k + pz.oy * k, gl = me && u.wingTier && tc ? tc(u.wingTier, t) : 0;
+      for (const sd of [1, -1]) {
+        ctx.save(); ctx.translate(x0 + sd * 3 * k, y0); ctx.scale(sd * pz.wf, 1); ctx.rotate(-pz.flap);
+        if (gl) { ctx.shadowColor = rgb(gl, .9); ctx.shadowBlur = 16; }
+        ctx.drawImage(cv, -WR[0] * sc, -WR[1] * sc, WSZ * sc, WSZ * sc); ctx.restore();
+      }
+    }
+    // маунт
+    if (mkey) { const fr = Math.floor(t * 8) % 4, fname = (mg.fly ? 'run_' : 'stance_') + d + '_' + (mg.fly ? fr : fi); blit(S, ctx, mkey, S.textures.getFrame(mkey, fname) ? fname : 'stance_' + d + '_0', cx, fy + (mg.fly ? Math.sin(t * 2.2) * 3 * k : 0), mg.sc * k, mk[1] || 0); }
+    // сам герой
+    const glow = { main: me && u.wTier && tc ? tc(u.wTier, t) : 0, chest: me && u.aTier && tc ? tc(u.aTier, t, .5) : r.spec.glow || 0 };
     for (const slot of ORDER[d]) {
-      const p = r.parts[slot]; if (!p || (mounted && (slot === 'feet' || slot === 'legs'))) continue;
-      const f = S.textures.getFrame(p.key, 'stance_' + d + '_' + fi) || S.textures.getFrame(p.key, 'stance_' + d + '_0'); if (!f) continue;
-      const o = meta(S, p.key).origin || [.5, .8], ss = f.data.spriteSourceSize, src = f.data.sourceSize || { w: f.realWidth, h: f.realHeight };
-      const x = cx - o[0] * src.w * k + ss.x * k, y = fy - o[1] * src.h * k + ss.y * k;
-      ctx.save();
-      const tint = r.spec.tint[slot];
-      if (tint) { ctx.filter = 'none'; }
-      ctx.drawImage(f.source.image, f.cutX, f.cutY, f.cutWidth, f.cutHeight, x, y, f.cutWidth * k, f.cutHeight * k);
-      ctx.restore();
+      const p = r.parts[slot]; if (!p) continue;
+      const nm = S.textures.getFrame(p.key, 'stance_' + d + '_' + fi) ? 'stance_' + d + '_' + fi : 'stance_' + d + '_0', sit = mkey && (slot === 'feet' || slot === 'legs');
+      blit(S, ctx, p.key, nm, cx, fy - lift - (sit ? HIP * k * (1 - SITQ) : 0), k, r.spec.tint[slot] || 0, glow[slot] || 0, sit ? k * SITQ : k, sit ? k * 1.12 : k);
     }
     return true;
   }
@@ -334,5 +470,5 @@ const FLR = (() => {
     const x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height);
     return drawPanel(S, x, fake, cv.width / 2, cv.height * .96, cv.height / 100, 0, false);
   }
-  return { portraitTo, WEAP, PET, petFrame, attachPet, mountKey, NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
+  return { tileImage, wingCanvas, mountGeo, portraitTo, WEAP, PET, petFrame, attachPet, mountKey, NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
 })();
