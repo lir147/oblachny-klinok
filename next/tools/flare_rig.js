@@ -144,15 +144,58 @@ const FLR = (() => {
 
   /* ---------- что надето → какие слои ---------- */
   // костюмы: свой комплект Flare + окраска; [комплект, шлем, оттенок одежды, оттенок шлема, свечение]
-  const COSTUME = {
-    sakura: ['mage1', null, 0xffb0cc], monk: ['cloth', null, 0xffa040], raven: ['leather', 'leather_hood', 0x6a6478, 0x5a5468], fox: ['leather', 'leather_hood', 0xffd8a0, 0xff9a50],
-    miko: ['mage0', null, 0xffe8e0], festival: ['mage1', null, 0x8fa0ff], ninja: ['leather', 'leather_hood', 0x707484, 0x60646e], shogun: ['plate', 'plate_helm', 0xff8a7a, 0xff8a7a],
-    abyss: ['plate', 'plate_helm', 0x7ab0b8, 0x7ab0b8, 0x3ae0d0], paladin: ['plate', 'plate_helm', 0xfff0b0, 0xfff0b0, 0xffe08a], bloodreaper: ['mage2', 'mage_hood_alt2', 0xff7a7a, 0x9a5060, 0xff3b5e]
+  // наряды: [комплект, шлем, палитра одежды, палитра шлема, свечение]; палитра = [тень, основной, блик, сила] или по слотам { chest: [...], legs: [...] }
+  const PAL = {
+    gold: [0x2a1804, 0xb08a3a, 0xfff0c0, .72], white: [0x4a4642, 0xcfcac2, 0xffffff, .82], crimson: [0x1a0204, 0x86181a, 0xffb0a0, .78], abyss: [0x041014, 0x1e5860, 0xa0f0e8, .8],
+    black: [0x0c0b10, 0x3a3846, 0xb8b4cc, .85], slate: [0x0c0e12, 0x444a58, 0xb8c0d0, .85], fox: [0x2a1004, 0xc87a34, 0xfff0d6, .85], rose: [0x3a0c1a, 0xd8729a, 0xffeaf2, .85],
+    saffron: [0x341402, 0xd07a1c, 0xffe2a4, .85], navy: [0x060a24, 0x33489c, 0xd0dcff, .85], blood: [0x0c0102, 0x5e0a14, 0xf06070, .9], silver: [0x14161c, 0x8a92a4, 0xffffff, .85],
+    shadowpurple: [0x060408, 0x2e2638, 0x9a8aaa, .9], red: [0x200302, 0xa02818, 0xffa080, .88], cream: [0x403830, 0xe6dccc, 0xffffff, .85]
   };
-  const HEADC = { hunter: ['chain_coif', 0xe8f0ff], reaper: ['mage_hood_alt2', 0x8a7090], crown: ['plate_helm', 0xffd060], oni: ['leather_hood', 0xff7a6a] };
+  const COSTUME = {
+    sakura: ['mage1', null, 'rose'], monk: ['cloth', null, 'saffron'], raven: ['leather', 'leather_hood', 'black', 'black'], fox: ['leather', 'leather_hood', 'fox', 'fox'],
+    miko: ['mage0', null, { chest: 'cream', hands: 'cream', legs: 'red', feet: 'red' }], festival: ['mage1', null, 'navy'], ninja: ['leather', 'leather_hood', 'slate', 'slate'],
+    shogun: ['plate', 'plate_helm', { chest: 'crimson', legs: 'crimson', hands: 'gold', feet: 'crimson' }, 'crimson'], abyss: ['plate', 'plate_helm', 'abyss', 'abyss', 0x3ae0d0],
+    paladin: ['plate', 'plate_helm', { chest: 'white', legs: 'gold', hands: 'gold', feet: 'gold' }, 'gold', 0xffe08a], bloodreaper: ['mage2', 'mage_hood_alt2', 'blood', 'shadowpurple', 0xff3b5e]
+  };
+  const HEADC = { hunter: ['chain_coif', 'silver'], reaper: ['mage_hood_alt2', 'shadowpurple'], crown: ['plate_helm', 'gold'], oni: ['leather_hood', 'red'] };
+  const RC = {}; // перекрашенные атласы: ключ → true
+  function recolorKey(S, base, pid) { // атлас слоя, перекрашенный палитрой pid с сохранением светотени и бликов
+    const key = base + '~' + pid; if (RC[key] || S.textures.exists(key)) return key;
+    const P = PAL[pid], T = S.textures.get(base), src = T.getSourceImage();
+    const cv = document.createElement('canvas'); cv.width = src.width; cv.height = src.height; const x = cv.getContext('2d'); x.drawImage(src, 0, 0);
+    const id = x.getImageData(0, 0, cv.width, cv.height), d = id.data, st = P[3];
+    const skin = /cloth|mage|default/.test(base);
+    const isSkin = (r, g, bl) => skin && r > g && g > bl && r - bl > 45 && r - bl < 150 && r > 110 && g > 70 && (r - g) < 75;
+    // выравниваем яркость материала: тёмная ткань не уходит в сплошную тень, светлая не выгорает
+    const hist = new Uint32Array(256); let tot = 0;
+    for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 128 || isSkin(d[i], d[i + 1], d[i + 2])) continue; hist[(d[i] * 77 + d[i + 1] * 151 + d[i + 2] * 28) >> 8]++; tot++; }
+    let lo = 0, hi = 255, acc = 0; for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc < tot * .04) lo = i; if (acc < tot * .985) hi = i; }
+    if (hi - lo < 40) { lo = Math.max(0, lo - 20); hi = Math.min(255, hi + 20); }
+    const c3 = [P[0], P[1], P[2]].map(c => [c >> 16 & 255, c >> 8 & 255, c & 255]);
+    // карта яркость → цвет (тень → основной → блик), с лёгким усилением контраста
+    const lut = new Uint8ClampedArray(256 * 3);
+    for (let i = 0; i < 256; i++) { let L = Math.min(1, Math.max(0, (i - lo) / (hi - lo))); const a = L < .55 ? c3[0] : c3[1], b = L < .55 ? c3[1] : c3[2], t = L < .55 ? L / .55 : (L - .55) / .45, e = t * t * (3 - 2 * t);
+      for (let k = 0; k < 3; k++) lut[i * 3 + k] = a[k] + (b[k] - a[k]) * e; }
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 8) continue;
+      const r = d[i], g = d[i + 1], bl = d[i + 2], L = (r * 77 + g * 151 + bl * 28) >> 8;
+      // кожа (руки, шея) остаётся как была
+      if (isSkin(r, g, bl)) continue;
+      const mx = Math.max(r, g, bl), sat = mx ? (mx - Math.min(r, g, bl)) / mx : 0, k = st * (sat > .55 ? .9 : 1);
+      d[i] = r + (lut[L * 3] - r) * k; d[i + 1] = g + (lut[L * 3 + 1] - g) * k; d[i + 2] = bl + (lut[L * 3 + 2] - bl) * k;
+    }
+    x.putImageData(id, 0, 0);
+    const frames = {};
+    for (const n of T.getFrameNames()) { const f = T.get(n), dd = f.data || {}; frames[n] = { frame: { x: f.cutX, y: f.cutY, w: f.cutWidth, h: f.cutHeight }, rotated: false, trimmed: !!f.trimmed || !!dd.trim,
+      spriteSourceSize: dd.spriteSourceSize || { x: 0, y: 0, w: f.cutWidth, h: f.cutHeight }, sourceSize: dd.sourceSize || { w: f.realWidth, h: f.realHeight } }; }
+    S.textures.addAtlasJSONHash(key, cv, { frames, meta: {} });
+    const nt = S.textures.get(key); nt.customData = Object.assign({}, T.customData);
+    makeAnims(S, key); RC[key] = true; return key;
+  }
   function heroSpec(o) { // o: { cls, r, costume, head, weapon, fem, outfit }
     const cls = TIER[o.cls] ? o.cls : 'warrior', sex = o.fem ? 'f' : 'm';
     const t = Math.max(0, Math.min(4, o.r || 0)), C = o.costume && COSTUME[o.costume], H = o.head && HEADC[o.head];
+    const rc = {};
     const L = Object.assign({}, SETS[C ? C[0] : TIER[cls][t]]);
     L.head = sex === 'f' ? 'head_long' : o.bald ? 'head_bald' : 'head_short';
     let helm = C ? C[1] : HELM[cls][t]; if (H) helm = H[0];
@@ -162,11 +205,12 @@ const FLR = (() => {
     if (cls === 'rogue' && t >= 2) L.off = 'buckler';
     for (const k in L) if (!has(sex, L[k])) delete L[k];
     const tint = {};
-    if (C) { for (const k of ['chest', 'legs', 'hands', 'feet']) tint[k] = C[2]; if (C[3]) tint.helm = C[3]; }
+    if (C) { for (const k of ['chest', 'legs', 'hands', 'feet']) rc[k] = typeof C[2] === 'string' ? C[2] : C[2][k]; if (C[3]) rc.helm = C[3]; }
     else if (o.outfit && !o.r) { tint.chest = mixWhite(o.outfit, .45); tint.legs = mixWhite(o.outfit, .6); }
-    if (H) tint.helm = H[1];
+    if (H) rc.helm = H[1];
     for (const k in tint) if (!L[k]) delete tint[k];
-    return { sex, layers: L, tint, glow: C && C[4] || 0, act: ACT[cls] || 'swing', sig: sex + JSON.stringify(L) + JSON.stringify(tint) };
+    for (const k in rc) if (!L[k] || !PAL[rc[k]]) delete rc[k];
+    return { sex, layers: L, tint, rc, glow: C && C[4] || 0, act: ACT[cls] || 'swing', sig: sex + JSON.stringify(L) + JSON.stringify(tint) + JSON.stringify(rc) };
   }
   const mixWhite = (c, k) => { const r = c >> 16 & 255, g = c >> 8 & 255, b = c & 255; return (Math.round(r + (255 - r) * k) << 16) | (Math.round(g + (255 - g) * k) << 8) | Math.round(b + (255 - b) * k); };
 
@@ -196,6 +240,7 @@ const FLR = (() => {
     if (!r.ready) {
       let all = true; for (const s in r.parts) if (!need(S, r.parts[s].key, r.parts[s].path)) { if (status[r.parts[s].key] === 'missing') { delete r.parts[s]; continue; } all = false; }
       if (!all || !Object.keys(r.parts).length) return;
+      if (r.spec && r.spec.rc) for (const s in r.parts) if (r.spec.rc[s]) { try { r.parts[s].key = recolorKey(S, r.parts[s].key, r.spec.rc[s]); } catch (e) { console.warn('recolor', e); } }
       for (const s in r.parts) { const p = r.parts[s], o = meta(S, p.key).origin || [.5, .8]; p.spr = S.add.sprite(0, 0, p.key, Object.keys(S.textures.get(p.key).frames).find(f => f !== '__BASE')).setOrigin(o[0], o[1]); }
       if (r.kind === 'mob') { const p = r.parts.body, f = S.textures.getFrame(p.key, 'stance_6_0') || p.spr.frame, h = (f.data && f.data.spriteSourceSize ? f.data.spriteSourceSize.h : f.height) || 60; r.scale = Phaser.Math.Clamp(r.height / h, .15, 3); }
       r.ready = true; r.lx = u.x; r.ly = u.y; hideOld(u);
@@ -287,65 +332,127 @@ const FLR = (() => {
 
   /* ---------- крылья: нарисованы в духе Flare (перья, перепонка, кристалл) ---------- */
   const WCV = {}; // id → canvas правого крыла; корень крыла в (WR[0], WR[1])
-  const WSZ = 300, WR = [24, 236];
+  const WSZ = 300, WR = [24, 206];
   const rgb = (c, a) => 'rgba(' + (c >> 16 & 255) + ',' + (c >> 8 & 255) + ',' + (c & 255) + ',' + (a === undefined ? 1 : a) + ')';
   const shade = (c, k) => { const f = v => Math.max(0, Math.min(255, Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k))); return (f(c >> 16 & 255) << 16) | (f(c >> 8 & 255) << 8) | f(c & 255); };
-  function wingCanvas(id) {
-    if (WCV[id]) return WCV[id];
+  // реалистичные крылья: рисуем в 2× разрешении (WQ), в мире — уменьшенная копия WSZ×WSZ
+  const WQ = 2, WHI = {};
+  function wrng(seed) { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let r = Math.imul(t ^ t >>> 15, 1 | t); r ^= r + Math.imul(r ^ r >>> 7, 61 | r); return ((r ^ r >>> 14) >>> 0) / 4294967296; }; }
+  const mixc = (a, b, t) => { const f = (s) => Math.round((a >> s & 255) + ((b >> s & 255) - (a >> s & 255)) * t); return (f(16) << 16) | (f(8) << 8) | f(0); };
+  function wingHi(id) {
+    if (WHI[id]) return WHI[id];
     const W = (typeof WINGS !== 'undefined' && WINGS[id]) || { pal: [0xd8d8e8, 0xf0f0ff, 0xffffff, 0x8a8aa0] };
-    const P = W.pal, cv = document.createElement('canvas'); cv.width = cv.height = WSZ; const x = cv.getContext('2d');
-    x.translate(WR[0], WR[1]); x.lineJoin = 'round';
-    // кость крыла: плечо → локоть → кисть → кончик
-    const arm = [[0, 0], [70, -96], [150, -150], [262, -206]];
+    const P = W.pal, R = wrng([...String(id)].reduce((h, c) => h * 31 + c.charCodeAt(0), 7));
+    const cv = document.createElement('canvas'); cv.width = cv.height = WSZ * WQ; const x = cv.getContext('2d');
+    const feath = W.style !== 'membrane' && W.style !== 'crystal';
+    x.scale(WQ, WQ); x.translate(WR[0], WR[1]); x.scale(feath ? .8 : .86, feath ? .8 : .86); x.lineJoin = 'round'; x.lineCap = 'round';
+    const arm = feath ? [[0, 0], [52, -84], [112, -134], [196, -176]] : [[0, 0], [70, -96], [150, -150], [262, -206]];
     const bez = t => { const [a, b, c, d] = arm, m = 1 - t; return [m * m * m * a[0] + 3 * m * m * t * b[0] + 3 * m * t * t * c[0] + t * t * t * d[0], m * m * m * a[1] + 3 * m * m * t * b[1] + 3 * m * t * t * c[1] + t * t * t * d[1]]; };
-    const outline = rgb(shade(P[3], -.55), .85);
+    const dark = shade(P[3], -.55), shadowOn = (a, bl, oy) => { x.shadowColor = 'rgba(0,0,0,' + a + ')'; x.shadowBlur = bl; x.shadowOffsetX = 1.5; x.shadowOffsetY = oy; }, shadowOff = () => { x.shadowColor = 'transparent'; x.shadowBlur = 0; x.shadowOffsetX = 0; x.shadowOffsetY = 0; };
     if (W.style === 'membrane') {
-      const fingers = [[262, -206], [250, -60], [196, 10], [118, 30]], wrist = bez(.55);
-      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= .55; t += .05) { const q = bez(t); x.lineTo(q[0], q[1]); }
-      x.lineTo(262, -206);
-      for (let i = 1; i < fingers.length; i++) { const a = fingers[i - 1], b = fingers[i], mx = (a[0] + b[0]) / 2 - 18, my = (a[1] + b[1]) / 2 - 26; x.quadraticCurveTo(mx, my, b[0], b[1]); }
-      x.quadraticCurveTo(40, -10, 0, 0); x.closePath();
-      const g = x.createLinearGradient(0, -200, 160, 40); g.addColorStop(0, rgb(P[1])); g.addColorStop(.6, rgb(P[0])); g.addColorStop(1, rgb(P[3]));
-      x.fillStyle = g; x.fill(); x.lineWidth = 4; x.strokeStyle = outline; x.stroke();
-      x.lineCap = 'round';
-      for (const f of fingers) { x.beginPath(); x.moveTo(wrist[0], wrist[1]); x.lineTo(f[0], f[1]); x.lineWidth = 7; x.strokeStyle = rgb(shade(P[3], -.4)); x.stroke(); x.lineWidth = 2.5; x.strokeStyle = rgb(P[2], .55); x.stroke(); }
-      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= .55; t += .05) { const q = bez(t); x.lineTo(q[0], q[1]); } x.lineWidth = 11; x.strokeStyle = rgb(shade(P[3], -.4)); x.stroke(); x.lineWidth = 4; x.strokeStyle = rgb(P[2], .5); x.stroke();
-      x.beginPath(); x.moveTo(wrist[0], wrist[1]); x.lineTo(wrist[0] + 6, wrist[1] - 22); x.lineTo(wrist[0] + 14, wrist[1] - 2); x.fillStyle = rgb(P[2]); x.fill();
+      // перепонка летучей мыши / дракона: кости-пальцы, полупрозрачная кожа с прожилками, фестончатый край
+      const wrist = bez(.55), fingers = [[262, -206], [262, -96], [228, -8], [160, 34], [84, 36]];
+      const edge = () => { x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= .55; t += .05) { const q = bez(t); x.lineTo(q[0], q[1]); } x.lineTo(fingers[0][0], fingers[0][1]);
+        for (let i = 1; i < fingers.length; i++) { const a = fingers[i - 1], b = fingers[i], mx = (a[0] + b[0]) / 2 - (b[1] - a[1]) * .22 - 10, my = (a[1] + b[1]) / 2 + (b[0] - a[0]) * .22 - 18; x.quadraticCurveTo(mx, my, b[0], b[1]); }
+        x.quadraticCurveTo(40, 14, 0, 0); x.closePath(); };
+      edge(); shadowOn(.45, 10, 4);
+      const g = x.createRadialGradient(wrist[0], wrist[1], 10, wrist[0], wrist[1], 230); g.addColorStop(0, rgb(P[1], .97)); g.addColorStop(.55, rgb(P[0], .9)); g.addColorStop(1, rgb(shade(P[0], -.35), .82));
+      x.fillStyle = g; x.fill(); shadowOff();
+      x.save(); edge(); x.clip();
+      // прожилки и складки кожи
+      for (let i = 0; i < fingers.length; i++) { const f = fingers[i], n = i ? fingers[i - 1] : [0, 0];
+        for (let k = 0; k < 7; k++) { const t = .2 + k * .11, sx = wrist[0] + (f[0] - wrist[0]) * t, sy = wrist[1] + (f[1] - wrist[1]) * t, ex = sx + (n[0] - f[0]) * (.18 + R() * .12) + (R() - .5) * 10, ey = sy + (n[1] - f[1]) * (.18 + R() * .12) + 14;
+          x.beginPath(); x.moveTo(sx, sy); x.quadraticCurveTo((sx + ex) / 2 + (R() - .5) * 14, (sy + ey) / 2 + 6, ex, ey); x.lineWidth = .9; x.strokeStyle = rgb(shade(P[3], -.3), .35); x.stroke(); } }
+      for (let k = 0; k < 26; k++) { const a = fingers[1 + Math.floor(R() * 3)], t = .3 + R() * .6, sx = wrist[0] + (a[0] - wrist[0]) * t, sy = wrist[1] + (a[1] - wrist[1]) * t;
+        x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + (R() - .3) * 40, sy + 10 + R() * 30); x.lineWidth = 2.5; x.strokeStyle = 'rgba(255,255,255,.05)'; x.stroke(); }
+      const lg = x.createLinearGradient(0, -220, 120, 60); lg.addColorStop(0, 'rgba(255,255,255,.18)'); lg.addColorStop(.5, 'rgba(255,255,255,0)'); lg.addColorStop(1, 'rgba(0,0,0,.25)'); x.fillStyle = lg; x.fillRect(-20, -240, 320, 320);
+      x.restore();
+      edge(); x.lineWidth = 2.2; x.strokeStyle = rgb(dark, .9); x.stroke();
+      // кости
+      const bone = (a, b, w) => { x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); shadowOn(.4, 4, 2); x.lineWidth = w; x.strokeStyle = rgb(shade(P[3], -.35)); x.stroke(); shadowOff(); x.lineWidth = w * .35; x.strokeStyle = rgb(mixc(P[1], 0xffffff, .3), .55); x.beginPath(); x.moveTo(a[0] - w * .15, a[1] - w * .2); x.lineTo(b[0] - w * .15, b[1] - w * .2); x.stroke(); };
+      for (const f of fingers) bone(wrist, f, 5.5);
+      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= .55; t += .05) { const q = bez(t); x.lineTo(q[0], q[1]); } shadowOn(.4, 5, 2); x.lineWidth = 12; x.strokeStyle = rgb(shade(P[3], -.3)); x.stroke(); shadowOff(); x.lineWidth = 3.5; x.strokeStyle = rgb(mixc(P[1], 0xffffff, .35), .5); x.stroke();
+      for (const j of [wrist, bez(.25)]) { const g2 = x.createRadialGradient(j[0] - 2, j[1] - 2, 1, j[0], j[1], 9); g2.addColorStop(0, rgb(mixc(P[1], 0xffffff, .4))); g2.addColorStop(1, rgb(shade(P[3], -.4))); x.fillStyle = g2; x.beginPath(); x.arc(j[0], j[1], 8, 0, 6.29); x.fill(); }
+      x.beginPath(); x.moveTo(wrist[0] - 3, wrist[1] - 4); x.quadraticCurveTo(wrist[0] + 4, wrist[1] - 30, wrist[0] + 16, wrist[1] - 26); x.quadraticCurveTo(wrist[0] + 8, wrist[1] - 14, wrist[0] + 8, wrist[1]); x.closePath();
+      x.fillStyle = '#e8e2d0'; x.fill(); x.lineWidth = 1; x.strokeStyle = 'rgba(0,0,0,.6)'; x.stroke();
+      if (P[2] && W.gem) { const g3 = x.createRadialGradient(wrist[0], wrist[1], 0, wrist[0], wrist[1], 30); g3.addColorStop(0, rgb(P[2], .6)); g3.addColorStop(1, rgb(P[2], 0)); x.globalCompositeOperation = 'lighter'; x.fillStyle = g3; x.fillRect(wrist[0] - 30, wrist[1] - 30, 60, 60); x.globalCompositeOperation = 'source-over'; }
     } else if (W.style === 'crystal') {
-      for (let i = 0; i < 9; i++) {
-        const t = .18 + i * .1, b = bez(Math.min(1, t)), len = 70 + i * 16, ang = Math.PI * (.42 - i * .045);
-        const tip = [b[0] + Math.cos(ang) * len, b[1] + Math.sin(ang) * len], w = 15 + i * 1.2, nx = -Math.sin(ang) * w, ny = Math.cos(ang) * w;
-        x.beginPath(); x.moveTo(b[0] + nx * .4, b[1] + ny * .4); x.lineTo(b[0] + (tip[0] - b[0]) * .55 + nx, b[1] + (tip[1] - b[1]) * .55 + ny); x.lineTo(tip[0], tip[1]); x.lineTo(b[0] + (tip[0] - b[0]) * .6 - nx * .6, b[1] + (tip[1] - b[1]) * .6 - ny * .6); x.lineTo(b[0] - nx * .3, b[1] - ny * .3); x.closePath();
-        const g = x.createLinearGradient(b[0], b[1], tip[0], tip[1]); g.addColorStop(0, rgb(P[0], .95)); g.addColorStop(.7, rgb(P[1], .85)); g.addColorStop(1, rgb(P[2], .9));
-        x.fillStyle = g; x.fill(); x.lineWidth = 2.5; x.strokeStyle = rgb(P[3], .9); x.stroke();
-        x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(tip[0], tip[1]); x.lineWidth = 1.6; x.strokeStyle = 'rgba(255,255,255,.7)'; x.stroke();
+      // ледяные осколки: грани с преломлением, светлые рёбра, искры
+      const shards = [];
+      for (let i = 0; i < 13; i++) { const t = .1 + i * .072, b = bez(Math.min(1, t)), len = 64 + i * 13 + R() * 14, ang = Math.PI * (.46 - i * .036) + (R() - .5) * .06; shards.push([b, ang, len, 11 + i * .9]); }
+      for (let i = 0; i < 9; i++) { const b = bez(.08 + i * .1); shards.push([[b[0] - 6, b[1] + 6], Math.PI * (.42 - i * .03), 34 + R() * 10, 9]); }
+      for (const [b, ang, len, w] of shards) {
+        const dx = Math.cos(ang), dy = Math.sin(ang), nx = -dy, ny = dx, tip = [b[0] + dx * len, b[1] + dy * len], m1 = [b[0] + dx * len * .55 + nx * w, b[1] + dy * len * .55 + ny * w], m2 = [b[0] + dx * len * .62 - nx * w * .7, b[1] + dy * len * .62 - ny * w * .7];
+        shadowOn(.35, 8, 3); x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(m1[0], m1[1]); x.lineTo(tip[0], tip[1]); x.lineTo(m2[0], m2[1]); x.closePath(); x.fillStyle = rgb(P[0], .55); x.fill(); shadowOff();
+        // две грани: светлая и тёмная
+        x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(m1[0], m1[1]); x.lineTo(tip[0], tip[1]); x.closePath();
+        let g = x.createLinearGradient(b[0], b[1], m1[0], m1[1]); g.addColorStop(0, rgb(P[1], .75)); g.addColorStop(1, rgb(0xffffff, .9)); x.fillStyle = g; x.fill();
+        x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(tip[0], tip[1]); x.lineTo(m2[0], m2[1]); x.closePath();
+        g = x.createLinearGradient(b[0], b[1], m2[0], m2[1]); g.addColorStop(0, rgb(P[3], .85)); g.addColorStop(1, rgb(P[0], .7)); x.fillStyle = g; x.fill();
+        x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(tip[0], tip[1]); x.lineWidth = 1.2; x.strokeStyle = 'rgba(255,255,255,.95)'; x.stroke();
+        x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(m1[0], m1[1]); x.lineTo(tip[0], tip[1]); x.lineTo(m2[0], m2[1]); x.closePath(); x.lineWidth = 1; x.strokeStyle = rgb(shade(P[3], -.3), .8); x.stroke();
+        for (let k = 0; k < 3; k++) { const t = .3 + R() * .5; x.beginPath(); x.moveTo(b[0] + dx * len * t, b[1] + dy * len * t); x.lineTo(b[0] + dx * len * t + nx * w * .6, b[1] + dy * len * t + ny * w * .6); x.lineWidth = .6; x.strokeStyle = 'rgba(255,255,255,.5)'; x.stroke(); }
       }
-      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= 1; t += .05) { const q = bez(t); x.lineTo(q[0], q[1]); } x.lineWidth = 10; x.strokeStyle = rgb(P[3]); x.stroke(); x.lineWidth = 3; x.strokeStyle = 'rgba(255,255,255,.75)'; x.stroke();
+      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= 1; t += .04) { const q = bez(t); x.lineTo(q[0], q[1]); } shadowOn(.4, 5, 2); x.lineWidth = 9; x.strokeStyle = rgb(P[3]); x.stroke(); shadowOff(); x.lineWidth = 2.5; x.strokeStyle = 'rgba(255,255,255,.85)'; x.stroke();
+      x.globalCompositeOperation = 'lighter';
+      for (let k = 0; k < 18; k++) { const q = bez(R()), px = q[0] + R() * 80, py = q[1] + R() * 110, r = 1 + R() * 2.5; const g = x.createRadialGradient(px, py, 0, px, py, r * 4); g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(px - r * 4, py - r * 4, r * 8, r * 8); }
+      x.globalCompositeOperation = 'source-over';
     } else {
-      const feather = (b, ang, len, w, c0, c1, edge) => {
-        const tip = [b[0] + Math.cos(ang) * len, b[1] + Math.sin(ang) * len], nx = -Math.sin(ang), ny = Math.cos(ang);
-        x.beginPath(); x.moveTo(b[0] - nx * w * .35, b[1] - ny * w * .35);
-        x.quadraticCurveTo(b[0] + Math.cos(ang) * len * .55 - nx * w * .7, b[1] + Math.sin(ang) * len * .55 - ny * w * .7, tip[0], tip[1]);
-        x.quadraticCurveTo(b[0] + Math.cos(ang) * len * .6 + nx * w * .62, b[1] + Math.sin(ang) * len * .6 + ny * w * .62, b[0] + nx * w * .35, b[1] + ny * w * .35); x.closePath();
-        const g = x.createLinearGradient(b[0], b[1], tip[0], tip[1]); g.addColorStop(0, rgb(c0)); g.addColorStop(1, rgb(c1));
-        x.fillStyle = g; x.fill(); x.lineWidth = 2.2; x.strokeStyle = outline; x.stroke();
-        x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(b[0] + Math.cos(ang) * len * .85, b[1] + Math.sin(ang) * len * .85); x.lineWidth = 1.3; x.strokeStyle = rgb(edge, .55); x.stroke();
+      // перо: объёмная лопасть (свет сверху-слева), стержень, бородки, расщепы на краю, мягкая тень на нижний ряд
+      const feather = (b, ang, len, w, c0, c1, opt) => {
+        opt = opt || {};
+        const dx = Math.cos(ang), dy = Math.sin(ang), nx = -dy, ny = dx, curve = opt.curve || .08, tip = [b[0] + dx * len - nx * len * curve, b[1] + dy * len - ny * len * curve];
+        const path = () => { x.beginPath(); x.moveTo(b[0] - nx * w * .18, b[1] - ny * w * .18);
+          x.bezierCurveTo(b[0] + dx * len * .3 - nx * w * .62, b[1] + dy * len * .3 - ny * w * .62, b[0] + dx * len * .78 - nx * w * (opt.round ? .62 : .48) - nx * len * curve, b[1] + dy * len * .78 - ny * w * (opt.round ? .62 : .48) - ny * len * curve, tip[0], tip[1]);
+          x.bezierCurveTo(b[0] + dx * len * .82 + nx * w * (opt.round ? .58 : .42) - nx * len * curve, b[1] + dy * len * .82 + ny * w * (opt.round ? .58 : .42) - ny * len * curve, b[0] + dx * len * .35 + nx * w * .55, b[1] + dy * len * .35 + ny * w * .55, b[0] + nx * w * .18, b[1] + ny * w * .18); x.closePath(); };
+        path(); shadowOn(opt.sh == null ? .38 : opt.sh, 7, 3); x.fillStyle = rgb(c0); x.fill(); shadowOff();
+        x.save(); path(); x.clip();
+        let g = x.createLinearGradient(b[0], b[1], tip[0], tip[1]); g.addColorStop(0, rgb(c0)); g.addColorStop(.6, rgb(mixc(c0, c1, .7))); g.addColorStop(1, rgb(c1)); x.fillStyle = g; x.fillRect(-60, -320, 460, 460);
+        // изгиб лопасти: внешняя половина светлее, внутренняя темнее
+        const mx = b[0] + dx * len * .5, my = b[1] + dy * len * .5;
+        g = x.createLinearGradient(mx - nx * w * .6, my - ny * w * .6, mx + nx * w * .6, my + ny * w * .6); g.addColorStop(0, 'rgba(255,255,255,.22)'); g.addColorStop(.45, 'rgba(255,255,255,0)'); g.addColorStop(.55, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.3)');
+        x.fillStyle = g; x.fillRect(-60, -320, 460, 460);
+        // бородки
+        const nb = Math.max(8, Math.round(len / 3.2));
+        for (let k = 1; k < nb; k++) { const t = k / nb, sx = b[0] + dx * len * t - nx * len * curve * t * t, sy = b[1] + dy * len * t - ny * len * curve * t * t;
+          for (const sd of [-1, 1]) { const l = w * .62 * (1 - t * .35); x.beginPath(); x.moveTo(sx, sy); x.quadraticCurveTo(sx + sd * nx * l * .5 + dx * l * .25, sy + sd * ny * l * .5 + dy * l * .25, sx + sd * nx * l + dx * l * .55, sy + sd * ny * l + dy * l * .55);
+            x.lineWidth = .55; x.strokeStyle = sd < 0 ? 'rgba(255,255,255,.13)' : 'rgba(0,0,0,.14)'; x.stroke(); } }
+        x.restore();
+        // расщепы на краю пера
+        if (!opt.round) for (let k = 0; k < 1; k++) { if (R() < .55) continue; const t = .45 + R() * .4, sd = R() < .5 ? -1 : 1, ex = b[0] + dx * len * t + sd * nx * w * .5, ey = b[1] + dy * len * t + sd * ny * w * .5;
+          x.save(); x.globalCompositeOperation = 'destination-out'; x.beginPath(); x.moveTo(ex, ey); x.lineTo(ex - sd * nx * w * .28 + dx * 3, ey - sd * ny * w * .28 + dy * 3); x.lineTo(ex + dx * 5, ey + dy * 5); x.closePath(); x.fill(); x.restore(); }
+        path(); x.lineWidth = .7; x.strokeStyle = rgb(dark, .32); x.stroke();
+        // стержень: светлая линия с тёмной кромкой
+        x.beginPath(); x.moveTo(b[0], b[1]); x.quadraticCurveTo(b[0] + dx * len * .5 - nx * len * curve * .25, b[1] + dy * len * .5 - ny * len * curve * .25, b[0] + dx * len * .92 - nx * len * curve * .85, b[1] + dy * len * .92 - ny * len * curve * .85);
+        x.lineWidth = opt.round ? .9 : 1.7; x.strokeStyle = rgb(shade(c0, -.4), .55); x.stroke(); x.lineWidth = opt.round ? .5 : .9; x.strokeStyle = rgb(mixc(c1, 0xffffff, .55), .85); x.stroke();
       };
-      // маховые (длинные, по внешней половине), второстепенные, кроющие
-      for (let i = 10; i >= 0; i--) { const t = .35 + i * .065, b = bez(Math.min(1, t)); feather(b, Math.PI * (.47 - i * .052), 92 + i * 10, 24, shade(P[0], -.25), P[1], P[2]); }
-      for (let i = 7; i >= 0; i--) { const t = .04 + i * .055, b = bez(t); feather(b, Math.PI * (.52 - i * .02), 110 - i * 2, 26, shade(P[0], -.35), shade(P[0], .1), P[2]); }
-      for (let i = 0; i < 9; i++) { const t = .05 + i * .1, b = bez(t); feather([b[0] - 4, b[1] + 6], Math.PI * (.45 - i * .04), 46 + i * 2, 22, shade(P[3], 0), P[0], P[2]); }
-      for (let i = 0; i < 10; i++) { const t = .03 + i * .085, b = bez(t); feather([b[0], b[1] + 2], Math.PI * (.42 - i * .035), 26, 18, P[1], shade(P[0], .15), 0xffffff); }
-      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= 1; t += .04) { const q = bez(t); x.lineTo(q[0], q[1]); } x.lineCap = 'round'; x.lineWidth = 9; x.strokeStyle = rgb(shade(P[3], -.2)); x.stroke(); x.lineWidth = 3; x.strokeStyle = rgb(P[2], .7); x.stroke();
-      if (W.energy) { x.globalCompositeOperation = 'lighter'; x.globalAlpha = .35; x.drawImage(cv, -WR[0], -WR[1]); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over'; }
+      const jit = (c, a) => mixc(c, R() < .5 ? 0xffffff : 0x000000, R() * a);
+      const lerp = (a, b, t) => a + (b - a) * t, D = Math.PI / 180;
+      // маховые: от кисти к концу, длиннейшие — 2–4-е от края
+      for (let i = 11; i >= 0; i--) { const u = i / 11, b = bez(.5 + u * .5); feather(b, lerp(28, -24, u) * D + (R() - .5) * .03, 112 + 46 * Math.sin(Math.min(1, u * 1.25) * Math.PI * .5) - (u > .9 ? 10 : 0) + R() * 5, 21 + u * 3, jit(shade(P[0], -.32), .07), jit(P[1], .05), { curve: .035 + u * .03 }); }
+      // второстепенные: веером вниз от предплечья
+      for (let i = 10; i >= 0; i--) { const u = i / 10, b = bez(u * .52); feather([b[0], b[1] + 3], lerp(82, 32, u) * D + (R() - .5) * .03, lerp(104, 112, u) + R() * 5, 24, jit(shade(P[0], -.36), .07), jit(mixc(P[0], P[1], .55), .05), { curve: .025 }); }
+      // большие кроющие, средние, малые — ряды «чешуи» вдоль кости
+      for (let i = 0; i < 13; i++) { const u = i / 12, b = bez(.02 + u * .9); feather([b[0] - 2, b[1] + 7], lerp(74, 0, u) * D, 56 - u * 6, 21, jit(shade(P[3], -.05), .05), jit(P[0], .05), { round: true, sh: .3 }); }
+      for (let i = 0; i < 15; i++) { const u = i / 14, b = bez(.01 + u * .92); feather([b[0] - 1, b[1] + 3], lerp(66, -6, u) * D, 33 - u * 4, 16, jit(P[0], .05), jit(mixc(P[0], P[1], .6), .05), { round: true, sh: .28 }); }
+      for (let i = 0; i < 20; i++) { const u = i / 19, b = bez(u * .95); feather([b[0], b[1]], lerp(58, -10, u) * D, 18, 11, jit(mixc(P[0], P[1], .5), .04), jit(P[1], .04), { round: true, sh: .22 }); }
+      // ведущая кромка (кость, покрытая мелким пером) и блик сверху
+      x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= 1; t += .04) { const q = bez(t); x.lineTo(q[0], q[1]); } shadowOn(.35, 4, 2); x.lineWidth = 7; x.strokeStyle = rgb(mixc(P[0], P[1], .4)); x.stroke(); shadowOff();
+      x.lineWidth = 2.2; x.strokeStyle = rgb(mixc(P[1], 0xffffff, .5), .8); x.beginPath(); x.moveTo(-1, -3); for (let t = 0; t <= 1; t += .04) { const q = bez(t); x.lineTo(q[0] - 1, q[1] - 3); } x.stroke();
+      if (W.energy) { x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = .28; x.filter = 'blur(3px)'; x.drawImage(cv, -WR[0], -WR[1], WSZ, WSZ); x.restore(); }
     }
-    // лёгкий «живописный» шум
+    // общий объём: свет сверху-слева, затемнение к корню
     x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-atop';
-    for (let i = 0; i < 900; i++) { x.fillStyle = Math.random() < .5 ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.05)'; x.fillRect(Math.random() * WSZ, Math.random() * WSZ, 3, 3); }
+    const S2 = WSZ * WQ, g = x.createLinearGradient(S2 * .9, 0, 0, S2); g.addColorStop(0, 'rgba(255,250,235,.12)'); g.addColorStop(.6, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,10,.28)'); x.fillStyle = g; x.fillRect(0, 0, S2, S2);
     x.globalCompositeOperation = 'source-over';
+    return (WHI[id] = cv);
+  }
+  function wingCanvas(id) { // уменьшенная копия для мира (сглаженная, без «лесенки»)
+    if (WCV[id]) return WCV[id];
+    const hi = wingHi(id), cv = document.createElement('canvas'); cv.width = cv.height = WSZ; const x = cv.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(hi, 0, 0, WSZ, WSZ);
     return (WCV[id] = cv);
   }
-  const WSCALE = .3, SHOULDER = 74; // размер крыла в мире; высота корня крыла над стопами
+  const WSCALE = .33, SHOULDER = 74; // размер крыла в мире; высота корня крыла над стопами
   function wingId(S, u) { return u === S.hero ? (u.hasWings && u.alive !== false ? u.wingId : null) : (u.wingR && u.wingR.texture && u.wingR.texture.key.startsWith('wing7_') ? u.wingR.texture.key.slice(6) : null); }
   function wingPose(dir, t, moving) { // общая раскладка крыльев для мира и окна героя
     const a = ANGLE[dir], wf = Math.max(.3, Math.abs(Math.sin(a))), front = Math.sin(a) < -.1;
@@ -420,7 +527,7 @@ const FLR = (() => {
     // крылья (за спиной)
     const wid = me ? wingId(S, u) : null;
     if (wid) {
-      const cv = wingCanvas(wid), pz = wingPose(d, t, false), sc = WSCALE * k, x0 = cx + pz.ox * k, y0 = fy - lift - SHOULDER * k + pz.oy * k, gl = me && u.wingTier && tc ? tc(u.wingTier, t) : 0;
+      const cv = wingHi(wid), pz = wingPose(d, t, false), sc = WSCALE * k, x0 = cx + pz.ox * k, y0 = fy - lift - SHOULDER * k + pz.oy * k, gl = me && u.wingTier && tc ? tc(u.wingTier, t) : 0;
       for (const sd of [1, -1]) {
         ctx.save(); ctx.translate(x0 + sd * 3 * k, y0); ctx.scale(sd * pz.wf, 1); ctx.rotate(-pz.flap);
         if (gl) { ctx.shadowColor = rgb(gl, .9); ctx.shadowBlur = 16; }
@@ -470,5 +577,5 @@ const FLR = (() => {
     const x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height);
     return drawPanel(S, x, fake, cv.width / 2, cv.height * .96, cv.height / 100, 0, false);
   }
-  return { tileImage, wingCanvas, mountGeo, portraitTo, WEAP, PET, petFrame, attachPet, mountKey, NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
+  return { tileImage, wingCanvas, wingHi, mountGeo, portraitTo, WEAP, PET, petFrame, attachPet, mountKey, NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
 })();
