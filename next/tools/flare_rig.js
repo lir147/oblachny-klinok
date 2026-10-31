@@ -4,7 +4,9 @@ const FLR = (() => {
   const BASE = 'flare/';
   // порядок слоёв по направлению (0 W, 1 NW, 2 N, 3 NE, 4 E, 5 SE, 6 S, 7 SW) — из engine/hero_layers.txt Flare
   const A = ['main', 'feet', 'legs', 'hands', 'chest', 'off', 'head', 'helm'], B = ['feet', 'legs', 'hands', 'chest', 'off', 'head', 'helm', 'main'];
-  const ORDER = [A, A, B, B, B, ['feet', 'legs', 'hands', 'main', 'chest', 'head', 'helm', 'off'], ['main', 'feet', 'legs', 'hands', 'chest', 'head', 'helm', 'off'], A];
+  // оружие в руке рисуем поверх тела, когда герой повёрнут к камере, — иначе его почти не видно
+  const F = ['feet', 'legs', 'hands', 'chest', 'off', 'head', 'helm', 'main'];
+  const ORDER = [A, A, B, B, F, F, F, F];
   const SLOTS = ['feet', 'legs', 'hands', 'chest', 'off', 'head', 'helm', 'main'];
   const ANGLE = [Math.PI, -Math.PI * .75, -Math.PI / 2, -Math.PI / 4, 0, Math.PI / 4, Math.PI / 2, Math.PI * .75];
   const dirOf = (sx, sy) => [4, 5, 6, 7, 0, 1, 2, 3][((Math.round(Math.atan2(sy, sx) / (Math.PI / 4)) % 8) + 8) % 8];
@@ -226,6 +228,7 @@ const FLR = (() => {
     let helm = C ? C[1] : HELM[cls][t]; if (H) helm = H[0];
     if (helm) L.helm = helm;
     L.main = o.noWeapon ? null : (WEAP[o.weapon] || o.weapon || DEF_WEAP[cls]); if (!L.main) delete L.main;
+    if (L.main && (o.wr || 0) >= 2) L.main = ({ longbow: 'greatbow', shortbow: 'longbow', staff: 'greatstaff', rod: 'greatstaff', wand: 'greatstaff', dagger: 'shortsword', shortsword: 'longsword', hand_axe: 'battle_axe', club: 'reinforced_club' })[L.main] || L.main;
     if (o.noHelm) delete L.helm;
     if (cls === 'rogue' && t >= 2) L.off = 'buckler';
     for (const k in L) if (!has(sex, L[k])) delete L[k];
@@ -293,6 +296,8 @@ const FLR = (() => {
     // позиция, глубина, прозрачность, оттенок — копируем со старого спрайта
     const order = r.kind === 'mob' ? ['body'] : ORDER[r.dir];
     const tinted = spr.isTinted, fill = spr.tintFill, tc = spr.tintTopLeft;
+    // верхом старый код сам приподнимает спрайт под прежнего маунта — берём землю по тени
+    r.by = r.kind === 'hero' && mounted && u.shadow ? u.shadow.y : spr.y;
     let i = 0;
     for (const slot of order) {
       const p = r.parts[slot]; if (!p || !p.spr) continue;
@@ -300,7 +305,7 @@ const FLR = (() => {
       if (r.anim !== key || restart || !s.anims.isPlaying && an !== 'die') { if (S.anims.exists(k)) s.play(k, !restart && r.anim === key); }
       const sc = r.scale || 1, sit = mounted && r.lift !== undefined && (slot === 'feet' || slot === 'legs');
       // в седле ноги «согнуты»: укорочены от бёдер вниз и чуть разведены
-      s.setPosition(spr.x, spr.y + (u.flBob || 0) - (r.lift || 0) - (sit ? HIP * sc * (1 - SITQ) : 0)).setDepth(spr.depth + .01 + i * .001).setAlpha(spr.alpha).setVisible(spr.visible);
+      s.setPosition(spr.x, r.by + (u.flBob || 0) - (r.lift || 0) - (sit ? HIP * sc * (1 - SITQ) : 0)).setDepth(spr.depth + .01 + i * .001).setAlpha(spr.alpha).setVisible(spr.visible);
       s.setScale(sc * (sit ? 1.12 : 1), sc * (sit ? SITQ : 1));
       if (tinted || (r.spec && r.spec.tint[slot]) || r.defTint) {
         const base = r.spec && r.spec.tint[slot] || r.defTint;
@@ -318,7 +323,7 @@ const FLR = (() => {
     r.fx = r.fx || {};
     for (const slot in want) {
       const p = r.parts[slot], s = p && p.spr; if (!s || !s.preFX) continue;
-      if (want[slot]) { if (!r.fx[slot]) r.fx[slot] = s.preFX.addGlow(0xffffff, 3, 0, false, .1, 10); r.fx[slot].color = want[slot]; r.fx[slot].outerStrength = (slot === 'main' ? 2.6 : 1.6) + Math.sin(now * 4) * (slot === 'main' ? 1 : .6); }
+      if (want[slot]) { if (!r.fx[slot]) r.fx[slot] = s.preFX.addGlow(0xffffff, 3, 0, false, .1, 10); r.fx[slot].color = want[slot]; r.fx[slot].outerStrength = (slot === 'main' ? 3.6 : 1.6) + Math.sin(now * 4) * (slot === 'main' ? 1 : .6); }
       else if (r.fx[slot]) { s.preFX.remove(r.fx[slot]); r.fx[slot] = null; }
     }
   }
@@ -327,7 +332,7 @@ const FLR = (() => {
     lion: ['fire_ant', 0xfff0a0], cerberus: ['fire_ant', 0xff9a88], nightmare: ['antlion_armored'], drake: ['wyvern_water'], warboar: ['antlion_armored', 0xf0d8b8], bat: ['wyvern_air', 0xd890a0],
     crane: ['wyvern_air', 0xf0f4ff], phoenix: ['wyvern_fire'], skydragon: ['wyvern_water', 0xd8e8ff], whitetiger: ['ice_ant', 0xffffff], shadowlion: ['antlion_armored', 0x9888c8], flysword: ['wyvern_air', 0xc8e0ff] };
   // [высота на экране, доля высоты, где спина/седло, подъём над землёй в полёте]
-  const MGEO = { antlion: [92, .5, 0], antlion_small: [80, .52, 0], antlion_armored: [104, .5, 0], fire_ant: [94, .5, 0], ice_ant: [94, .5, 0], wyvern_air: [134, .5, 8], wyvern_fire: [134, .5, 8], wyvern_water: [134, .5, 8] };
+  const MGEO = { antlion: [92, .5, 0], antlion_small: [80, .52, 0], antlion_armored: [104, .5, 0], fire_ant: [94, .5, 0], ice_ant: [94, .5, 0], wyvern_air: [130, .9, 4], wyvern_fire: [130, .9, 4], wyvern_water: [130, .9, 4] };
   const HIP = 48, SITQ = .58; // высота бёдер героя над стопами (px атласа); насколько «сгибаются» ноги в седле
   function mountKey(id) { const m = MOUNT[id]; if (m) return m; const M = typeof MOUNTS !== 'undefined' && MOUNTS[id]; return M && M.fly ? ['wyvern_air'] : ['antlion']; }
   function mountGeo(S, key) {
@@ -351,7 +356,7 @@ const FLR = (() => {
     const ms = r.mnt.spr, an = (moving || g.fly ? 'run' : 'stance') + '|' + r.dir, k = key + '|' + an;
     if (r.mnt.an !== an && S.anims.exists(k)) { ms.play(k); r.mnt.an = an; }
     const tinted = u.spr.isTinted && u.spr.tintFill;
-    ms.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(u.spr.x, u.spr.y + (u.flBob || 0) + hover).setDepth(u.spr.depth - .02);
+    ms.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(u.spr.x, (r.by == null ? u.spr.y : r.by) + (u.flBob || 0) + hover).setDepth(u.spr.depth - .02);
     if (tinted) ms.setTintFill(u.spr.tintTopLeft); else if (mk[1]) ms.setTint(mk[1]); else ms.clearTint();
   }
 
@@ -550,7 +555,7 @@ const FLR = (() => {
     const key = 'flc_' + cp.join('_'); if (!S.textures.exists(key)) S.textures.addCanvas(key, (() => { const hi = capeCanvas(cp), c = document.createElement('canvas'); c.width = CW; c.height = CH; const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(hi, 0, 0, CW, CH); return c; })());
     if (!r.cape || r.cape.texture.key !== key) { if (r.cape) r.cape.destroy(); r.cape = S.add.image(0, 0, key).setOrigin(.5, 6 / CH); }
     const pz = capePose(r.dir, S.now || 0, u.moving), sc = CSC * (r.scale || 1);
-    r.cape.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(u.spr.x + pz.ox * .6, u.spr.y + (u.flBob || 0) - (r.lift || 0) - SHOULDER - 2).setScale(sc * pz.wf, sc * pz.sy).setRotation(pz.rot).setDepth(u.spr.depth + (pz.front ? .025 : -.005));
+    r.cape.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(u.spr.x + pz.ox * .6, (r.by == null ? u.spr.y : r.by) + (u.flBob || 0) - (r.lift || 0) - SHOULDER - 2).setScale(sc * pz.wf, sc * pz.sy).setRotation(pz.rot).setDepth(u.spr.depth + (pz.front ? .025 : -.005));
   }
   const WSCALE = .33, SHOULDER = 74; // размер крыла в мире; высота корня крыла над стопами
   function wingId(S, u) { return u === S.hero ? (u.hasWings && u.alive !== false ? u.wingId : null) : (u.wingR && u.wingR.texture && u.wingR.texture.key.startsWith('wing7_') ? u.wingR.texture.key.slice(6) : null); }
@@ -565,7 +570,7 @@ const FLR = (() => {
     const key = 'flw_' + id;
     if (!S.textures.exists(key)) S.textures.addCanvas(key, wingCanvas(id));
     if (!r.wings || r.wings[0].texture.key !== key) { if (r.wings) for (const w of r.wings) w.destroy(); r.wings = [1, -1].map(sd => S.add.image(0, 0, key).setOrigin(sd > 0 ? WR[0] / WSZ : 1 - WR[0] / WSZ, WR[1] / WSZ).setFlipX(sd < 0)); r.wfx = null; }
-    const pz = wingPose(r.dir, S.now || 0, u.moving), sc = WSCALE * (r.scale || 1), x0 = u.spr.x + pz.ox, y0 = u.spr.y + (u.flBob || 0) - (r.lift || 0) - SHOULDER + pz.oy;
+    const pz = wingPose(r.dir, S.now || 0, u.moving), sc = WSCALE * (r.scale || 1), x0 = u.spr.x + pz.ox, y0 = (r.by == null ? u.spr.y : r.by) + (u.flBob || 0) - (r.lift || 0) - SHOULDER + pz.oy;
     const tier = u === S.hero ? u.wingTier : null;
     r.wings.forEach((w, i) => {
       const sd = i ? -1 : 1;
@@ -621,9 +626,9 @@ const FLR = (() => {
   function drawPanel(S, ctx, u, cx, fy, k, t, mounted) { // рисует героя (с маунтом и крыльями) в окне персонажа; true если получилось
     const r = u && u.flr; if (!r || !r.ready || r.kind !== 'hero') return false;
     const me = S && u === S.hero, mid = me && mounted && save.eq.mount ? save.eq.mount.base : null;
-    const d = mid ? 5 : 6, fi = Math.floor(t * 3.2) % 4, tc = typeof tierColor === 'function' ? tierColor : null;
+    const d = 6, fi = Math.floor(t * 3.2) % 4, tc = typeof tierColor === 'function' ? tierColor : null;
     let lift = 0, mkey = null, mg = null, mk = null;
-    if (mid) { mk = mountKey(mid); mkey = 'fl_m_' + mk[0]; need(S, mkey, 'mob/' + mk[0]); if (S.textures.exists(mkey)) { mg = mountGeo(S, mkey); k *= mg.fly ? .66 : .78; lift = (Math.max(0, mg.seat - HIP) + (mg.fly ? Math.sin(t * 2.2) * 3 : 0)) * k; } else mkey = null; }
+    if (mid) { mk = mountKey(mid); mkey = 'fl_m_' + mk[0]; need(S, mkey, 'mob/' + mk[0]); if (S.textures.exists(mkey)) { mg = mountGeo(S, mkey); k *= mg.fly ? .5 : .78; lift = (Math.max(0, mg.seat - HIP) + (mg.fly ? Math.sin(t * 2.2) * 3 : 0)) * k; } else mkey = null; }
     // крылья (за спиной)
     const wid = me ? wingId(S, u) : null;
     if (wid) {

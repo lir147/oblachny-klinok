@@ -64,7 +64,7 @@ rep("""    const base = this.currentLook();
     try {
       const co = this.lookOn('costume'), hd = this.lookOn('head'), wl0 = this.weaponLook(), ofit = co && OUTFITS[co.base];
       FLR.attachHero(this, h, FLR.heroSpec({ cls: save.cls || 'warrior', r: save.eq.armor ? save.eq.armor.rarity : 0, costume: co ? co.base : null, head: hd ? hd.base : null,
-        weapon: wl0 ? wl0.base : (CLASSES[save.cls || 'warrior'] || CLASSES.warrior).starter, fem: !!save.fem, outfit: ofit ? (Array.isArray(ofit) ? ofit[0] : ofit).coat : null }));
+        weapon: wl0 ? wl0.base : (CLASSES[save.cls || 'warrior'] || CLASSES.warrior).starter, wr: wl0 ? wl0.r : 0, fem: !!save.fem, outfit: ofit ? (Array.isArray(ofit) ? ofit[0] : ofit).coat : null }));
     } catch (e) { console.warn('flare hero', e); }
     h.tex = {};""")
 # монстры
@@ -76,7 +76,7 @@ rep("""    if (def.tint) { m.spr.setTint(def.tint); m.spr.baseTint = def.tint; }
 rep("""  u.spr = S.add.image(0, 0, u.tex.idle).setOrigin(.5, HERO_FY / HERO_H).setScale(HERO_K / HRES);
   const wb = L.w && WGEO[L.w] ? L.w : (CLASSES[p.c] || CLASSES.warrior).starter;""", """  u.spr = S.add.image(0, 0, u.tex.idle).setOrigin(.5, HERO_FY / HERO_H).setScale(HERO_K / HRES);
   const wb = L.w && WGEO[L.w] ? L.w : (CLASSES[p.c] || CLASSES.warrior).starter;
-  try { const of2 = L.co && OUTFITS[L.co]; FLR.attachHero(S, u, FLR.heroSpec({ cls: CLASSES[p.c] ? p.c : 'warrior', r: +L.r || 0, costume: L.co || null, head: L.hd || null, weapon: wb, fem: !!L.fm, outfit: of2 ? (Array.isArray(of2) ? of2[0] : of2).coat : null })); } catch (e) {}""")
+  try { const of2 = L.co && OUTFITS[L.co]; FLR.attachHero(S, u, FLR.heroSpec({ cls: CLASSES[p.c] ? p.c : 'warrior', r: +L.r || 0, costume: L.co || null, head: L.hd || null, weapon: wb, wr: +L.wr || +L.r || 0, fem: !!L.fm, outfit: of2 ? (Array.isArray(of2) ? of2[0] : of2).coat : null })); } catch (e) {}""")
 # соперник на арене
 rep("""    const wb = CLASSES[f.c].starter; m.wspr = S.add.image(0, 0, S.weaponTexKey(wb, 2)).setOrigin(GRIP[0] / HERO_W, GRIP[1] / HERO_H).setScale(HERO_K / 4);""",
     """    const wb = CLASSES[f.c].starter; m.wspr = S.add.image(0, 0, S.weaponTexKey(wb, 2)).setOrigin(GRIP[0] / HERO_W, GRIP[1] / HERO_H).setScale(HERO_K / 4);
@@ -323,6 +323,9 @@ Object.assign(OUTFITS, {
 WINGS.triumph = { name: 'Крылья Триумфа',""")
 _sl = [l for l in s.split('\n') if l.startswith("const SHOP_LOOKS = {")][0]
 rep(_sl, _sl + "\nSHOP_LOOKS.costume.push('royalknight', 'archmage', 'elvenranger', 'nightblade', 'dragonlord', 'highpriestess'); SHOP_LOOKS.wings.push('aurora', 'monarch', 'fairy', 'phoenixlord', 'starnight', 'eagle', 'archangel');")
+# старые перья-частицы от прежних крыльев не нужны: крылья рисует Flare
+rep("      if (!WD.style && t > (this.orbT || 0)) {", "      if (!WD.style && !FLR.ready(h) && t > (this.orbT || 0)) {")
+rep("        if (Math.random() < .6 && !WINGS[h.wingId].style) {", "        if (Math.random() < .6 && !WINGS[h.wingId].style && !FLR.ready(h)) {")
 # --- 3. тестовая версия: своё сохранение, облако только на чтение ---
 rep("const SAVE_KEY = 'oblachny-klinok-v2';", """const SAVE_KEY = 'oblachny-klinok-next';
 try { if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem('oblachny-klinok-v2')) localStorage.setItem(SAVE_KEY, localStorage.getItem('oblachny-klinok-v2')); } catch (e) {}""")
