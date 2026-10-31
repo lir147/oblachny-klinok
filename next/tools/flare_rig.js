@@ -149,13 +149,38 @@ const FLR = (() => {
     gold: [0x2a1804, 0xb08a3a, 0xfff0c0, .72], white: [0x4a4642, 0xcfcac2, 0xffffff, .82], crimson: [0x1a0204, 0x86181a, 0xffb0a0, .78], abyss: [0x041014, 0x1e5860, 0xa0f0e8, .8],
     black: [0x0c0b10, 0x3a3846, 0xb8b4cc, .85], slate: [0x0c0e12, 0x444a58, 0xb8c0d0, .85], fox: [0x2a1004, 0xc87a34, 0xfff0d6, .85], rose: [0x3a0c1a, 0xd8729a, 0xffeaf2, .85],
     saffron: [0x341402, 0xd07a1c, 0xffe2a4, .85], navy: [0x060a24, 0x33489c, 0xd0dcff, .85], blood: [0x0c0102, 0x5e0a14, 0xf06070, .9], silver: [0x14161c, 0x8a92a4, 0xffffff, .85],
-    shadowpurple: [0x060408, 0x2e2638, 0x9a8aaa, .9], red: [0x200302, 0xa02818, 0xffa080, .88], cream: [0x403830, 0xe6dccc, 0xffffff, .85]
+    shadowpurple: [0x060408, 0x2e2638, 0x9a8aaa, .9], red: [0x200302, 0xa02818, 0xffa080, .88], cream: [0x403830, 0xe6dccc, 0xffffff, .85],
+    azure: [0x050a24, 0x2448b0, 0xb0ccff, .85], storm: [0x0a0618, 0x4a3496, 0xd0c0ff, .85], ice: [0x34465e, 0xc4dcf2, 0xffffff, .8], teal: [0x03181c, 0x1a7a84, 0xc8fff6, .85],
+    brown: [0x140c06, 0x5e4630, 0xd8c0a0, .8], amethyst: [0x0c0614, 0x5a2e8a, 0xe0c8ff, .85], bronze: [0x1a0e04, 0x9a6428, 0xffe0a0, .78], obsidian: [0x030304, 0x26222e, 0xa49cbc, .86],
+    forest: [0x04100a, 0x2e6a3a, 0xc8f0b0, .85], royal: [0x040a20, 0x22408e, 0xb8c8ff, .8], steel: [0x101318, 0x7c8698, 0xffffff, .7], ivory: [0x4a4034, 0xe8e0d0, 0xffffff, .82],
+    violet: [0x0a0418, 0x3c1a7a, 0xc8a8ff, .88], sky: [0x0c2034, 0x5aa0d8, 0xe8f6ff, .82], ember: [0x1a0402, 0x8a2a0c, 0xffc070, .85]
   };
   const COSTUME = {
     sakura: ['mage1', null, 'rose'], monk: ['cloth', null, 'saffron'], raven: ['leather', 'leather_hood', 'black', 'black'], fox: ['leather', 'leather_hood', 'fox', 'fox'],
     miko: ['mage0', null, { chest: 'cream', hands: 'cream', legs: 'red', feet: 'red' }], festival: ['mage1', null, 'navy'], ninja: ['leather', 'leather_hood', 'slate', 'slate'],
     shogun: ['plate', 'plate_helm', { chest: 'crimson', legs: 'crimson', hands: 'gold', feet: 'crimson' }, 'crimson'], abyss: ['plate', 'plate_helm', 'abyss', 'abyss', 0x3ae0d0],
-    paladin: ['plate', 'plate_helm', { chest: 'white', legs: 'gold', hands: 'gold', feet: 'gold' }, 'gold', 0xffe08a], bloodreaper: ['mage2', 'mage_hood_alt2', 'blood', 'shadowpurple', 0xff3b5e]
+    paladin: ['plate', 'plate_helm', { chest: 'white', legs: 'gold', hands: 'gold', feet: 'gold' }, 'gold', 0xffe08a, [0xe8e2d4, 0xd8a838, 'sun']], bloodreaper: ['mage2', 'mage_hood_alt2', 'blood', 'shadowpurple', 0xff3b5e, [0x3a060c, 0x8a1020]],
+    seraphknight: ['plate', 'plate_helm', { chest: 'ivory', legs: 'gold', hands: 'gold', feet: 'ivory' }, 'gold', 0x6ab8ff, [0x1a2a7a, 0xe8b84a, 'star']],
+    crimsondragon: ['plate', 'plate_helm', { chest: 'crimson', legs: 'obsidian', hands: 'crimson', feet: 'obsidian' }, 'crimson', 0xff6a2a, [0x5a0810, 0xffc84a, 'dragon']],
+    azuremage: ['mage2', 'mage_hood_alt1', { chest: 'azure', legs: 'azure', hands: 'gold', feet: 'gold' }, 'azure', 0, [0x14306e, 0xe0b04f, 'star']],
+    stormlord: ['plate', 'plate_helm', 'storm', 'storm', 0xc0a0ff, [0x24164a, 0xb8a0ff, 'bolt']],
+    snowqueen: ['mage1', null, { chest: 'ice', legs: 'ice', hands: 'sky', feet: 'sky' }, null, 0x9fe0ff, [0xdceeff, 0x8ac0f0, 'flake']],
+    shadowassassin: ['leather', 'leather_hood', { chest: 'black', legs: 'black', hands: 'crimson', feet: 'black' }, 'black', 0, [0x16141c, 0xb01c2a]],
+    goldemperor: ['plate', 'plate_helm', 'gold', 'gold', 0xffe08a, [0x8a1c24, 0xfff0b0, 'crown']],
+    oceanpriest: ['mage0', null, { chest: 'teal', legs: 'teal', hands: 'ivory', feet: 'teal' }, null, 0, [0x0e5a66, 0x9ff0e8]],
+    wanderer: ['leather', 'leather_hood', 'brown', 'brown', 0, [0x3a2e22, 0x8a1c24]],
+    lotus: ['mage1', null, { chest: 'cream', legs: 'rose', hands: 'cream', feet: 'rose' }],
+    spidersilk: ['mage2', 'mage_hood', 'amethyst', 'amethyst', 0xc080ff, [0x1a0f26, 0xd8c8ff]],
+    bloodmoonrobe: ['mage2', 'mage_hood_alt2', 'blood', 'blood', 0xff3a5e, [0x3a0610, 0xffd36a, 'moon']],
+    frostcitadel: ['plate', 'plate_helm', 'ice', 'ice', 0x9fe0ff, [0x5a8ac8, 0x9fe0ff, 'flake']],
+    glad: ['chain', 'chain_coif', { chest: 'bronze', legs: 'brown', hands: 'bronze', feet: 'bronze' }, 'bronze', 0, [0x8a1c24, 0xffd36a]],
+    // новые наряды
+    royalknight: ['plate', 'plate_helm', { chest: 'steel', legs: 'steel', hands: 'gold', feet: 'steel' }, 'steel', 0, [0x1c3a8e, 0xf0c050, 'lion']],
+    archmage: ['mage2', 'mage_hood_alt2', { chest: 'violet', legs: 'violet', hands: 'gold', feet: 'violet' }, 'violet', 0xb080ff, [0x2a1060, 0xe8c060, 'star']],
+    elvenranger: ['leather', 'leather_hood', { chest: 'forest', legs: 'brown', hands: 'forest', feet: 'brown' }, 'forest', 0, [0x24502c, 0xd8c070, 'leaf']],
+    nightblade: ['leather', 'leather_hood', 'obsidian', 'obsidian', 0xff3040, [0x0e0c12, 0xc01828, 'moon']],
+    dragonlord: ['plate', 'plate_helm', { chest: 'obsidian', legs: 'obsidian', hands: 'ember', feet: 'obsidian' }, 'ember', 0xff7020, [0x6a0a08, 0xffb040, 'dragon']],
+    highpriestess: ['mage1', null, { chest: 'ivory', legs: 'ivory', hands: 'gold', feet: 'gold' }, null, 0xfff0b0, [0xf4eee2, 0xd8a838, 'sun']]
   };
   const HEADC = { hunter: ['chain_coif', 'silver'], reaper: ['mage_hood_alt2', 'shadowpurple'], crown: ['plate_helm', 'gold'], oni: ['leather_hood', 'red'] };
   const RC = {}; // перекрашенные атласы: ключ → true
@@ -210,7 +235,7 @@ const FLR = (() => {
     if (H) rc.helm = H[1];
     for (const k in tint) if (!L[k]) delete tint[k];
     for (const k in rc) if (!L[k] || !PAL[rc[k]]) delete rc[k];
-    return { sex, layers: L, tint, rc, glow: C && C[4] || 0, act: ACT[cls] || 'swing', sig: sex + JSON.stringify(L) + JSON.stringify(tint) + JSON.stringify(rc) };
+    return { sex, layers: L, tint, rc, cape: C && C[5] || null, glow: C && C[4] || 0, act: ACT[cls] || 'swing', sig: sex + JSON.stringify(L) + JSON.stringify(tint) + JSON.stringify(rc) };
   }
   const mixWhite = (c, k) => { const r = c >> 16 & 255, g = c >> 8 & 255, b = c & 255; return (Math.round(r + (255 - r) * k) << 16) | (Math.round(g + (255 - g) * k) << 8) | Math.round(b + (255 - b) * k); };
 
@@ -229,7 +254,7 @@ const FLR = (() => {
     const r = { unit, kind: 'mob', mobKey: kind, parts: { body: { key: 'fl_m_' + m[0], path: 'mob/' + m[0], spr: null } }, dir: Math.floor(Math.random() * 8), anim: '', ready: false, height: m[1], defTint: m[2] };
     unit.flr = r; rigs.add(r); return r;
   }
-  function destroy(r) { for (const s in r.parts) if (r.parts[s].spr) r.parts[s].spr.destroy(); for (const o of [r.mnt && r.mnt.spr, ...(r.wings || [])]) if (o) o.destroy(); rigs.delete(r); if (r.unit && r.unit.flr === r) r.unit.flr = null; restore(r); }
+  function destroy(r) { for (const s in r.parts) if (r.parts[s].spr) r.parts[s].spr.destroy(); for (const o of [r.mnt && r.mnt.spr, r.cape, ...(r.wings || [])]) if (o) o.destroy(); rigs.delete(r); if (r.unit && r.unit.flr === r) r.unit.flr = null; restore(r); }
   const NOREN = () => false;
   function hideOld(u) { for (const o of [u.spr, u.wspr, u.wglow, u.mountB, u.mountF, u.wingR, u.wingL, u.wingGR, u.wingGL]) if (o && o.willRender !== NOREN) { o._flWR = o.willRender; o.willRender = NOREN; } }
   function restore(r) { const u = r.unit; if (!u) return; for (const o of [u.spr, u.wspr, u.wglow, u.mountB, u.mountF, u.wingR, u.wingL, u.wingGR, u.wingGL]) if (o && o._flWR) { o.willRender = o._flWR; delete o._flWR; } }
@@ -284,7 +309,7 @@ const FLR = (() => {
       i++;
     }
     r.anim = key;
-    if (r.kind === 'hero') { hideOld(u); mountTick(S, r, u, mounted, moving); wingTick(S, r, u); glowTick(S, r, u); }
+    if (r.kind === 'hero') { hideOld(u); mountTick(S, r, u, mounted, moving); wingTick(S, r, u); capeTick(S, r, u); glowTick(S, r, u); }
   }
   // свечение заточки: оружие (u.wTier) и доспех (u.aTier), а также «светящиеся» костюмы
   function glowTick(S, r, u) {
@@ -344,8 +369,8 @@ const FLR = (() => {
     const W = (typeof WINGS !== 'undefined' && WINGS[id]) || { pal: [0xd8d8e8, 0xf0f0ff, 0xffffff, 0x8a8aa0] };
     const P = W.pal, R = wrng([...String(id)].reduce((h, c) => h * 31 + c.charCodeAt(0), 7));
     const cv = document.createElement('canvas'); cv.width = cv.height = WSZ * WQ; const x = cv.getContext('2d');
-    const feath = W.style !== 'membrane' && W.style !== 'crystal';
-    x.scale(WQ, WQ); x.translate(WR[0], WR[1]); x.scale(feath ? .8 : .86, feath ? .8 : .86); x.lineJoin = 'round'; x.lineCap = 'round';
+    const feath = W.style !== 'membrane' && W.style !== 'crystal' && W.style !== 'butterfly';
+    x.scale(WQ, WQ); x.translate(WR[0], WR[1]); { const ks = feath ? .8 : W.style === 'butterfly' ? .6 : .86; x.scale(ks, ks); } x.lineJoin = 'round'; x.lineCap = 'round';
     const arm = feath ? [[0, 0], [52, -84], [112, -134], [196, -176]] : [[0, 0], [70, -96], [150, -150], [262, -206]];
     const bez = t => { const [a, b, c, d] = arm, m = 1 - t; return [m * m * m * a[0] + 3 * m * m * t * b[0] + 3 * m * t * t * c[0] + t * t * t * d[0], m * m * m * a[1] + 3 * m * m * t * b[1] + 3 * m * t * t * c[1] + t * t * t * d[1]]; };
     const dark = shade(P[3], -.55), shadowOn = (a, bl, oy) => { x.shadowColor = 'rgba(0,0,0,' + a + ')'; x.shadowBlur = bl; x.shadowOffsetX = 1.5; x.shadowOffsetY = oy; }, shadowOff = () => { x.shadowColor = 'transparent'; x.shadowBlur = 0; x.shadowOffsetX = 0; x.shadowOffsetY = 0; };
@@ -376,6 +401,29 @@ const FLR = (() => {
       x.beginPath(); x.moveTo(wrist[0] - 3, wrist[1] - 4); x.quadraticCurveTo(wrist[0] + 4, wrist[1] - 30, wrist[0] + 16, wrist[1] - 26); x.quadraticCurveTo(wrist[0] + 8, wrist[1] - 14, wrist[0] + 8, wrist[1]); x.closePath();
       x.fillStyle = '#e8e2d0'; x.fill(); x.lineWidth = 1; x.strokeStyle = 'rgba(0,0,0,.6)'; x.stroke();
       if (P[2] && W.gem) { const g3 = x.createRadialGradient(wrist[0], wrist[1], 0, wrist[0], wrist[1], 30); g3.addColorStop(0, rgb(P[2], .6)); g3.addColorStop(1, rgb(P[2], 0)); x.globalCompositeOperation = 'lighter'; x.fillStyle = g3; x.fillRect(wrist[0] - 30, wrist[1] - 30, 60, 60); x.globalCompositeOperation = 'source-over'; }
+    } else if (W.style === 'butterfly') {
+      // крыло бабочки/феи: верхняя и нижняя доли, жилки, тёмная кайма с пятнами, перламутровый отлив
+      const lobe = (pts) => { x.beginPath(); x.moveTo(0, 0); x.bezierCurveTo(...pts[0]); x.bezierCurveTo(...pts[1]); x.bezierCurveTo(...pts[2]); x.closePath(); };
+      const up = [[30, -120, 150, -220, 240, -200], [292, -186, 262, -96, 222, -60], [160, -10, 60, 0, 0, 0]], lo = [[60, 20, 170, -10, 196, 40], [214, 86, 170, 140, 120, 150], [70, 156, 20, 90, 0, 0]];
+      for (const [pts, big] of [[lo, 0], [up, 1]]) {
+        lobe(pts); x.shadowColor = 'rgba(0,0,0,.4)'; x.shadowBlur = 10; x.shadowOffsetY = 3; x.fillStyle = rgb(P[3], .95); x.fill(); x.shadowColor = 'transparent';
+        x.save(); lobe(pts); x.clip();
+        const g = x.createRadialGradient(10, 0, 10, 10, 0, big ? 270 : 190); g.addColorStop(0, rgb(P[0], .95)); g.addColorStop(.55, rgb(P[1], .92)); g.addColorStop(.85, rgb(mixc(P[1], P[3], .5), .95)); g.addColorStop(1, rgb(P[3], 1));
+        x.fillStyle = g; x.fillRect(-20, -260, 340, 440);
+        // перламутр
+        const ir = x.createLinearGradient(0, -220, 260, 120); ir.addColorStop(0, 'rgba(255,255,255,0)'); ir.addColorStop(.45, rgb(P[2], .28)); ir.addColorStop(.55, 'rgba(255,255,255,.18)'); ir.addColorStop(.7, 'rgba(255,255,255,0)'); x.fillStyle = ir; x.fillRect(-20, -260, 340, 440);
+        // жилки
+        x.lineWidth = 1.6; x.strokeStyle = rgb(P[3], .85);
+        for (let k = 0; k < (big ? 7 : 5); k++) { const a = big ? -1.35 + k * .2 : .05 + k * .26, L = big ? 250 : 175; x.beginPath(); x.moveTo(6, -2); x.quadraticCurveTo(Math.cos(a) * L * .5 + 10, Math.sin(a) * L * .5 + 6, Math.cos(a) * L, Math.sin(a) * L); x.stroke(); }
+        // кайма и светлые пятна
+        x.restore(); lobe(pts); x.lineWidth = 9; x.strokeStyle = rgb(P[3], .95); x.stroke();
+        x.save(); lobe(pts); x.clip(); const pts2 = []; for (let k = 0; k < 40; k++) { pts2.push(k); }
+        x.fillStyle = rgb(P[2], .95); const pt = pts[1]; for (let k = 0; k < (big ? 9 : 6); k++) { const t = k / (big ? 9 : 6), bx = big ? 240 + (222 - 240) * t + Math.sin(t * 3) * 30 : 196 + (120 - 196) * t, by = big ? -200 + 140 * t : 40 + 110 * t; x.beginPath(); x.arc(bx - (big ? 6 : 6), by + (big ? 4 : -2), 2.6, 0, 6.29); x.fill(); }
+        if (W.eye) { const ex = big ? 150 : 110, ey = big ? -120 : 70; for (const [rr, c] of [[18, P[3]], [14, W.eye], [7, P[3]], [3, 0xffffff]]) { x.fillStyle = rgb(c); x.beginPath(); x.ellipse(ex, ey, rr, rr * .8, -.4, 0, 6.29); x.fill(); } }
+        x.restore();
+      }
+      x.beginPath(); x.moveTo(0, 2); x.quadraticCurveTo(-4, -30, 10, -60); x.lineWidth = 1.5; x.strokeStyle = rgb(P[3]); x.stroke();
+      x.globalCompositeOperation = 'lighter'; for (let k = 0; k < 30; k++) { const px = R() * 240, py = -200 + R() * 330, rr = .6 + R() * 1.6; const sg = x.createRadialGradient(px, py, 0, px, py, rr * 3); sg.addColorStop(0, rgb(P[2], .8)); sg.addColorStop(1, rgb(P[2], 0)); x.fillStyle = sg; x.fillRect(px - rr * 3, py - rr * 3, rr * 6, rr * 6); } x.globalCompositeOperation = 'source-over';
     } else if (W.style === 'crystal') {
       // ледяные осколки: грани с преломлением, светлые рёбра, искры
       const shards = [];
@@ -417,6 +465,8 @@ const FLR = (() => {
         for (let k = 1; k < nb; k++) { const t = k / nb, sx = b[0] + dx * len * t - nx * len * curve * t * t, sy = b[1] + dy * len * t - ny * len * curve * t * t;
           for (const sd of [-1, 1]) { const l = w * .62 * (1 - t * .35); x.beginPath(); x.moveTo(sx, sy); x.quadraticCurveTo(sx + sd * nx * l * .5 + dx * l * .25, sy + sd * ny * l * .5 + dy * l * .25, sx + sd * nx * l + dx * l * .55, sy + sd * ny * l + dy * l * .55);
             x.lineWidth = .55; x.strokeStyle = sd < 0 ? 'rgba(255,255,255,.13)' : 'rgba(0,0,0,.14)'; x.stroke(); } }
+        if (opt.bands) for (let k = 1; k <= 3; k++) { const t = .32 + k * .16, cx0 = b[0] + dx * len * t, cy0 = b[1] + dy * len * t; x.beginPath(); x.moveTo(cx0 - nx * w, cy0 - ny * w); x.quadraticCurveTo(cx0 + dx * 4, cy0 + dy * 4, cx0 + nx * w, cy0 + ny * w); x.lineWidth = 3.2; x.strokeStyle = rgb(opt.bands, .55); x.stroke(); }
+        if (opt.tipGlow) { const tg = x.createRadialGradient(tip[0], tip[1], 0, tip[0], tip[1], len * .45); tg.addColorStop(0, rgb(opt.tipGlow, .9)); tg.addColorStop(1, rgb(opt.tipGlow, 0)); x.globalCompositeOperation = 'lighter'; x.fillStyle = tg; x.fillRect(tip[0] - len, tip[1] - len, len * 2, len * 2); x.globalCompositeOperation = 'source-over'; }
         x.restore();
         // расщепы на краю пера
         if (!opt.round) for (let k = 0; k < 1; k++) { if (R() < .55) continue; const t = .45 + R() * .4, sd = R() < .5 ? -1 : 1, ex = b[0] + dx * len * t + sd * nx * w * .5, ey = b[1] + dy * len * t + sd * ny * w * .5;
@@ -429,9 +479,9 @@ const FLR = (() => {
       const jit = (c, a) => mixc(c, R() < .5 ? 0xffffff : 0x000000, R() * a);
       const lerp = (a, b, t) => a + (b - a) * t, D = Math.PI / 180;
       // маховые: от кисти к концу, длиннейшие — 2–4-е от края
-      for (let i = 11; i >= 0; i--) { const u = i / 11, b = bez(.5 + u * .5); feather(b, lerp(28, -24, u) * D + (R() - .5) * .03, 112 + 46 * Math.sin(Math.min(1, u * 1.25) * Math.PI * .5) - (u > .9 ? 10 : 0) + R() * 5, 21 + u * 3, jit(shade(P[0], -.32), .07), jit(P[1], .05), { curve: .035 + u * .03 }); }
+      for (let i = 11; i >= 0; i--) { const u = i / 11, b = bez(.5 + u * .5); feather(b, lerp(28, -24, u) * D + (R() - .5) * .03, 112 + 46 * Math.sin(Math.min(1, u * 1.25) * Math.PI * .5) - (u > .9 ? 10 : 0) + R() * 5, 21 + u * 3, jit(shade(P[0], -.32), .07), W.tip ? W.tip : jit(P[1], .05), { curve: .035 + u * .03, bands: W.bands, tipGlow: W.tipGlow }); }
       // второстепенные: веером вниз от предплечья
-      for (let i = 10; i >= 0; i--) { const u = i / 10, b = bez(u * .52); feather([b[0], b[1] + 3], lerp(82, 32, u) * D + (R() - .5) * .03, lerp(104, 112, u) + R() * 5, 24, jit(shade(P[0], -.36), .07), jit(mixc(P[0], P[1], .55), .05), { curve: .025 }); }
+      for (let i = 10; i >= 0; i--) { const u = i / 10, b = bez(u * .52); feather([b[0], b[1] + 3], lerp(82, 32, u) * D + (R() - .5) * .03, lerp(104, 112, u) + R() * 5, 24, jit(shade(P[0], -.36), .07), W.tip ? mixc(P[1], W.tip, .7) : jit(mixc(P[0], P[1], .55), .05), { curve: .025, bands: W.bands, tipGlow: W.tipGlow }); }
       // большие кроющие, средние, малые — ряды «чешуи» вдоль кости
       for (let i = 0; i < 13; i++) { const u = i / 12, b = bez(.02 + u * .9); feather([b[0] - 2, b[1] + 7], lerp(74, 0, u) * D, 56 - u * 6, 21, jit(shade(P[3], -.05), .05), jit(P[0], .05), { round: true, sh: .3 }); }
       for (let i = 0; i < 15; i++) { const u = i / 14, b = bez(.01 + u * .92); feather([b[0] - 1, b[1] + 3], lerp(66, -6, u) * D, 33 - u * 4, 16, jit(P[0], .05), jit(mixc(P[0], P[1], .6), .05), { round: true, sh: .28 }); }
@@ -439,6 +489,7 @@ const FLR = (() => {
       // ведущая кромка (кость, покрытая мелким пером) и блик сверху
       x.beginPath(); x.moveTo(0, 0); for (let t = 0; t <= 1; t += .04) { const q = bez(t); x.lineTo(q[0], q[1]); } shadowOn(.35, 4, 2); x.lineWidth = 7; x.strokeStyle = rgb(mixc(P[0], P[1], .4)); x.stroke(); shadowOff();
       x.lineWidth = 2.2; x.strokeStyle = rgb(mixc(P[1], 0xffffff, .5), .8); x.beginPath(); x.moveTo(-1, -3); for (let t = 0; t <= 1; t += .04) { const q = bez(t); x.lineTo(q[0] - 1, q[1] - 3); } x.stroke();
+      if (W.stars) { x.save(); x.globalCompositeOperation = 'source-atop'; for (let k = 0; k < 90; k++) { const px = R() * 330 - 20, py = -230 + R() * 330, rr = .5 + R() * (k % 9 ? 1.2 : 2.6); const sg = x.createRadialGradient(px, py, 0, px, py, rr * 3); sg.addColorStop(0, rgb(W.stars, 1)); sg.addColorStop(1, rgb(W.stars, 0)); x.fillStyle = sg; x.fillRect(px - rr * 3, py - rr * 3, rr * 6, rr * 6); if (k % 9 === 0) { x.fillStyle = rgb(W.stars, .9); x.fillRect(px - rr * 4, py - .4, rr * 8, .8); x.fillRect(px - .4, py - rr * 4, .8, rr * 8); } } x.restore(); }
       if (W.energy) { x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = .28; x.filter = 'blur(3px)'; x.drawImage(cv, -WR[0], -WR[1], WSZ, WSZ); x.restore(); }
     }
     // общий объём: свет сверху-слева, затемнение к корню
@@ -451,6 +502,55 @@ const FLR = (() => {
     if (WCV[id]) return WCV[id];
     const hi = wingHi(id), cv = document.createElement('canvas'); cv.width = cv.height = WSZ; const x = cv.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(hi, 0, 0, WSZ, WSZ);
     return (WCV[id] = cv);
+  }
+  /* ---------- плащ: ткань со складками, кайма, застёжки и вышитая эмблема ---------- */
+  const CW = 130, CH = 230, CVS = {};
+  function capeCanvas(cp) {
+    const id = cp.join('|'); if (CVS[id]) return CVS[id];
+    const [col, trim, emb] = cp, Q = 2, cv = document.createElement('canvas'); cv.width = CW * Q; cv.height = CH * Q; const x = cv.getContext('2d'); x.scale(Q, Q);
+    const hem = u => 214 + Math.sin(u * Math.PI * 5) * 7; // волнистый подол
+    const shape = () => { x.beginPath(); x.moveTo(42, 6); x.lineTo(88, 6); x.bezierCurveTo(104, 60, 118, 140, 124, hem(1)); for (let u = 1; u >= 0; u -= .05) x.lineTo(6 + u * 118, hem(u)); x.bezierCurveTo(12, 140, 26, 60, 42, 6); x.closePath(); };
+    shape(); x.shadowColor = 'rgba(0,0,0,.45)'; x.shadowBlur = 8; x.shadowOffsetY = 3; x.fillStyle = rgb(col); x.fill(); x.shadowColor = 'transparent';
+    x.save(); shape(); x.clip();
+    // складки: чередование света и тени по ширине, расходятся веером вниз
+    for (let i = 0; i < 260; i++) { const yy = i * .9; const w = 46 + (118 - 46) * Math.min(1, yy / 210), x0 = 65 - w / 2;
+      const g = x.createLinearGradient(x0, 0, x0 + w, 0);
+      for (let k = 0; k <= 12; k++) { const u = k / 12, v = Math.cos(u * Math.PI * 6 + yy * .004) * .5 + .5; g.addColorStop(u, v > .5 ? 'rgba(255,255,255,' + ((v - .5) * .22).toFixed(3) + ')' : 'rgba(0,0,0,' + ((.5 - v) * .5).toFixed(3) + ')'); }
+      x.fillStyle = g; x.fillRect(x0 - 4, yy, w + 8, 1.2); }
+    // свет сверху и затемнение к краям
+    let g = x.createLinearGradient(0, 0, 0, CH); g.addColorStop(0, 'rgba(255,255,255,.12)'); g.addColorStop(.4, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.3)'); x.fillStyle = g; x.fillRect(0, 0, CW, CH);
+    g = x.createLinearGradient(0, 0, CW, 0); g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(.25, 'rgba(0,0,0,0)'); g.addColorStop(.75, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.4)'); x.fillStyle = g; x.fillRect(0, 0, CW, CH);
+    // фактура ткани
+    for (let i = 0; i < 1400; i++) { x.fillStyle = Math.random() < .5 ? 'rgba(255,255,255,.035)' : 'rgba(0,0,0,.05)'; x.fillRect(Math.random() * CW, Math.random() * CH, 2, 1); }
+    // эмблема
+    if (emb) { x.save(); x.translate(65, 110); x.fillStyle = rgb(trim, .85); x.strokeStyle = rgb(shade(trim, -.5), .8); x.lineWidth = 1.2;
+      const star = (n, r1, r2) => { x.beginPath(); for (let k = 0; k < n * 2; k++) { const a = k * Math.PI / n - Math.PI / 2, r = k % 2 ? r2 : r1; x.lineTo(Math.cos(a) * r, Math.sin(a) * r); } x.closePath(); x.fill(); x.stroke(); };
+      x.beginPath(); x.moveTo(0, -30); x.lineTo(24, -16); x.lineTo(22, 12); x.quadraticCurveTo(14, 28, 0, 36); x.quadraticCurveTo(-14, 28, -22, 12); x.lineTo(-24, -16); x.closePath(); x.fillStyle = rgb(shade(col, -.25), .9); x.fill(); x.lineWidth = 2.2; x.strokeStyle = rgb(trim, .9); x.stroke();
+      x.fillStyle = rgb(trim, .9);
+      if (emb === 'star' || emb === 'sun') star(emb === 'sun' ? 12 : 5, 15, emb === 'sun' ? 9 : 6);
+      else if (emb === 'flake') { for (let k = 0; k < 6; k++) { x.save(); x.rotate(k * Math.PI / 3); x.fillRect(-1.2, -16, 2.4, 16); x.fillRect(-5, -11, 10, 1.8); x.restore(); } }
+      else if (emb === 'moon') { x.beginPath(); x.arc(0, 2, 13, 0, 6.29); x.fill(); x.globalCompositeOperation = 'destination-out'; x.beginPath(); x.arc(6, -2, 11, 0, 6.29); x.fill(); x.globalCompositeOperation = 'source-over'; }
+      else if (emb === 'bolt') { x.beginPath(); x.moveTo(4, -18); x.lineTo(-8, 3); x.lineTo(0, 3); x.lineTo(-4, 20); x.lineTo(9, -3); x.lineTo(1, -3); x.closePath(); x.fill(); }
+      else if (emb === 'leaf') { x.beginPath(); x.moveTo(0, -18); x.quadraticCurveTo(14, -2, 0, 18); x.quadraticCurveTo(-14, -2, 0, -18); x.fill(); x.strokeStyle = rgb(shade(col, -.3)); x.beginPath(); x.moveTo(0, -14); x.lineTo(0, 15); x.stroke(); }
+      else if (emb === 'crown') { x.beginPath(); x.moveTo(-14, 10); x.lineTo(-14, -6); x.lineTo(-7, 2); x.lineTo(0, -12); x.lineTo(7, 2); x.lineTo(14, -6); x.lineTo(14, 10); x.closePath(); x.fill(); x.stroke(); }
+      else if (emb === 'lion' || emb === 'dragon') { x.beginPath(); x.moveTo(-12, 14); x.quadraticCurveTo(-16, -4, -4, -12); x.quadraticCurveTo(2, -20, 10, -14); x.lineTo(6, -9); x.quadraticCurveTo(14, -4, 8, 4); x.quadraticCurveTo(14, 10, 12, 16); x.quadraticCurveTo(2, 8, -12, 14); x.closePath(); x.fill(); x.stroke(); if (emb === 'dragon') { x.beginPath(); x.moveTo(-4, -12); x.lineTo(-12, -22); x.lineTo(-2, -16); x.fill(); } }
+      x.restore(); }
+    x.restore();
+    // кайма по краю и подолу
+    shape(); x.lineWidth = 5; x.strokeStyle = rgb(shade(trim, -.35)); x.stroke(); x.lineWidth = 2.6; const tg = x.createLinearGradient(0, 0, CW, CH); tg.addColorStop(0, rgb(mixc(trim, 0xffffff, .4))); tg.addColorStop(.5, rgb(trim)); tg.addColorStop(1, rgb(shade(trim, -.25))); x.strokeStyle = tg; x.stroke();
+    // застёжки на плечах
+    for (const cx0 of [44, 86]) { const gg = x.createRadialGradient(cx0 - 1.5, 8.5, .5, cx0, 10, 6.5); gg.addColorStop(0, '#fff8d8'); gg.addColorStop(.5, rgb(trim)); gg.addColorStop(1, rgb(shade(trim, -.5))); x.fillStyle = gg; x.beginPath(); x.arc(cx0, 10, 6, 0, 6.29); x.fill(); x.lineWidth = 1; x.strokeStyle = 'rgba(0,0,0,.5)'; x.stroke(); }
+    return (CVS[id] = cv);
+  }
+  const CSC = .3; // высота плаща в мире ≈ 230 * .3 ≈ 69 px
+  function capePose(dir, t, moving) { const a = ANGLE[dir], wf = Math.max(.42, Math.abs(Math.sin(a))); return { wf, front: Math.sin(a) < -.1, ox: -Math.cos(a) * 9, rot: -Math.cos(a) * (moving ? .32 : .1) + Math.sin(t * (moving ? 9 : 2)) * (moving ? .05 : .025), sy: 1 - (moving ? .06 : 0) + Math.sin(t * 2.2) * .015 }; }
+  function capeTick(S, r, u) {
+    const cp = r.spec && r.spec.cape;
+    if (!cp || u.alive === false) { if (r.cape) r.cape.setVisible(false); return; }
+    const key = 'flc_' + cp.join('_'); if (!S.textures.exists(key)) S.textures.addCanvas(key, (() => { const hi = capeCanvas(cp), c = document.createElement('canvas'); c.width = CW; c.height = CH; const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(hi, 0, 0, CW, CH); return c; })());
+    if (!r.cape || r.cape.texture.key !== key) { if (r.cape) r.cape.destroy(); r.cape = S.add.image(0, 0, key).setOrigin(.5, 6 / CH); }
+    const pz = capePose(r.dir, S.now || 0, u.moving), sc = CSC * (r.scale || 1);
+    r.cape.setVisible(u.spr.visible).setAlpha(u.spr.alpha).setPosition(u.spr.x + pz.ox * .6, u.spr.y + (u.flBob || 0) - (r.lift || 0) - SHOULDER - 2).setScale(sc * pz.wf, sc * pz.sy).setRotation(pz.rot).setDepth(u.spr.depth + (pz.front ? .025 : -.005));
   }
   const WSCALE = .33, SHOULDER = 74; // размер крыла в мире; высота корня крыла над стопами
   function wingId(S, u) { return u === S.hero ? (u.hasWings && u.alive !== false ? u.wingId : null) : (u.wingR && u.wingR.texture && u.wingR.texture.key.startsWith('wing7_') ? u.wingR.texture.key.slice(6) : null); }
@@ -534,6 +634,8 @@ const FLR = (() => {
         ctx.drawImage(cv, -WR[0] * sc, -WR[1] * sc, WSZ * sc, WSZ * sc); ctx.restore();
       }
     }
+    // плащ
+    if (r.spec.cape) { const cv = capeCanvas(r.spec.cape), pz = capePose(d, t, false), sc = CSC * k; ctx.save(); ctx.translate(cx + pz.ox * .6 * k, fy - lift - (SHOULDER + 2) * k); ctx.rotate(pz.rot); ctx.scale(pz.wf, pz.sy); ctx.drawImage(cv, -CW / 2 * sc, -6 * sc, CW * sc, CH * sc); ctx.restore(); }
     // маунт
     if (mkey) { const fr = Math.floor(t * 8) % 4, fname = (mg.fly ? 'run_' : 'stance_') + d + '_' + (mg.fly ? fr : fi); blit(S, ctx, mkey, S.textures.getFrame(mkey, fname) ? fname : 'stance_' + d + '_0', cx, fy + (mg.fly ? Math.sin(t * 2.2) * 3 * k : 0), mg.sc * k, mk[1] || 0); }
     // сам герой
@@ -577,5 +679,5 @@ const FLR = (() => {
     const x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height);
     return drawPanel(S, x, fake, cv.width / 2, cv.height * .96, cv.height / 100, 0, false);
   }
-  return { tileImage, wingCanvas, wingHi, mountGeo, portraitTo, WEAP, PET, petFrame, attachPet, mountKey, NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
+  return { capeCanvas, tileImage, wingCanvas, wingHi, mountGeo, portraitTo, WEAP, PET, petFrame, attachPet, mountKey, NPC, whenTiles, init, heroSpec, portrait, groundOk, paintGround, decoImage, attachHero, attachMob, ghost, drawPanel, MOB, ready: u => !!(u && u.flr && u.flr.ready) };
 })();

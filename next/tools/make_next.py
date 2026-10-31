@@ -294,6 +294,35 @@ rep("      place('lantern', x, y, .95);\n      const p = iso(x, y);", "      pla
 rep("    if (z.village) { if (dc < 3.6 || Math.abs(cx - C) < 1.01", "    if (z.village) { if (dc < 3.6 * (z.town ? TOWN_K : 1) || Math.abs(cx - C) < 1.01")
 rep("      if (z.village ? dc < 5 : Math.hypot(cx - C, cy - C) < 3) continue;", "      if (z.village ? dc < 5 * (z.town ? TOWN_K : 1) : Math.hypot(cx - C, cy - C) < 3) continue;")
 rep("    if (this.zone.village && Math.max(Math.abs(x - C), Math.abs(y - C)) < 4.2) return true;", "    if (this.zone.village && Math.max(Math.abs(x - C), Math.abs(y - C)) < 4.2 * (this.zone.town ? TOWN_K : 1)) return true;")
+# --- 5. новые крылья и наряды (красивые, с плащами) ---
+rep("WINGS.triumph = { name: 'Крылья Триумфа',", """Object.assign(WINGS, {
+  aurora: { name: 'Крылья северного сияния', r: 2, price: 9500, pal: [0x30d0c0, 0x7a5aff, 0xe8fff8, 0x081028], fx: 'moon', style: 'butterfly', eye: 0x9affee, frame: 0xb8f0ff, gem: 0x6affe0, aura: 0x06204a },
+  monarch: { name: 'Крылья королевской бабочки', r: 1, price: 4200, pal: [0xffb030, 0xe0601a, 0xffffff, 0x120a06], fx: 'sakura', style: 'butterfly', frame: 0xe0b04f, gem: 0xff8a2a, aura: 0x3a1804 },
+  fairy: { name: 'Крылья лесной феи', r: 1, price: 3800, pal: [0xc8ffd8, 0x8ad8ff, 0xffffff, 0x2a5a6a], fx: 'jade', style: 'butterfly', eye: 0xffd0f0, frame: 0xd8f0e0, gem: 0x8affc0, aura: 0x06302a },
+  phoenixlord: { name: 'Крылья Огненного феникса', r: 2, price: 12000, pal: [0xc0200a, 0xff7a1a, 0xfff0a0, 0x5a0a04], tip: 0xffe060, tipGlow: 0xff9a2a, energy: true, fx: 'flame', frame: 0xe0b04f, gem: 0xff4a1a, aura: 0x5a1000 },
+  starnight: { name: 'Крылья звёздной ночи', r: 2, price: 10500, pal: [0x0a0c2a, 0x2a2e78, 0xc8d4ff, 0x04040e], stars: 0xe8f0ff, fx: 'void', frame: 0xb8c8e8, gem: 0x8ab0ff, aura: 0x04082a },
+  eagle: { name: 'Крылья горного орла', r: 1, price: 3500, pal: [0x4a2e18, 0xc89a6a, 0xfff4e0, 0x1a0e06], bands: 0x2a1608, fx: 'jade', frame: 0xc8a070, gem: 0xffb040, aura: 0x2a1406 },
+  archangel: { name: 'Крылья архангела', r: 2, price: 14000, pal: [0xf4efe4, 0xffffff, 0xffe8a0, 0xb08a3a], tip: 0xffd870, tipGlow: 0xfff0b0, fx: 'moon', frame: 0xe8b84a, gem: 0x6ab8ff, aura: 0x1a1a5a }
+});
+Object.assign(COSTUMES, {
+  royalknight: { name: 'Латы королевского рыцаря', r: 2, price: 5000 },
+  archmage: { name: 'Мантия архимага', r: 2, price: 5500 },
+  elvenranger: { name: 'Наряд эльфийского следопыта', r: 1, price: 2400 },
+  nightblade: { name: 'Облачение Ночного клинка', r: 2, price: 4800 },
+  dragonlord: { name: 'Доспех Повелителя драконов', r: 2, price: 9000 },
+  highpriestess: { name: 'Одеяние Верховной жрицы', r: 2, price: 6000 }
+});
+Object.assign(OUTFITS, {
+  royalknight: { coat: 0xb8c0d0, inner: 0x1c3a8e, plates: true, sash: 0x1c3a8e, trim: 0xf0c050, cape: 0x1c3a8e },
+  archmage: { coat: 0x3c1a7a, inner: 0x1a0a3a, pat: 'gold', patc: 0xe8c060, sash: 0xe8c060, trim: 0xe8c060, cape: 0x2a1060, glow: 0xb080ff },
+  elvenranger: { coat: 0x2e6a3a, inner: 0x5e4630, sash: 0xd8c070, trim: 0xd8c070, cape: 0x24502c },
+  nightblade: { coat: 0x16141c, inner: 0x0a080e, sash: 0xc01828, trim: 0xc01828, acc: 'ninja', cape: 0x0e0c12, glow: 0xff3040 },
+  dragonlord: { coat: 0x26222e, inner: 0x6a0a08, plates: true, sash: 0x6a0a08, trim: 0xffb040, cape: 0x6a0a08, glow: 0xff7020, acc: 'kabuto' },
+  highpriestess: { coat: 0xf4eee2, inner: 0xe8d8b0, pat: 'gold', patc: 0xd8a838, sash: 0xd8a838, trim: 0xd8a838, cape: 0xf4eee2, glow: 0xfff0b0 }
+});
+WINGS.triumph = { name: 'Крылья Триумфа',""")
+_sl = [l for l in s.split('\n') if l.startswith("const SHOP_LOOKS = {")][0]
+rep(_sl, _sl + "\nSHOP_LOOKS.costume.push('royalknight', 'archmage', 'elvenranger', 'nightblade', 'dragonlord', 'highpriestess'); SHOP_LOOKS.wings.push('aurora', 'monarch', 'fairy', 'phoenixlord', 'starnight', 'eagle', 'archangel');")
 # --- 3. тестовая версия: своё сохранение, облако только на чтение ---
 rep("const SAVE_KEY = 'oblachny-klinok-v2';", """const SAVE_KEY = 'oblachny-klinok-next';
 try { if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem('oblachny-klinok-v2')) localStorage.setItem(SAVE_KEY, localStorage.getItem('oblachny-klinok-v2')); } catch (e) {}""")
