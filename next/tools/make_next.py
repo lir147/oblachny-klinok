@@ -326,6 +326,26 @@ rep(_sl, _sl + "\nSHOP_LOOKS.costume.push('royalknight', 'archmage', 'elvenrange
 # старые перья-частицы от прежних крыльев не нужны: крылья рисует Flare
 rep("      if (!WD.style && t > (this.orbT || 0)) {", "      if (!WD.style && !FLR.ready(h) && t > (this.orbT || 0)) {")
 rep("        if (Math.random() < .6 && !WINGS[h.wingId].style) {", "        if (Math.random() < .6 && !WINGS[h.wingId].style && !FLR.ready(h)) {")
+# --- 6. исправления: кнопки вещи сразу под описанием; защита золота от NaN ---
+rep("""      acts.appendChild(btn('Продать за ' + sellPrice(it) + ' мон', () => this.sell(this.selItem.i), '', !village || isLocked(it)));""",
+    """      det.appendChild(acts); // кнопки «Надеть/Продать» — сразу под описанием, гнёзда и формы ниже
+      acts.appendChild(btn('Продать за ' + sellPrice(it) + ' мон', () => this.sell(this.selItem.i), '', !village || isLocked(it)));""")
+rep("""      acts.appendChild(btn('Снять', () => this.unequip(this.selItem.slot), '', save.inv.length >= BAG));
+    }
+    det.appendChild(acts);""", """      acts.appendChild(btn('Снять', () => this.unequip(this.selItem.slot), '', save.inv.length >= BAG));
+    }
+    if (!acts.parentNode) det.appendChild(acts);""")
+rep("const sellPrice = it => GEM_REF(it)", "const sellPrice = it => { const v = sellPrice0(it); return Number.isFinite(v) ? v : 0; };\nconst sellPrice0 = it => GEM_REF(it)")
+rep("const persist = () => { if (typeof NO_PERSIST !== 'undefined' && NO_PERSIST) return;", """function goldGuard() { // золото никогда не должно стать «NaN»: откатываемся к последнему верному значению
+  if (!save) return;
+  if (Number.isFinite(save.gold)) { save._goldOk = save.gold; return; }
+  let g = Number.isFinite(save._goldOk) ? save._goldOk : NaN;
+  if (!Number.isFinite(g)) { try { const v2 = JSON.parse(localStorage.getItem('oblachny-klinok-v2') || '{}'); g = +v2.gold; } catch (e) {} }
+  save.gold = Number.isFinite(g) ? Math.max(0, Math.round(g)) : 0; save._goldOk = save.gold;
+}
+const persist = () => { goldGuard(); if (typeof NO_PERSIST !== 'undefined' && NO_PERSIST) return;""")
+# вещь с камнем в гнезде: значок камня падал (нет slot:'use') и окно вещи обрывалось до кнопки «Надеть»
+rep("gemIconURL({ base: 'gem_' + g + '_' + t, rarity: Math.min(4, +t - 1) })", "gemIconURL({ slot: 'use', base: 'gem_' + g + '_' + t, rarity: Math.min(4, +t - 1) })")
 # --- 3. тестовая версия: своё сохранение, облако только на чтение ---
 rep("const SAVE_KEY = 'oblachny-klinok-v2';", """const SAVE_KEY = 'oblachny-klinok-next';
 try { if (!localStorage.getItem(SAVE_KEY) && localStorage.getItem('oblachny-klinok-v2')) localStorage.setItem(SAVE_KEY, localStorage.getItem('oblachny-klinok-v2')); } catch (e) {}""")

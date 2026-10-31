@@ -887,7 +887,8 @@ const starText = n => '★'.repeat(n) + '☆'.repeat(5 - n);
 const STAR_COST = [2000, 5000, 10000, 20000, 40000];
 const itemName = it => it.name + (it.plus ? ' +' + it.plus : '');
 const LIFE_REF = it => it && typeof LIFE !== 'undefined' && LIFE[it.base] && it.slot === 'use' ? LIFE[it.base] : null;
-const sellPrice = it => GEM_REF(it) ? Math.round(it.value * .3) : LIFE_REF(it) ? Math.round(LIFE_REF(it).price * .5) : it.slot === 'use' ? (it.kind === 'scroll' ? 50 : 3) : (it.slot === 'costume' || it.slot === 'wings' || it.slot === 'mount' || COSMETICS[it.slot]) ? Math.round(it.value * .3 * (1 + it.plus * .2)) : Math.round(it.value * .4 * (1 + it.plus * .3));
+const sellPrice = it => { const v = sellPrice0(it); return Number.isFinite(v) ? v : 0; };
+const sellPrice0 = it => GEM_REF(it) ? Math.round(it.value * .3) : LIFE_REF(it) ? Math.round(LIFE_REF(it).price * .5) : it.slot === 'use' ? (it.kind === 'scroll' ? 50 : 3) : (it.slot === 'costume' || it.slot === 'wings' || it.slot === 'mount' || COSMETICS[it.slot]) ? Math.round(it.value * .3 * (1 + it.plus * .2)) : Math.round(it.value * .4 * (1 + it.plus * .3));
 function describe(it) {
   if (GEM_REF(it)) { const R = GEM_REF(it); return 'Камень · ' + RAR[it.rarity].n + ' — ' + GEMS[R.g].label + ' +' + Math.round(gemVal(R.g, R.t) * 10) / 10 + ' в гнезде. Три одинаковых сливаются в следующую ступень («Дневник» → «Путь»). В стопке: ' + it.qty; }
   if (LIFE_REF(it) && LIFE_REF(it).type === 'event') return 'Праздничная награда · обменивается в лавке праздника («Дневник» → «Праздник»)' + (it.base === 'ev_gift' ? ', а подарок можно открыть' : '') + '. В стопке: ' + it.qty;
@@ -4572,7 +4573,14 @@ if (!save.qv) { if (save.q.i >= 3) save.q = { i: 3, n: 0, state: 'avail' }; save
 save.inv.forEach(fixItem); Object.values(save.eq).forEach(fixItem);
 if (!ZONES[save.zone]) save.zone = 'town';
 let CLOUD_DIRTY = 0;
-const persist = () => { if (typeof NO_PERSIST !== 'undefined' && NO_PERSIST) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} CLOUD_DIRTY = CLOUD_DIRTY || Date.now(); };
+function goldGuard() { // золото никогда не должно стать «NaN»: откатываемся к последнему верному значению
+  if (!save) return;
+  if (Number.isFinite(save.gold)) { save._goldOk = save.gold; return; }
+  let g = Number.isFinite(save._goldOk) ? save._goldOk : NaN;
+  if (!Number.isFinite(g)) { try { const v2 = JSON.parse(localStorage.getItem('oblachny-klinok-v2') || '{}'); g = +v2.gold; } catch (e) {} }
+  save.gold = Number.isFinite(g) ? Math.max(0, Math.round(g)) : 0; save._goldOk = save.gold;
+}
+const persist = () => { goldGuard(); if (typeof NO_PERSIST !== 'undefined' && NO_PERSIST) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} CLOUD_DIRTY = CLOUD_DIRTY || Date.now(); };
 
 const heroBase = lv => ({ maxHp: Math.round(100 + (lv - 1) * 22), maxMp: Math.round(50 + (lv - 1) * 6), atk: 10 + (lv - 1) * 3.5 });
 const xpNeed = lv => Math.round(40 * Math.pow(lv, 1.5));
@@ -5810,6 +5818,7 @@ class World extends Phaser.Scene {
         const cb = cmpBlock(this, it); if (cb) det.appendChild(cb); else if (cur && it.slot !== 'costume') det.appendChild(mk('div', 'ds', 'Сейчас надето: ' + itemName(cur) + ' — ' + describe(cur).split(' — ')[1]));
         acts.appendChild(btn(it.slot === 'costume' ? 'Примерить' : 'Надеть', () => this.equip(this.selItem.i), 'main'));
       }
+      det.appendChild(acts); // кнопки «Надеть/Продать» — сразу под описанием, гнёзда и формы ниже
       acts.appendChild(btn('Продать за ' + sellPrice(it) + ' зол.', () => this.sell(this.selItem.i), '', !village || isLocked(it)));
       if (!it.kind && it.slot !== 'use' && !GEM_REF(it) && !LIFE_REF(it)) acts.appendChild(btn(it.lock ? '🔓 Снять замок' : '🔒 Замок', () => toggleLock(this, it), it.lock ? 'main' : ''));
       if (!it.kind && it.slot !== 'use') { socketUI(det, this, it); tradeFormInto(det, this, it); }
@@ -5818,7 +5827,7 @@ class World extends Phaser.Scene {
     } else {
       acts.appendChild(btn('Снять', () => this.unequip(this.selItem.slot), '', save.inv.length >= BAG));
     }
-    det.appendChild(acts);
+    if (!acts.parentNode) det.appendChild(acts);
   }
 
   equip(i) {
@@ -9732,7 +9741,7 @@ function socketUI(det, G, it) {
   const row = mk('div', 'sockets'); row.appendChild(mk('span', 'label', 'Гнёзда'));
   for (let i = 0; i < n; i++) {
     const k = (it.gems || [])[i];
-    if (k) { const [g, t] = k.split('_'); const c = mk('span', 'sock on'); c.style.background = 'url(' + gemIconURL({ base: 'gem_' + g + '_' + t, rarity: Math.min(4, +t - 1) }) + ') center/cover'; c.title = gemName(g, +t); row.appendChild(c); row.appendChild(btn('Извлечь · ' + 500 * +t, () => unsocketGem(G, it, i), 'mini')); }
+    if (k) { const [g, t] = k.split('_'); const c = mk('span', 'sock on'); c.style.background = 'url(' + gemIconURL({ slot: 'use', base: 'gem_' + g + '_' + t, rarity: Math.min(4, +t - 1) }) + ') center/cover'; c.title = gemName(g, +t); row.appendChild(c); row.appendChild(btn('Извлечь · ' + 500 * +t, () => unsocketGem(G, it, i), 'mini')); }
     else { row.appendChild(mk('span', 'sock')); }
   }
   const gems = save.inv.filter(x => GEM_REF(x));
